@@ -20,3 +20,5 @@ generate_c = false
 [[depends-on]]
 a0b_base = "*"
 gnat_native = "*"
+gnatcoll = "*"
+vss = "*"
