@@ -97,6 +97,7 @@ package body RTG.System is
       PL ("   Null_Address : constant Address;");
       NL;
       PL ("   Storage_Unit : constant := 8;");
+      PL ("   Word_Size    : constant := 32;");
       PL ("   Memory_Size  : constant := 2 ** 32;");
       NL;
       PL ("private");
