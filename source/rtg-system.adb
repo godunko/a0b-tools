@@ -94,6 +94,8 @@ package body RTG.System is
       PL ("   type Address is private with Preelaborable_Initialization;");
       PL ("   Null_Address : constant Address;");
       NL;
+      PL ("   Max_Binary_Modulus    : constant := 2 ** Standard'Max_Integer_Size;");
+      NL;
       PL ("private");
       NL;
       PL ("   type Address is mod 2 ** 32;");
