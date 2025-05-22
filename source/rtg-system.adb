@@ -97,11 +97,11 @@ package body RTG.System is
       PL ("   Null_Address : constant Address;");
       NL;
       PL ("   Storage_Unit : constant := 8;");
+      PL ("   Memory_Size  : constant := 2 ** 32;");
       NL;
       PL ("private");
       NL;
-      PL ("   type Address is mod 2 ** 32;");
-      PL ("   for Address'Size use Standard'Address_Size;");
+      PL ("   type Address is mod Memory_Size with Size => Standard'Address_Size;");
       PL ("   Null_Address : constant Address := 0;");
       NL;
 
@@ -120,9 +120,7 @@ package body RTG.System is
                          (if Parameters (J) then "True" else "False"))));
          end;
       end loop;
-      --  PL ("   Exit_Status_Supported     : constant Boolean := False;");
-      --  PL ("   Suppress_Standard_Library : constant Boolean := True;");
-      --  PL ("   Use_Ada_Main_Program_Name : constant Boolean := False;");
+
       NL;
       PL ("end System;");
 
