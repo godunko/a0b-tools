@@ -9,7 +9,7 @@ with VSS.Text_Streams.File_Output;
 
 package body RTG.Runtime is
 
-   procedure Generate_Build_Core_Project (Descriptor : Runtime_Descriptor);
+   procedure Generate_Build_Runtime_Project (Descriptor : Runtime_Descriptor);
 
    procedure Generate_Ada_Source_Path (Descriptor : Runtime_Descriptor);
 
@@ -28,7 +28,7 @@ package body RTG.Runtime is
 
       Generate_Ada_Source_Path (Descriptor);
       Generate_Ada_Object_Path (Descriptor);
-      Generate_Build_Core_Project (Descriptor);
+      Generate_Build_Runtime_Project (Descriptor);
       Generate_Runtime_XML (Descriptor);
    end Create;
 
@@ -70,21 +70,21 @@ package body RTG.Runtime is
       Output.Close;
    end Generate_Ada_Object_Path;
 
-   ---------------------------------
-   -- Generate_Build_Core_Project --
-   ---------------------------------
+   ------------------------------------
+   -- Generate_Build_Runtime_Project --
+   ------------------------------------
 
-   procedure Generate_Build_Core_Project (Descriptor : Runtime_Descriptor) is
+   procedure Generate_Build_Runtime_Project (Descriptor : Runtime_Descriptor) is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
 
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.RTL_Directory.Create_From_Dir
-                ("build_core.gpr").Display_Full_Name));
+           (Descriptor.RTL_Directory.Create_From_Dir ("build_runtime.gpr")
+              .Display_Full_Name));
 
-      Output.Put_Line ("library project Build_Core is", Success);
+      Output.Put_Line ("library project Build_Runtime is", Success);
       Output.Put_Line ("   for Target use ""arm-eabi"";", Success);
       Output.Put_Line
         ("   for Runtime (""Ada"") use Project'Project_Dir;", Success);
@@ -92,10 +92,10 @@ package body RTG.Runtime is
       Output.Put_Line ("   for Source_Dirs use (""gnat"");", Success);
       Output.Put_Line ("   for Object_Dir use ""obj/gnat"";", Success);
       Output.Put_Line ("   for Library_Dir use ""lib/gnat"";", Success);
-      Output.Put_Line ("end Build_Core;", Success);
+      Output.Put_Line ("end Build_Runtime;", Success);
 
       Output.Close;
-   end Generate_Build_Core_Project;
+   end Generate_Build_Runtime_Project;
 
    --------------------------
    -- Generate_Runtime_XML --
