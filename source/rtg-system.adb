@@ -100,6 +100,9 @@ package body RTG.System is
       PL ("   Word_Size    : constant := 32;");
       PL ("   Memory_Size  : constant := 2 ** 32;");
       NL;
+      PL ("   function ""<="" (Left, Right : Address) return Boolean");
+      PL ("     with Import, Convention => Intrinsic;");
+      NL;
       PL ("private");
       NL;
       PL ("   type Address is mod Memory_Size with Size => Standard'Address_Size;");
