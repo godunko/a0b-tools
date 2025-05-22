@@ -91,10 +91,12 @@ package body RTG.System is
       NL;
       PL ("package System with Pure, No_Elaboration_Code_All is");
       NL;
+      PL ("   Max_Binary_Modulus    : constant := 2 ** Standard'Max_Integer_Size;");
+      NL;
       PL ("   type Address is private with Preelaborable_Initialization;");
       PL ("   Null_Address : constant Address;");
       NL;
-      PL ("   Max_Binary_Modulus    : constant := 2 ** Standard'Max_Integer_Size;");
+      PL ("   Storage_Unit : constant := 8;");
       NL;
       PL ("private");
       NL;
