@@ -83,12 +83,12 @@ package body RTG.System is
            (Runtime.Runtime_Source_Directory.Create_From_Dir
                 ("system.ads").Display_Full_Name));
 
-      --  PL ("pragma Profile (Jorvik);");
       PL ("pragma Restrictions (No_Exception_Propagation);");
       PL ("pragma Restrictions (No_Exception_Registration);");
       PL ("pragma Restrictions (No_Implicit_Dynamic_Code);");
       PL ("pragma Restrictions (No_Finalization);");
-      PL ("pragma Restrictions (No_Tasking);");
+      --  PL ("pragma Restrictions (No_Tasking);");
+      PL ("pragma Profile (Jorvik);");
       NL;
       PL ("package System with Pure, No_Elaboration_Code_All is");
       NL;
