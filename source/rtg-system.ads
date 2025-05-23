@@ -35,9 +35,6 @@ package RTG.System is
          Suppress_Standard_Library,
          Use_Ada_Main_Program_Name,
          ZCX_By_Default);
-        --   Fractional_Fixed_Ops,
-        --   Frontend_Layout,
-        --   Frontend_Exceptions,
 
       type System_Implementation_Parameters is
         array (System_Implementation_Parameter) of Boolean;
@@ -57,6 +54,7 @@ package RTG.System is
 
    procedure Generate
      (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Parameters : GCC14.System_Implementation_Parameters);
+      Parameters : GCC14.System_Implementation_Parameters;
+      Tasking    : RTG.Runtime.Tasking_Profile);
 
 end RTG.System;

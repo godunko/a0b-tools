@@ -11,7 +11,7 @@ with RTG.System;
 
 procedure RTG.Driver is
    Runtime    : RTG.Runtime.Runtime_Descriptor;
-   Parameters : RTG.System.GCC14.System_Implementation_Parameters :=
+   Parameters : constant RTG.System.GCC14.System_Implementation_Parameters :=
      [RTG.System.GCC14.Always_Compatible_Rep     => True,
       RTG.System.GCC14.Atomic_Sync_Default       => False,
       RTG.System.GCC14.Backend_Divide_Checks     => False,
@@ -19,7 +19,7 @@ procedure RTG.Driver is
       RTG.System.GCC14.Command_Line_Args         => False,
       RTG.System.GCC14.Configurable_Run_Times    => True,
       RTG.System.GCC14.Denorm                    => True,
-      RTG.System.GCC14.Duration_32_Bits          => True,
+      RTG.System.GCC14.Duration_32_Bits          => False,
       RTG.System.GCC14.Exit_Status_Supported     => False,
       RTG.System.GCC14.Machine_Overflows         => False,
       RTG.System.GCC14.Machine_Rounds            => True,
@@ -38,9 +38,11 @@ procedure RTG.Driver is
       RTG.System.GCC14.ZCX_By_Default            => True];
    --  It is set of parameters for ARM Cortex-M `light` runtime
 
+   Tasking : constant RTG.Runtime.Tasking_Profile := RTG.Runtime.Light;
+
 begin
    RTG.Runtime.Initialize (Runtime);
 
-   RTG.Runtime.Create (Runtime);
-   RTG.System.Generate (Runtime, Parameters);
+   RTG.Runtime.Create (Runtime, Tasking);
+   RTG.System.Generate (Runtime, Parameters, Tasking);
 end RTG.Driver;

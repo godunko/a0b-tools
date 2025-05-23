@@ -11,42 +11,328 @@ package body RTG.Runtime is
 
    procedure Generate_Build_Runtime_Project (Descriptor : Runtime_Descriptor);
 
-   procedure Generate_Ada_Source_Path (Descriptor : Runtime_Descriptor);
+   procedure Generate_Build_Tasking_Project (Descriptor : Runtime_Descriptor);
 
-   procedure Generate_Ada_Object_Path (Descriptor : Runtime_Descriptor);
+   procedure Generate_Ada_Source_Path
+     (Descriptor : Runtime_Descriptor;
+      Tasking    : Boolean);
+
+   procedure Generate_Ada_Object_Path
+     (Descriptor : Runtime_Descriptor;
+      Tasking    : Boolean);
 
    procedure Generate_Runtime_XML (Descriptor : Runtime_Descriptor);
+
+   procedure Copy_Runtime_Sources (Descriptor : Runtime_Descriptor);
+
+   procedure Copy_Tasking_Sources (Descriptor : Runtime_Descriptor);
+
+   --------------------------
+   -- Copy_Runtime_Sources --
+   --------------------------
+
+   procedure Copy_Runtime_Sources (Descriptor : Runtime_Descriptor) is
+      Success : Boolean;
+
+   begin
+      --  Common sources
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/common"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/fpu"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/atomics"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+
+      --  Common sources of `light`
+      --  GNATCOLL.VFS.Copy
+      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+      --       ("/include/rts-sources/light"),
+      --     Descriptor.Tasking_Source_Directory.Full_Name.all,
+      --     Success);
+      --  GNATCOLL.VFS.Copy
+      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+      --       ("/include/rts-sources/light/exceptions"),
+      --     Descriptor.Tasking_Source_Directory.Full_Name.all,
+      --     Success);
+      --  GNATCOLL.VFS.Copy
+      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+      --       ("/include/rts-sources/light/non-tasking"),
+      --     Descriptor.Tasking_Source_Directory.Full_Name.all,
+      --     Success);
+
+      --  Common sources of `light-tasking`
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/light-tasking"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/light"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/light/exceptions"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+
+      --  `light-tasking` Has_CHERI:no
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/secondary_stack/symbol"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+      --  `light-tasking` Memory_Profile:small
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/gnat/parameters/small"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+
+      --  Add_Value_Spec:yes  required by `s-imgboo.ads` from common `gnat`
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/value/spec"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+
+      --  CPU_Family:arm
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/atomics/32"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+
+      --  Text_IO:semihosting required by common `gnat`
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/semihosting"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+
+      --  Add_Value_LL_Spec:yes required by common `gnat`
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/value/spec_ll"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+
+      --  "RTS_Profile:light-tasking"
+      --  "Has_CHERI:no"
+      --  "Has_libc:no"
+      --  "Certifiable_Packages:no"
+      --  "Has_Compare_And_Swap:yes"
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/alloc/tasking"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+
+      --------------------
+      --  Custom files  --
+      --------------------
+
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../src/s-macres__cortexm3.adb"),
+         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-macres.adb")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../src/s-sgshca__cortexm.adb"),
+         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-sgshca.adb")
+           .Full_Name.all,
+         Success);
+
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../arm/stm32/stm32f40x/svd"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (GNATCOLL.VFS.Create ("../s-bbbopa.ads"),
+         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbbopa.ads")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-bbmcpa.ads"),
+         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbmcpa.ads")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-bbmcpa.adb"),
+         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbmcpa.adb")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../arm/stm32/s-stm32.ads"),
+         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-stm32.ads")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-stm32.adb"),
+         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-stm32.adb")
+           .Full_Name.all,
+         Success);
+   end Copy_Runtime_Sources;
+
+   --------------------------
+   -- Copy_Tasking_Sources --
+   --------------------------
+
+   procedure Copy_Tasking_Sources (Descriptor : Runtime_Descriptor) is
+      Success : Boolean;
+
+   begin
+      --  Common sources of `gnarl`
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/gnarl/common"),
+         Descriptor.Tasking_Source_Directory.Full_Name.all,
+         Success);
+
+      --  "RTS_Profile:light-tasking"
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/gnarl/sfp"),
+         Descriptor.Tasking_Source_Directory.Full_Name.all,
+         Success);
+
+      --  "Timer:timer32"
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/gnarl/timer32"),
+         Descriptor.Tasking_Source_Directory.Full_Name.all,
+         Success);
+
+      --  "CPU_Family:arm"
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/gnarl/spinlock-gcc"),
+         Descriptor.Tasking_Source_Directory.Full_Name.all,
+         Success);
+
+      --------------------
+      --  Custom files  --
+      --------------------
+
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../src/s-bbpara__stm32f4.ads"),
+         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbpara.ads")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../src/s-bbcppr__old.ads"),
+         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbcppr.ads")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../src/s-bbcppr__armv7m.adb"),
+         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbcppr.adb")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../src/s-bbbosu__armv7m.adb"),
+         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbbosu.adb")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../src/s-bbcpsp__arm.ads"),
+         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbcpsp.ads")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../src/s-bcpcst__pendsv.adb"),
+         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bcpcst.adb")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../src/s-bcpcst__armvXm.ads"),
+         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bcpcst.ads")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/../../../src/s-bbsumu__generic.adb"),
+         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbsumu.adb")
+           .Full_Name.all,
+         Success);
+      --  GNATCOLL.VFS.Copy
+      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+      --       ("/include/rts-sources/"),
+      --     Descriptor.Tasking_Source_Directory.Create_From_Dir ("")
+      --       .Full_Name.all,
+      --     Success);
+   end Copy_Tasking_Sources;
 
    ------------
    -- Create --
    ------------
 
-   procedure Create (Descriptor : Runtime_Descriptor) is
+   procedure Create
+     (Descriptor : Runtime_Descriptor;
+      Tasking    : RTG.Runtime.Tasking_Profile) is
    begin
-      Descriptor.RTL_Directory.Make_Dir;
-      Source_Directory (Descriptor).Make_Dir;
+      Descriptor.Runtime_Directory.Make_Dir;
+      Descriptor.Runtime_Source_Directory.Make_Dir;
 
-      Generate_Ada_Source_Path (Descriptor);
-      Generate_Ada_Object_Path (Descriptor);
+      Generate_Ada_Source_Path (Descriptor, Tasking /= No);
+      Generate_Ada_Object_Path (Descriptor, Tasking /= No);
       Generate_Build_Runtime_Project (Descriptor);
       Generate_Runtime_XML (Descriptor);
+      Copy_Runtime_Sources (Descriptor);
+
+      if Tasking /= No then
+         Descriptor.Tasking_Source_Directory.Make_Dir;
+         Generate_Build_Tasking_Project (Descriptor);
+         Copy_Tasking_Sources (Descriptor);
+      end if;
    end Create;
 
    ------------------------------
    -- Generate_Ada_Source_Path --
    ------------------------------
 
-   procedure Generate_Ada_Source_Path (Descriptor : Runtime_Descriptor) is
+   procedure Generate_Ada_Source_Path
+     (Descriptor : Runtime_Descriptor;
+      Tasking    : Boolean)
+   is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
 
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.RTL_Directory.Create_From_Dir
+           (Descriptor.Runtime_Directory.Create_From_Dir
                 ("ada_source_path").Display_Full_Name));
 
       Output.Put_Line ("gnat", Success);
+
+      if Tasking then
+         Output.Put_Line ("gnarl", Success);
+      end if;
 
       Output.Close;
    end Generate_Ada_Source_Path;
@@ -55,17 +341,24 @@ package body RTG.Runtime is
    -- Generate_Ada_Object_Path --
    ------------------------------
 
-   procedure Generate_Ada_Object_Path (Descriptor : Runtime_Descriptor) is
+   procedure Generate_Ada_Object_Path
+     (Descriptor : Runtime_Descriptor;
+      Tasking    : Boolean)
+   is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
 
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.RTL_Directory.Create_From_Dir
+           (Descriptor.Runtime_Directory.Create_From_Dir
                 ("ada_object_path").Display_Full_Name));
 
       Output.Put_Line ("lib/gnat", Success);
+
+      if Tasking then
+         Output.Put_Line ("lib/gnarl", Success);
+      end if;
 
       Output.Close;
    end Generate_Ada_Object_Path;
@@ -74,14 +367,16 @@ package body RTG.Runtime is
    -- Generate_Build_Runtime_Project --
    ------------------------------------
 
-   procedure Generate_Build_Runtime_Project (Descriptor : Runtime_Descriptor) is
+   procedure Generate_Build_Runtime_Project
+     (Descriptor : Runtime_Descriptor)
+   is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
 
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.RTL_Directory.Create_From_Dir ("build_runtime.gpr")
+           (Descriptor.Runtime_Directory.Create_From_Dir ("build_runtime.gpr")
               .Display_Full_Name));
 
       Output.Put_Line ("library project Build_Runtime is", Success);
@@ -96,6 +391,35 @@ package body RTG.Runtime is
 
       Output.Close;
    end Generate_Build_Runtime_Project;
+
+   ------------------------------------
+   -- Generate_Build_Tasking_Project --
+   ------------------------------------
+
+   procedure Generate_Build_Tasking_Project
+     (Descriptor : Runtime_Descriptor)
+   is
+      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
+      Success : Boolean := True;
+
+   begin
+      Output.Create
+        (VSS.Strings.Conversions.To_Virtual_String
+           (Descriptor.Runtime_Directory.Create_From_Dir ("build_tasking.gpr")
+              .Display_Full_Name));
+
+      Output.Put_Line ("library project Build_Tasking is", Success);
+      Output.Put_Line ("   for Target use ""arm-eabi"";", Success);
+      Output.Put_Line
+        ("   for Runtime (""Ada"") use Project'Project_Dir;", Success);
+      Output.Put_Line ("   for Library_Name use ""gnarl"";", Success);
+      Output.Put_Line ("   for Source_Dirs use (""gnarl"");", Success);
+      Output.Put_Line ("   for Object_Dir use ""obj/gnarl"";", Success);
+      Output.Put_Line ("   for Library_Dir use ""lib/gnarl"";", Success);
+      Output.Put_Line ("end Build_Tasking;", Success);
+
+      Output.Close;
+   end Generate_Build_Tasking_Project;
 
    --------------------------
    -- Generate_Runtime_XML --
@@ -130,7 +454,7 @@ package body RTG.Runtime is
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.RTL_Directory.Create_From_Dir
+           (Descriptor.Runtime_Directory.Create_From_Dir
                 ("runtime.xml").Display_Full_Name));
 
       PL ("<?xml version=""1.0""?>");
@@ -138,6 +462,13 @@ package body RTG.Runtime is
       PL ("<gprconfig>");
       PL ("  <configuration>");
       PL ("    <config><![CDATA[");
+      PL ("   package Compiler is");
+      PL ("      Common_Required_Switches := (""-mfloat-abi=hard"", ""-mcpu=cortex-m4"", ""-mfpu=fpv4-sp-d16"");");
+      PL ("      for Leading_Required_Switches (""Ada"") use");
+      PL ("        Compiler'Leading_Required_Switches (""Ada"")");
+      PL ("        & Common_Required_Switches;");
+      PL ("   end Compiler;");
+      NL;
       PL ("   package Linker is");
       PL ("      for Required_Switches use Linker'Required_Switches &");
       PL ("        (""-nostartfiles"");");
@@ -156,36 +487,29 @@ package body RTG.Runtime is
 
    procedure Initialize (Self : in out Runtime_Descriptor) is
    begin
-      Self.RTL_Directory := GNATCOLL.VFS.Create ("rtl");
+      Self.Runtime_Directory := GNATCOLL.VFS.Create ("rtl");
+      Self.GNAT_RTS_Sources_Directory :=
+        GNATCOLL.VFS.Create ("../../bb-runtimes-14/gnat_rts_sources");
    end Initialize;
 
-     --         --------------------
-     --         -- Root_Directory --
-     --         --------------------
-     --
-     --         function Root_Directory
-     --  (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
+   ------------------------------
+   -- Runtime_Source_Directory --
+   ------------------------------
 
-   ----------------------
-   -- Source_Directory --
-   ----------------------
-
-   function Source_Directory
+   function Runtime_Source_Directory
      (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File is
    begin
-      return Self.RTL_Directory.Create_From_Dir ("gnat");
-   end Source_Directory;
+      return Self.Runtime_Directory.Create_From_Dir ("gnat");
+   end Runtime_Source_Directory;
 
-   ----------------------
-   -- Source_Directory --
-   ----------------------
+   ------------------------------
+   -- Tasking_Source_Directory --
+   ------------------------------
 
-   function Source_Directory
-     (Self : Runtime_Descriptor) return VSS.Strings.Virtual_String is
+   function Tasking_Source_Directory
+     (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File is
    begin
-      return
-        VSS.Strings.Conversions.To_Virtual_String
-          (Self.Source_Directory.Display_Full_Name);
-   end Source_Directory;
+      return Self.Runtime_Directory.Create_From_Dir ("gnarl");
+   end Tasking_Source_Directory;
 
 end RTG.Runtime;

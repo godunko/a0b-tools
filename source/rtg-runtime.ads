@@ -6,9 +6,9 @@
 
 with GNATCOLL.VFS;
 
-with VSS.Strings;
-
 package RTG.Runtime is
+
+   type Tasking_Profile is (No, Light, Embedded);
 
    type Runtime_Descriptor is tagged limited private;
 
@@ -17,18 +17,21 @@ package RTG.Runtime is
    --  function Root_Directory
    --    (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
 
-   function Source_Directory
+   function Runtime_Source_Directory
      (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
 
-   function Source_Directory
-     (Self : Runtime_Descriptor) return VSS.Strings.Virtual_String;
+   function Tasking_Source_Directory
+     (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
 
-   procedure Create (Descriptor : Runtime_Descriptor);
+   procedure Create
+     (Descriptor : Runtime_Descriptor;
+      Tasking    : RTG.Runtime.Tasking_Profile);
 
 private
 
    type Runtime_Descriptor is tagged limited record
-      RTL_Directory : GNATCOLL.VFS.Virtual_File;
+      Runtime_Directory          : GNATCOLL.VFS.Virtual_File;
+      GNAT_RTS_Sources_Directory : GNATCOLL.VFS.Virtual_File;
    end record;
 
 end RTG.Runtime;

@@ -49,7 +49,8 @@ package body RTG.System is
 
    procedure Generate
      (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Parameters : GCC14.System_Implementation_Parameters)
+      Parameters : GCC14.System_Implementation_Parameters;
+      Tasking    : RTG.Runtime.Tasking_Profile)
    is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
@@ -79,7 +80,7 @@ package body RTG.System is
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Runtime.Source_Directory.Create_From_Dir
+           (Runtime.Runtime_Source_Directory.Create_From_Dir
                 ("system.ads").Display_Full_Name));
 
       --  PL ("pragma Profile (Jorvik);");
