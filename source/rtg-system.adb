@@ -105,6 +105,12 @@ package body RTG.System is
       NL;
       PL ("   type Bit_Order is (High_Order_First, Low_Order_First);");
       NL;
+      PL ("   subtype Any_Priority       is Integer range         0 .. 255;");
+      PL ("   subtype Priority           is Any_Priority range    0 .. 240;");
+      PL ("   subtype Interrupt_Priority is Any_Priority range  241 .. 255;");
+      NL;
+      PL ("   Default_Priority : constant Priority := 120;");
+      NL;
       PL ("private");
       NL;
       PL ("   type Address is mod Memory_Size with Size => Standard'Address_Size;");
