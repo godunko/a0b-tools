@@ -354,11 +354,7 @@ package body RTG.Runtime is
            (Descriptor.Runtime_Directory.Create_From_Dir
                 ("ada_object_path").Display_Full_Name));
 
-      Output.Put_Line ("lib/gnat", Success);
-
-      if Tasking then
-         Output.Put_Line ("lib/gnarl", Success);
-      end if;
+      Output.Put_Line ("lib", Success);
 
       Output.Close;
    end Generate_Ada_Object_Path;
@@ -386,7 +382,7 @@ package body RTG.Runtime is
       Output.Put_Line ("   for Library_Name use ""gnat"";", Success);
       Output.Put_Line ("   for Source_Dirs use (""gnat"");", Success);
       Output.Put_Line ("   for Object_Dir use ""obj/gnat"";", Success);
-      Output.Put_Line ("   for Library_Dir use ""lib/gnat"";", Success);
+      Output.Put_Line ("   for Library_Dir use ""lib"";", Success);
       Output.Put_Line ("end Build_Runtime;", Success);
 
       Output.Close;
@@ -415,7 +411,7 @@ package body RTG.Runtime is
       Output.Put_Line ("   for Library_Name use ""gnarl"";", Success);
       Output.Put_Line ("   for Source_Dirs use (""gnarl"");", Success);
       Output.Put_Line ("   for Object_Dir use ""obj/gnarl"";", Success);
-      Output.Put_Line ("   for Library_Dir use ""lib/gnarl"";", Success);
+      Output.Put_Line ("   for Library_Dir use ""lib"";", Success);
       Output.Put_Line ("end Build_Tasking;", Success);
 
       Output.Close;
