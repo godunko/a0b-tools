@@ -86,6 +86,19 @@ package body RTG.Runtime is
          Descriptor.Runtime_Source_Directory.Full_Name.all,
          Success);
 
+      --  "Has_libc:no"
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/mem"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+      --  "Has_CHERI:no" "Has_libc:no"
+      GNATCOLL.VFS.Copy
+        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+           ("/include/rts-sources/mem/no-cheri"),
+         Descriptor.Runtime_Source_Directory.Full_Name.all,
+         Success);
+
       --  `light-tasking` Has_CHERI:no
       GNATCOLL.VFS.Copy
         (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
