@@ -459,7 +459,8 @@ package body RTG.Runtime is
       PL ("  <configuration>");
       PL ("    <config><![CDATA[");
       PL ("   package Compiler is");
-      PL ("      Common_Required_Switches := (""-mfloat-abi=hard"", ""-mcpu=cortex-m4"", ""-mfpu=fpv4-sp-d16"");");
+      --  PL ("      Common_Required_Switches := (""-mfloat-abi=hard"", ""-mcpu=cortex-m4"", ""-mfpu=fpv4-sp-d16"");");
+      PL ("      Common_Required_Switches := (""-mfloat-abi=hard"", ""-mcpu=cortex-m4"");");
       PL ("      for Leading_Required_Switches (""Ada"") use");
       PL ("        Compiler'Leading_Required_Switches (""Ada"")");
       PL ("        & Common_Required_Switches;");
@@ -467,7 +468,7 @@ package body RTG.Runtime is
       NL;
       PL ("   package Linker is");
       PL ("      for Required_Switches use Linker'Required_Switches &");
-      PL ("        (""-nostartfiles"");");
+      PL ("        (""-nostartfiles"", ""-nolibc"");");
       PL ("   end Linker;");
       PL ("      ]]>");
       PL ("    </config>");
