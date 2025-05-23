@@ -103,6 +103,8 @@ package body RTG.System is
       PL ("   function ""<="" (Left, Right : Address) return Boolean");
       PL ("     with Import, Convention => Intrinsic;");
       NL;
+      PL ("   type Bit_Order is (High_Order_First, Low_Order_First);");
+      NL;
       PL ("private");
       NL;
       PL ("   type Address is mod Memory_Size with Size => Standard'Address_Size;");
