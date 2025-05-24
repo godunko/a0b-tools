@@ -17,6 +17,7 @@ with VSS.Strings.Conversions;
 with VSS.Text_Streams.File_Input;
 
 with RTG.Diagnostics;
+with RTG.Utilities;
 
 package body RTG.GNAT_RTS_Sources is
 
@@ -33,18 +34,25 @@ package body RTG.GNAT_RTS_Sources is
    end record;
 
    package Condition_Vectors is
-      new Ada.Containers.Vectors (Positive, Condition);
+     new Ada.Containers.Vectors (Positive, Condition);
+
+   --  package Directory_Vectors is
+   --    new Ada.Containers.Vectors (Positive, GNATCOLL.VFS.Virtual_File);
 
    type Copy_Handler is
      new VSS.JSON.Content_Handlers.JSON_Content_Handler with record
-      Scenarios     : Scenario_Maps.Map;
+      Scenarios         : Scenario_Maps.Map;
+      Base_Directory    : GNATCOLL.VFS.Virtual_File;
+      Runtime_Directory : GNATCOLL.VFS.Virtual_File;
+      Tasking_Directory : GNATCOLL.VFS.Virtual_File;
 
-      State         : States := Initial;
-      Ignore_Value  : Boolean := False;
-      Ignore_Object : Natural := 0;
-      Ignore_Array  : Natural := 0;
-      Sources_Depth : Natural := 0;
-      Conditions    : Condition_Vectors.Vector;
+      State             : States := Initial;
+      Ignore_Value      : Boolean := False;
+      Ignore_Object     : Natural := 0;
+      Ignore_Array      : Natural := 0;
+      Sources_Depth     : Natural := 0;
+      Conditions        : Condition_Vectors.Vector;
+      Target_Directory  : GNATCOLL.VFS.Virtual_File;
    end record;
 
    --  procedure Start_Document
@@ -132,13 +140,16 @@ package body RTG.GNAT_RTS_Sources is
       Handler : aliased Copy_Handler;
 
    begin
+      Handler.Scenarios         := Scenarios;
+      Handler.Base_Directory    := RTS_Sources.Dir;
+      Handler.Runtime_Directory := Descriptor.Runtime_Source_Directory;
+      Handler.Tasking_Directory := Descriptor.Tasking_Source_Directory;
+
       Input.Open
         (VSS.Strings.Conversions.To_Virtual_String
            (RTS_Sources.Display_Full_Name));
       Reader.Set_Stream (Input'Unchecked_Access);
       Reader.Set_Content_Handler (Handler'Unchecked_Access);
-
-      Handler.Scenarios := Scenarios;
 
       Reader.Parse;
 
@@ -262,7 +273,7 @@ package body RTG.GNAT_RTS_Sources is
                Self.Ignore_Value := True;
 
             elsif Key = "gnat" then
-               null;
+               Self.Target_Directory := Self.Runtime_Directory;
 
             elsif Key = "version" then
                Self.Ignore_Value := True;
@@ -279,7 +290,7 @@ package body RTG.GNAT_RTS_Sources is
                Self.State := Library_Sources;
 
             else
-               raise Program_Error with VSS.Strings.Conversions.To_UTF_8_String (Name);
+               raise Program_Error;
             end if;
 
          when Library_Sources =>
@@ -336,7 +347,10 @@ package body RTG.GNAT_RTS_Sources is
    ----------------
 
    overriding procedure Null_Value
-     (Self : in out Copy_Handler; Success : in out Boolean) is
+     (Self : in out Copy_Handler; Success : in out Boolean)
+   is
+      pragma Unreferenced (Success);
+
    begin
       if Self.Ignore_Value then
          Self.Ignore_Value := False;
@@ -345,7 +359,6 @@ package body RTG.GNAT_RTS_Sources is
       end if;
 
       if Self.Ignore_Array /= 0 or Self.Ignore_Object /= 0 then
-         raise Program_Error;
          return;
       end if;
 
@@ -359,7 +372,10 @@ package body RTG.GNAT_RTS_Sources is
    overriding procedure Number_Value
      (Self    : in out Copy_Handler;
       Value   : VSS.JSON.JSON_Number;
-      Success : in out Boolean) is
+      Success : in out Boolean)
+   is
+      pragma Unreferenced (Success);
+
    begin
       if Self.Ignore_Value then
          Self.Ignore_Value := False;
@@ -368,7 +384,6 @@ package body RTG.GNAT_RTS_Sources is
       end if;
 
       if Self.Ignore_Array /= 0 or Self.Ignore_Object /= 0 then
-         raise Program_Error;
          return;
       end if;
 
@@ -380,7 +395,10 @@ package body RTG.GNAT_RTS_Sources is
    -----------------
 
    overriding procedure Start_Array
-     (Self : in out Copy_Handler; Success : in out Boolean) is
+     (Self : in out Copy_Handler; Success : in out Boolean)
+   is
+      pragma Unreferenced (Success);
+
    begin
       if Self.Ignore_Value then
          Self.Ignore_Value := False;
@@ -461,7 +479,10 @@ package body RTG.GNAT_RTS_Sources is
    overriding procedure String_Value
      (Self    : in out Copy_Handler;
       Value   : VSS.Strings.Virtual_String'Class;
-      Success : in out Boolean) is
+      Success : in out Boolean)
+   is
+      pragma Unreferenced (Success);
+
    begin
       if Self.Ignore_Value then
          Self.Ignore_Value := False;
@@ -487,7 +508,18 @@ package body RTG.GNAT_RTS_Sources is
             raise Program_Error;
 
          when Library_Source_Directories =>
-            Ada.Text_IO.Put_Line (VSS.Strings.Conversions.To_UTF_8_String (Value));
+            declare
+               Source_Directory : constant GNATCOLL.VFS.Virtual_File :=
+                 GNATCOLL.VFS.Create_From_Base
+                   (GNATCOLL.VFS.Filesystem_String
+                      (VSS.Strings.Conversions.To_UTF_8_String (Value)),
+                    Self.Base_Directory.Full_Name.all);
+
+            begin
+               Ada.Text_IO.Put_Line (Source_Directory.Display_Full_Name);
+               RTG.Utilities.Copy_Files
+                 (Source_Directory, Self.Target_Directory);
+            end;
       end case;
    end String_Value;
 

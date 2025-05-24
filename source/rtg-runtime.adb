@@ -37,56 +37,6 @@ package body RTG.Runtime is
       Success : Boolean;
 
    begin
-      --  Common sources
-      RTG.Utilities.Copy_Files
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/common"),
-         Descriptor.Runtime_Source_Directory);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/fpu"),
-         Descriptor.Runtime_Source_Directory.Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/atomics"),
-         Descriptor.Runtime_Source_Directory.Full_Name.all,
-         Success);
-
-      --  Common sources of `light`
-      --  GNATCOLL.VFS.Copy
-      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-      --       ("/include/rts-sources/light"),
-      --     Descriptor.Tasking_Source_Directory.Full_Name.all,
-      --     Success);
-      --  GNATCOLL.VFS.Copy
-      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-      --       ("/include/rts-sources/light/exceptions"),
-      --     Descriptor.Tasking_Source_Directory.Full_Name.all,
-      --     Success);
-      --  GNATCOLL.VFS.Copy
-      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-      --       ("/include/rts-sources/light/non-tasking"),
-      --     Descriptor.Tasking_Source_Directory.Full_Name.all,
-      --     Success);
-
-      --  Common sources of `light-tasking`
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/light-tasking"),
-         Descriptor.Runtime_Source_Directory.Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/light"),
-         Descriptor.Runtime_Source_Directory.Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/light/exceptions"),
-         Descriptor.Runtime_Source_Directory.Full_Name.all,
-         Success);
-
       --  "Has_libc:no"
       GNATCOLL.VFS.Copy
         (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
