@@ -7,6 +7,8 @@
 with VSS.Strings.Conversions;
 with VSS.Text_Streams.File_Output;
 
+with RTG.Utilities;
+
 package body RTG.Runtime is
 
    procedure Generate_Build_Runtime_Project (Descriptor : Runtime_Descriptor);
@@ -36,11 +38,10 @@ package body RTG.Runtime is
 
    begin
       --  Common sources
-      GNATCOLL.VFS.Copy
+      RTG.Utilities.Copy_Files
         (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
            ("/include/rts-sources/common"),
-         Descriptor.Runtime_Source_Directory.Full_Name.all,
-         Success);
+         Descriptor.Runtime_Source_Directory);
       GNATCOLL.VFS.Copy
         (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
            ("/include/rts-sources/fpu"),

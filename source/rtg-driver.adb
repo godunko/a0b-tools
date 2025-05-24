@@ -6,6 +6,8 @@
 
 pragma Ada_2022;
 
+with Ada.Command_Line;
+
 with RTG.Runtime;
 with RTG.System;
 
@@ -45,4 +47,8 @@ begin
 
    RTG.Runtime.Create (Runtime, Tasking);
    RTG.System.Generate (Runtime, Parameters, Tasking);
+
+exception
+   when RTG.Internal_Error =>
+      Ada.Command_Line.Set_Exit_Status (1);
 end RTG.Driver;

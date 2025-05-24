@@ -6,4 +6,6 @@
 
 package RTG with Pure is
 
+   Internal_Error : exception;
+
 end RTG;
