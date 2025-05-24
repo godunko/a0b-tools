@@ -8,10 +8,17 @@ pragma Ada_2022;
 
 with Ada.Command_Line;
 
+with GNATCOLL.VFS;
+
+with RTG.GNAT_RTS_Sources;
 with RTG.Runtime;
 with RTG.System;
 
 procedure RTG.Driver is
+
+   GNAT_RTS_Sources_Directory : constant GNATCOLL.VFS.Virtual_File :=
+     GNATCOLL.VFS.Create ("../../bb-runtimes-14/gnat_rts_sources/");
+
    Runtime    : RTG.Runtime.Runtime_Descriptor;
    Parameters : constant RTG.System.GCC14.System_Implementation_Parameters :=
      [RTG.System.GCC14.Always_Compatible_Rep     => True,
@@ -39,14 +46,22 @@ procedure RTG.Driver is
       RTG.System.GCC14.Use_Ada_Main_Program_Name => False,
       RTG.System.GCC14.ZCX_By_Default            => True];
    --  It is set of parameters for ARM Cortex-M `light` runtime
+   Scenarios : RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
 
    Tasking : constant RTG.Runtime.Tasking_Profile := RTG.Runtime.Light;
 
 begin
    RTG.Runtime.Initialize (Runtime);
 
+   Scenarios.Insert ("RTS_Profile", "light-tasking");
+
    RTG.Runtime.Create (Runtime, Tasking);
    RTG.System.Generate (Runtime, Parameters, Tasking);
+   RTG.GNAT_RTS_Sources.Copy
+     (Runtime,
+      Scenarios,
+      GNAT_RTS_Sources_Directory.Create_From_Dir
+        ("lib/gnat/rts-sources.json"));
 
 exception
    when RTG.Internal_Error =>

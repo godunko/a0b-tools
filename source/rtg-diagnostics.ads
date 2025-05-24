@@ -6,7 +6,7 @@
 
 with GNATCOLL.VFS;
 
-with VSS.Strings;
+with VSS.Strings.Templates;
 
 package RTG.Diagnostics is
 
@@ -19,5 +19,9 @@ package RTG.Diagnostics is
 
    procedure Warning
      (File : GNATCOLL.VFS.Virtual_File; Text : VSS.Strings.Virtual_String);
+
+   procedure Warning
+     (Template    : VSS.Strings.Templates.Virtual_String_Template;
+      Parameter_1 : VSS.Strings.Virtual_String);
 
 end RTG.Diagnostics;

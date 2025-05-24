@@ -89,4 +89,15 @@ package body RTG.Diagnostics is
             Image (Text)));
    end Warning;
 
+   -------------
+   -- Warning --
+   -------------
+
+   procedure Warning
+     (Template    : VSS.Strings.Templates.Virtual_String_Template;
+      Parameter_1 : VSS.Strings.Virtual_String) is
+   begin
+      Warning (Template.Format (Image (Parameter_1)));
+   end Warning;
+
 end RTG.Diagnostics;
