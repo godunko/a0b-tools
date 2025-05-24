@@ -54,6 +54,18 @@ begin
    RTG.Runtime.Initialize (Runtime);
 
    Scenarios.Insert ("RTS_Profile", "light-tasking");
+   Scenarios.Insert ("Has_libc", "no");
+   Scenarios.Insert ("Has_CHERI", "no");
+   Scenarios.Insert ("Memory_Profile", "small");
+   Scenarios.Insert ("Add_Value_Spec", "yes");
+   Scenarios.Insert ("CPU_Family", "arm");
+   Scenarios.Insert ("Text_IO", "semihosting");
+   Scenarios.Insert ("Add_Value_LL_Spec", "yes");
+   Scenarios.Insert ("Certifiable_Packages", "no");
+   Scenarios.Insert ("Has_Compare_And_Swap", "yes");
+   Scenarios.Insert ("Timer", "timer32");
+   --  Scenarios.Insert ("", "");
+   --  Scenarios.Insert ("", "");
 
    RTG.Runtime.Create (Runtime, Tasking);
    RTG.System.Generate (Runtime, Parameters, Tasking);

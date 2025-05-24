@@ -36,9 +36,6 @@ package body RTG.GNAT_RTS_Sources is
    package Condition_Vectors is
      new Ada.Containers.Vectors (Positive, Condition);
 
-   --  package Directory_Vectors is
-   --    new Ada.Containers.Vectors (Positive, GNATCOLL.VFS.Virtual_File);
-
    type Copy_Handler is
      new VSS.JSON.Content_Handlers.JSON_Content_Handler with record
       Scenarios         : Scenario_Maps.Map;
@@ -258,9 +255,6 @@ package body RTG.GNAT_RTS_Sources is
 
    begin
       if Self.Ignore_Object /= 0 then
-         --  Self.Ignore_Object := @ + 1;
-         --  Self.Ignore_Value  := True;
-         --
          return;
       end if;
 
@@ -270,7 +264,14 @@ package body RTG.GNAT_RTS_Sources is
 
          when Library =>
             if Key = "gnarl" then
-               Self.Ignore_Value := True;
+               if Self.Scenarios ("RTS_Profile") = "light-tasking"
+                 or Self.Scenarios ("RTS_Profile") = "embedded"
+               then
+                  Self.Target_Directory := Self.Tasking_Directory;
+
+               else
+                  Self.Ignore_Value := True;
+               end if;
 
             elsif Key = "gnat" then
                Self.Target_Directory := Self.Runtime_Directory;
