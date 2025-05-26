@@ -7,8 +7,6 @@
 with VSS.Strings.Conversions;
 with VSS.Text_Streams.File_Output;
 
-with RTG.Utilities;
-
 package body RTG.Runtime is
 
    procedure Generate_Build_Runtime_Project (Descriptor : Runtime_Descriptor);
@@ -37,6 +35,8 @@ package body RTG.Runtime is
       Success : Boolean;
 
    begin
+      null;
+
       --------------------
       --  Custom files  --
       --------------------
@@ -54,40 +54,40 @@ package body RTG.Runtime is
            .Full_Name.all,
          Success);
 
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../arm/stm32/stm32f40x/svd"),
-         Descriptor.Runtime_Source_Directory.Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (GNATCOLL.VFS.Create ("../s-bbbopa.ads"),
-         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbbopa.ads")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-bbmcpa.ads"),
-         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbmcpa.ads")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-bbmcpa.adb"),
-         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbmcpa.adb")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../arm/stm32/s-stm32.ads"),
-         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-stm32.ads")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-stm32.adb"),
-         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-stm32.adb")
-           .Full_Name.all,
-         Success);
+      --  GNATCOLL.VFS.Copy
+      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+      --       ("/include/rts-sources/../../../arm/stm32/stm32f40x/svd"),
+      --     Descriptor.Runtime_Source_Directory.Full_Name.all,
+      --     Success);
+      --  GNATCOLL.VFS.Copy
+      --    (GNATCOLL.VFS.Create ("../s-bbbopa.ads"),
+      --     Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbbopa.ads")
+      --       .Full_Name.all,
+      --     Success);
+      --  GNATCOLL.VFS.Copy
+      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+      --       ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-bbmcpa.ads"),
+      --     Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbmcpa.ads")
+      --       .Full_Name.all,
+      --     Success);
+      --  GNATCOLL.VFS.Copy
+      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+      --       ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-bbmcpa.adb"),
+      --     Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbmcpa.adb")
+      --       .Full_Name.all,
+      --     Success);
+      --  GNATCOLL.VFS.Copy
+      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+      --       ("/include/rts-sources/../../../arm/stm32/s-stm32.ads"),
+      --     Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-stm32.ads")
+      --       .Full_Name.all,
+      --     Success);
+      --  GNATCOLL.VFS.Copy
+      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+      --       ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-stm32.adb"),
+      --     Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-stm32.adb")
+      --       .Full_Name.all,
+      --     Success);
    end Copy_Runtime_Sources;
 
    --------------------------
@@ -98,16 +98,29 @@ package body RTG.Runtime is
       Success : Boolean;
 
    begin
+      null;
+
+      GNATCOLL.VFS.Copy
+        (GNATCOLL.VFS.Create ("../s-bbpara.ads"),
+         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbpara.ads")
+           .Full_Name.all,
+         Success);
+      GNATCOLL.VFS.Copy
+        (GNATCOLL.VFS.Create ("../s-bbmcpa.ads"),
+         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbmcpa.ads")
+           .Full_Name.all,
+         Success);
+
       --------------------
       --  Custom files  --
       --------------------
 
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../src/s-bbpara__stm32f4.ads"),
-         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbpara.ads")
-           .Full_Name.all,
-         Success);
+      --  GNATCOLL.VFS.Copy
+      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
+      --       ("/include/rts-sources/../../../src/s-bbpara__stm32f4.ads"),
+      --     Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbpara.ads")
+      --       .Full_Name.all,
+      --     Success);
       GNATCOLL.VFS.Copy
         (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
            ("/include/rts-sources/../../../src/s-bbcppr__old.ads"),
@@ -150,6 +163,7 @@ package body RTG.Runtime is
          Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbsumu.adb")
            .Full_Name.all,
          Success);
+
       --  GNATCOLL.VFS.Copy
       --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
       --       ("/include/rts-sources/"),
