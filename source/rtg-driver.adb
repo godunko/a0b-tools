@@ -13,6 +13,7 @@ with GNATCOLL.VFS;
 with RTG.GNAT_RTS_Sources;
 with RTG.Runtime;
 with RTG.System;
+with RTG.System_BB_MCU_Parameters;
 
 procedure RTG.Driver is
 
@@ -69,6 +70,7 @@ begin
 
    RTG.Runtime.Create (Runtime, Tasking);
    RTG.System.Generate (Runtime, Parameters, Tasking);
+   RTG.System_BB_MCU_Parameters.Generate (Runtime);  --  tasking only
    RTG.GNAT_RTS_Sources.Copy
      (Runtime,
       Scenarios,
