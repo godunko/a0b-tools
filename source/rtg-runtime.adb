@@ -348,11 +348,13 @@ package body RTG.Runtime is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Self : in out Runtime_Descriptor) is
+   procedure Initialize
+     (Self        : in out Runtime_Descriptor;
+      BB_Runtimes : GNATCOLL.VFS.Virtual_File) is
    begin
-      Self.Runtime_Directory := GNATCOLL.VFS.Create ("rtl");
+      Self.Runtime_Directory          := GNATCOLL.VFS.Create ("rtl");
       Self.GNAT_RTS_Sources_Directory :=
-        GNATCOLL.VFS.Create ("../../bb-runtimes-14/gnat_rts_sources");
+        BB_Runtimes.Create_From_Dir ("gnat_rts_sources");
    end Initialize;
 
    ------------------------------

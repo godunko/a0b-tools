@@ -10,6 +10,9 @@ with Ada.Command_Line;
 
 with GNATCOLL.VFS;
 
+with VSS.Command_Line;
+with VSS.Strings.Conversions;
+
 with RTG.GNAT_RTS_Sources;
 with RTG.Runtime;
 with RTG.System;
@@ -18,8 +21,13 @@ with RTG.System_BB_Parameters;
 
 procedure RTG.Driver is
 
-   GNAT_RTS_Sources_Directory : constant GNATCOLL.VFS.Virtual_File :=
-     GNATCOLL.VFS.Create ("../../bb-runtimes-14/gnat_rts_sources/");
+   BB_Runtimes_Option : constant VSS.Command_Line.Value_Option :=
+     (Description => "Path to BB Runtimes sources",
+      Short_Name  => <>,
+      Long_Name   => "bb-runtimes",
+      Value_Name  => "path");
+
+   BB_Runtimes_Directory : GNATCOLL.VFS.Virtual_File;
 
    Runtime    : RTG.Runtime.Runtime_Descriptor;
    Parameters : constant RTG.System.GCC14.System_Implementation_Parameters :=
@@ -53,7 +61,28 @@ procedure RTG.Driver is
    Tasking : constant RTG.Runtime.Tasking_Profile := RTG.Runtime.Light;
 
 begin
-   RTG.Runtime.Initialize (Runtime);
+   VSS.Command_Line.Add_Option (BB_Runtimes_Option);
+
+   VSS.Command_Line.Process;
+
+   if VSS.Command_Line.Is_Specified (BB_Runtimes_Option) then
+      BB_Runtimes_Directory :=
+        GNATCOLL.VFS.Create
+          (GNATCOLL.VFS.Filesystem_String
+             (VSS.Strings.Conversions.To_UTF_8_String
+                (VSS.Command_Line.Value (BB_Runtimes_Option))));
+
+      if not BB_Runtimes_Directory.Is_Directory then
+         VSS.Command_Line.Report_Error
+           ("Specified path of BB Runtimes is not a directory");
+      end if;
+
+   else
+      VSS.Command_Line.Report_Error
+        ("BB Runtimes directory is not specified");
+   end if;
+
+   RTG.Runtime.Initialize (Runtime, BB_Runtimes_Directory);
 
    Scenarios.Insert ("RTS_Profile", "light-tasking");
    Scenarios.Insert ("Has_libc", "no");
@@ -76,8 +105,8 @@ begin
    RTG.GNAT_RTS_Sources.Copy
      (Runtime,
       Scenarios,
-      GNAT_RTS_Sources_Directory.Create_From_Dir
-        ("lib/gnat/rts-sources.json"));
+      BB_Runtimes_Directory.Create_From_Dir
+        ("gnat_rts_sources/lib/gnat/rts-sources.json"));
 
 exception
    when RTG.Internal_Error =>

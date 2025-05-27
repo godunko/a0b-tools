@@ -12,7 +12,9 @@ package RTG.Runtime is
 
    type Runtime_Descriptor is tagged limited private;
 
-   procedure Initialize (Self : in out Runtime_Descriptor);
+   procedure Initialize
+     (Self        : in out Runtime_Descriptor;
+      BB_Runtimes : GNATCOLL.VFS.Virtual_File);
 
    --  function Root_Directory
    --    (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
