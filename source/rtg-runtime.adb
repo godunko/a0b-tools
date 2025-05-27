@@ -98,24 +98,10 @@ package body RTG.Runtime is
       Success : Boolean;
 
    begin
-      --  These files should be generated
-
-      GNATCOLL.VFS.Copy
-        (GNATCOLL.VFS.Create ("../s-bbpara.ads"),
-         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbpara.ads")
-           .Full_Name.all,
-         Success);
-
       --------------------
       --  Custom files  --
       --------------------
 
-      --  GNATCOLL.VFS.Copy
-      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-      --       ("/include/rts-sources/../../../src/s-bbpara__stm32f4.ads"),
-      --     Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbpara.ads")
-      --       .Full_Name.all,
-      --     Success);
       GNATCOLL.VFS.Copy
         (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
            ("/include/rts-sources/../../../src/s-bbcppr__old.ads"),
