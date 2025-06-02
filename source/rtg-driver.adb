@@ -15,6 +15,7 @@ with VSS.Strings.Conversions;
 
 with RTG.GNAT_RTS_Sources;
 with RTG.Runtime;
+with RTG.Runtime_Reader;
 with RTG.System;
 with RTG.System_BB_MCU_Parameters;
 with RTG.System_BB_Parameters;
@@ -83,20 +84,7 @@ begin
    end if;
 
    RTG.Runtime.Initialize (Runtime, BB_Runtimes_Directory);
-
-   Scenarios.Insert ("RTS_Profile", "light-tasking");
-   Scenarios.Insert ("Has_libc", "no");
-   Scenarios.Insert ("Has_CHERI", "no");
-   Scenarios.Insert ("Memory_Profile", "small");
-   Scenarios.Insert ("Add_Value_Spec", "yes");
-   Scenarios.Insert ("CPU_Family", "arm");
-   Scenarios.Insert ("Text_IO", "semihosting");
-   Scenarios.Insert ("Add_Value_LL_Spec", "yes");
-   Scenarios.Insert ("Certifiable_Packages", "no");
-   Scenarios.Insert ("Has_Compare_And_Swap", "yes");
-   Scenarios.Insert ("Timer", "timer32");
-   --  Scenarios.Insert ("", "");
-   --  Scenarios.Insert ("", "");
+   RTG.Runtime_Reader.Read (GNATCOLL.VFS.Create ("runtime.json"), Scenarios);
 
    RTG.Runtime.Create (Runtime, Tasking);
    RTG.System.Generate (Runtime, Parameters, Tasking);
