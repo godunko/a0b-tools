@@ -13,6 +13,7 @@ with GNATCOLL.VFS;
 with VSS.Command_Line;
 with VSS.Strings.Conversions;
 
+with RTG.Architecture;
 with RTG.GNAT_RTS_Sources;
 with RTG.Runtime;
 with RTG.Runtime_Reader;
@@ -96,6 +97,7 @@ begin
 
    RTG.Runtime_Reader.Read (GNATCOLL.VFS.Create ("runtime.json"), Scenarios);
 
+   RTG.Architecture.Process (Scenarios, Parameters);
    RTG.Tasking.Process (Scenarios, Parameters);
 
    RTG.Runtime.Create (Runtime, Tasking);
