@@ -20,6 +20,7 @@ package body RTG.Architecture is
       System_Parameters : in out RTG.System.System_Descriptor)
    is
       use type VSS.Strings.Virtual_String;
+      use all type RTG.System.GCC14.System_Implementation_Parameter;
 
       procedure Check_Set
         (Name  : VSS.Strings.Virtual_String;
@@ -57,6 +58,17 @@ package body RTG.Architecture is
          Check_Set ("Has_FMA", "no");
          Check_Set ("Has_Compare_And_Swap", "yes");
          Check_Set ("Has_CHERI", "no");
+
+         System_Parameters.Parameters (Backend_Divide_Checks)     := False;
+         System_Parameters.Parameters (Backend_Overflow_Checks)   := True;
+         System_Parameters.Parameters (Support_Atomic_Primitives) := True;
+         System_Parameters.Parameters (Support_Long_Shifts)       := True;
+         System_Parameters.Parameters (ZCX_By_Default)            := True;
+
+         System_Parameters.Parameters (Denorm)                    := True;
+         System_Parameters.Parameters (Machine_Overflows)         := False;
+         System_Parameters.Parameters (Machine_Rounds)            := True;
+         System_Parameters.Parameters (Signed_Zeros)              := True;
 
          if RTG.Tasking.Use_GNAT_Tasking (Scenarios) then
             System_Parameters.Restrictions

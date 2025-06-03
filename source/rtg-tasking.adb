@@ -22,6 +22,9 @@ package body RTG.Tasking is
      (Scenarios         : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
       System_Parameters : in out RTG.System.System_Descriptor)
    is
+      use all type RTG.System.GCC14.Restriction;
+      use all type RTG.System.GCC14.System_Implementation_Parameter;
+
       procedure Check_Set
         (Name  : VSS.Strings.Virtual_String;
          Value : VSS.Strings.Virtual_String);
@@ -48,8 +51,6 @@ package body RTG.Tasking is
          end if;
       end Check_Set;
 
-      use all type RTG.System.GCC14.Restriction;
-
    begin
       if not Scenarios.Contains ("tasking")
         or else Scenarios ("tasking") = "no"
@@ -64,6 +65,9 @@ package body RTG.Tasking is
          System_Parameters.Restrictions (No_Implicit_Dynamic_Code)  := True;
          System_Parameters.Restrictions (No_Tasking)                := True;
 
+         System_Parameters.Parameters (Preallocated_Stacks)       := False;
+         System_Parameters.Parameters (Suppress_Standard_Library) := True;
+
       elsif Scenarios ("tasking") = "light" then
          Check_Set ("RTS_Profile", "light-tasking");
          System_Parameters.Profile := RTG.System.GCC14.Jorvik;
@@ -73,6 +77,9 @@ package body RTG.Tasking is
          System_Parameters.Restrictions (No_Implicit_Dynamic_Code)  := True;
          System_Parameters.Restrictions (No_Tasking)                := False;
 
+         System_Parameters.Parameters (Preallocated_Stacks)       := True;
+         System_Parameters.Parameters (Suppress_Standard_Library) := True;
+
       elsif Scenarios ("tasking") = "embedded" then
          Check_Set ("RTS_Profile", "embedded");
          System_Parameters.Profile := RTG.System.GCC14.Jorvik;
@@ -81,6 +88,9 @@ package body RTG.Tasking is
          System_Parameters.Restrictions (No_Finalization)           := False;
          System_Parameters.Restrictions (No_Implicit_Dynamic_Code)  := False;
          System_Parameters.Restrictions (No_Tasking)                := False;
+
+         System_Parameters.Parameters (Preallocated_Stacks)       := True;
+         System_Parameters.Parameters (Suppress_Standard_Library) := False;
 
       else
          RTG.Diagnostics.Error ("unknown tasking");
