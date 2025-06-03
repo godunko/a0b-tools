@@ -129,6 +129,9 @@ package body RTG.System is
       PL ("     with Import, Convention => Intrinsic;");
       NL;
       PL ("   type Bit_Order is (High_Order_First, Low_Order_First);");
+      PL ("   Default_Bit_Order : constant Bit_Order :=");
+      PL ("     Bit_Order'Val (Standard'Default_Bit_Order);");
+      PL ("   pragma Warnings (Off, Default_Bit_Order);");
       NL;
       PL ("   subtype Any_Priority       is Integer range         0 .. 255;");
       PL ("   subtype Priority           is Any_Priority range    0 .. 240;");
