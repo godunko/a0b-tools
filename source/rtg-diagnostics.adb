@@ -52,6 +52,21 @@ package body RTG.Diagnostics is
             Image (Text)));
    end Error;
 
+   -----------
+   -- Error --
+   -----------
+
+   procedure Error
+     (Template    : VSS.Strings.Templates.Virtual_String_Template;
+      Parameter_1 : VSS.Strings.Virtual_String;
+      Parameter_2 : VSS.Strings.Virtual_String;
+      Parameter_3 : VSS.Strings.Virtual_String) is
+   begin
+      Error
+        (Template.Format
+           (Image (Parameter_1), Image (Parameter_2), Image (Parameter_3)));
+   end Error;
+
    -------------
    -- Warning --
    -------------

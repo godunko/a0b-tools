@@ -19,6 +19,7 @@ with RTG.Runtime_Reader;
 with RTG.System;
 with RTG.System_BB_MCU_Parameters;
 with RTG.System_BB_Parameters;
+with RTG.Tasking;
 
 procedure RTG.Driver is
 
@@ -84,7 +85,10 @@ begin
    end if;
 
    RTG.Runtime.Initialize (Runtime, BB_Runtimes_Directory);
+
    RTG.Runtime_Reader.Read (GNATCOLL.VFS.Create ("runtime.json"), Scenarios);
+
+   RTG.Tasking.Process (Scenarios);
 
    RTG.Runtime.Create (Runtime, Tasking);
    RTG.System.Generate (Runtime, Parameters, Tasking);

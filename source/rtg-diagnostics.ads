@@ -15,6 +15,12 @@ package RTG.Diagnostics is
    procedure Error
      (File : GNATCOLL.VFS.Virtual_File; Text : VSS.Strings.Virtual_String);
 
+   procedure Error
+     (Template    : VSS.Strings.Templates.Virtual_String_Template;
+      Parameter_1 : VSS.Strings.Virtual_String;
+      Parameter_2 : VSS.Strings.Virtual_String;
+      Parameter_3 : VSS.Strings.Virtual_String);
+
    procedure Warning (Text : VSS.Strings.Virtual_String);
 
    procedure Warning
