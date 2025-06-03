@@ -49,8 +49,7 @@ package body RTG.System is
 
    procedure Generate
      (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Parameters : GCC14.System_Implementation_Parameters;
-      Tasking    : RTG.Runtime.Tasking_Profile)
+      Parameters : System_Descriptor)
    is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
@@ -83,12 +82,37 @@ package body RTG.System is
            (Runtime.Runtime_Source_Directory.Create_From_Dir
                 ("system.ads").Display_Full_Name));
 
-      PL ("pragma Restrictions (No_Exception_Propagation);");
-      PL ("pragma Restrictions (No_Exception_Registration);");
-      PL ("pragma Restrictions (No_Implicit_Dynamic_Code);");
-      PL ("pragma Restrictions (No_Finalization);");
-      --  PL ("pragma Restrictions (No_Tasking);");
-      PL ("pragma Profile (Jorvik);");
+      if Parameters.Restrictions (GCC14.No_Exception_Propagation) then
+         PL ("pragma Restrictions (No_Exception_Propagation);");
+      end if;
+
+      if Parameters.Restrictions (GCC14.No_Exception_Registration) then
+         PL ("pragma Restrictions (No_Exception_Registration);");
+      end if;
+
+      if Parameters.Restrictions (GCC14.No_Finalization) then
+         PL ("pragma Restrictions (No_Finalization);");
+      end if;
+
+      if Parameters.Restrictions (GCC14.No_Implicit_Dynamic_Code) then
+         PL ("pragma Restrictions (No_Implicit_Dynamic_Code);");
+      end if;
+
+      if Parameters.Restrictions (GCC14.No_Tasking) then
+         PL ("pragma Restrictions (No_Tasking);");
+      end if;
+
+      case Parameters.Profile is
+         when GCC14.No =>
+            null;
+
+         when GCC14.Ravenscar =>
+            PL ("pragma Profile (Ravenscar);");
+
+         when GCC14.Jorvik =>
+            PL ("pragma Profile (Jorvik);");
+      end case;
+
       NL;
       PL ("package System with Pure, No_Elaboration_Code_All is");
       NL;
@@ -118,7 +142,7 @@ package body RTG.System is
       PL ("   Null_Address : constant Address := 0;");
       NL;
 
-      for J in Parameters'Range loop
+      for J in Parameters.Parameters'Range loop
          declare
             Template : VSS.Strings.Templates.Virtual_String_Template :=
               "   {} : constant Boolean := {};";
@@ -130,7 +154,8 @@ package body RTG.System is
                       (System_Implementation_Parameter_Images (J)),
                   VSS.Strings.Formatters.Strings.Image
                     (VSS.Strings.Virtual_String'
-                         (if Parameters (J) then "True" else "False"))));
+                         (if Parameters.Parameters (J)
+                            then "True" else "False"))));
          end;
       end loop;
 

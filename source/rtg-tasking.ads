@@ -5,10 +5,12 @@
 --
 
 with RTG.GNAT_RTS_Sources;
+with RTG.System;
 
 package RTG.Tasking is
 
    procedure Process
-     (Scenarios : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map);
+     (Scenarios         : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
+      System_Parameters : in out RTG.System.System_Descriptor);
 
 end RTG.Tasking;

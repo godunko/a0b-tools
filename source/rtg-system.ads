@@ -39,22 +39,27 @@ package RTG.System is
       type System_Implementation_Parameters is
         array (System_Implementation_Parameter) of Boolean;
 
---  pragma Restrictions (Max_Asynchronous_Select_Nesting => 0);
---  pragma Restrictions (No_Abort_Statements);
---  pragma Restrictions (No_Exception_Propagation);
---  pragma Restrictions (No_Exception_Registration);
---  pragma Restrictions (No_Finalization);
---  pragma Restrictions (No_Implicit_Dynamic_Code);
---  pragma Restrictions (No_Specification_Of_Aspect => Attach_Handler);
---  pragma Restrictions (No_Task_At_Interrupt_Priority);
---  pragma Restrictions (No_Tasking);
---  pragma Restrictions (No_Use_Of_Pragma => Attach_Handler);
+      type Restriction is
+        (No_Exception_Propagation,
+         No_Exception_Registration,
+         No_Finalization,
+         No_Implicit_Dynamic_Code,
+         No_Tasking);
+
+      type Restrictions is array (Restriction) of Boolean;
+
+      type Profiles is (No, Ravenscar, Jorvik);
 
    end GCC14;
 
+   type System_Descriptor is record
+      Parameters   : GCC14.System_Implementation_Parameters;
+      Restrictions : GCC14.Restrictions;
+      Profile      : GCC14.Profiles;
+   end record;
+
    procedure Generate
      (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Parameters : GCC14.System_Implementation_Parameters;
-      Tasking    : RTG.Runtime.Tasking_Profile);
+      Parameters : System_Descriptor);
 
 end RTG.System;

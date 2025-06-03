@@ -4,6 +4,8 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
+pragma Ada_2022;
+
 with VSS.Strings.Templates;
 
 with RTG.Diagnostics;
@@ -15,7 +17,8 @@ package body RTG.Tasking is
    -------------
 
    procedure Process
-     (Scenarios : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map)
+     (Scenarios         : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
+      System_Parameters : in out RTG.System.System_Descriptor)
    is
       use type VSS.Strings.Virtual_String;
 
@@ -46,19 +49,39 @@ package body RTG.Tasking is
       end Check_Set;
 
    begin
-      if not Scenarios.Contains ("tasking") then
+      if not Scenarios.Contains ("tasking")
+        or else Scenarios ("tasking") = "no"
+      then
          RTG.Diagnostics.Warning
            ("""tasking"" is not specified, assume ""light""");
          Check_Set ("RTS_Profile", "light");
-
-      elsif Scenarios ("tasking") = "no" then
-         Check_Set ("RTS_Profile", "light");
+         System_Parameters.Profile := RTG.System.GCC14.No;
+         System_Parameters.Restrictions :=
+           [RTG.System.GCC14.No_Exception_Propagation  => True,
+            RTG.System.GCC14.No_Exception_Registration => True,
+            RTG.System.GCC14.No_Finalization           => True,
+            RTG.System.GCC14.No_Implicit_Dynamic_Code  => True,
+            RTG.System.GCC14.No_Tasking                => True];
 
       elsif Scenarios ("tasking") = "light" then
          Check_Set ("RTS_Profile", "light-tasking");
+         System_Parameters.Profile := RTG.System.GCC14.Jorvik;
+         System_Parameters.Restrictions :=
+           [RTG.System.GCC14.No_Exception_Propagation  => True,
+            RTG.System.GCC14.No_Exception_Registration => True,
+            RTG.System.GCC14.No_Finalization           => True,
+            RTG.System.GCC14.No_Implicit_Dynamic_Code  => True,
+            RTG.System.GCC14.No_Tasking                => False];
 
       elsif Scenarios ("tasking") = "embedded" then
          Check_Set ("RTS_Profile", "embedded");
+         System_Parameters.Profile := RTG.System.GCC14.Jorvik;
+         System_Parameters.Restrictions :=
+           [RTG.System.GCC14.No_Exception_Propagation  => False,
+            RTG.System.GCC14.No_Exception_Registration => True,
+            RTG.System.GCC14.No_Finalization           => False,
+            RTG.System.GCC14.No_Implicit_Dynamic_Code  => False,
+            RTG.System.GCC14.No_Tasking                => False];
 
       else
          RTG.Diagnostics.Error ("unknown tasking");
