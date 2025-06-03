@@ -70,8 +70,6 @@ procedure RTG.Driver is
    --  It is set of parameters for ARM Cortex-M `light` runtime
    Scenarios : RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
 
-   Tasking : constant RTG.Runtime.Tasking_Profile := RTG.Runtime.Light;
-
 begin
    VSS.Command_Line.Add_Option (BB_Runtimes_Option);
 
@@ -101,10 +99,14 @@ begin
    RTG.Architecture.Process (Scenarios, Parameters);
    RTG.Tasking.Process (Scenarios, Parameters);
 
-   RTG.Runtime.Create (Runtime, Tasking);
+   RTG.Runtime.Create (Runtime, RTG.Tasking.Use_GNAT_Tasking (Scenarios));
    RTG.System.Generate (Runtime, Parameters);
-   RTG.System_BB_MCU_Parameters.Generate (Runtime);  --  tasking only
-   RTG.System_BB_Parameters.Generate (Runtime);      --  tasking only
+
+   if RTG.Tasking.Use_GNAT_Tasking (Scenarios) then
+      RTG.System_BB_MCU_Parameters.Generate (Runtime);  --  tasking only
+      RTG.System_BB_Parameters.Generate (Runtime);      --  tasking only
+   end if;
+
    RTG.GNAT_RTS_Sources.Copy
      (Runtime,
       Scenarios,

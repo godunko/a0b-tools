@@ -8,8 +8,6 @@ with GNATCOLL.VFS;
 
 package RTG.Runtime is
 
-   type Tasking_Profile is (No, Light, Embedded);
-
    type Runtime_Descriptor is tagged limited private;
 
    procedure Initialize
@@ -27,7 +25,7 @@ package RTG.Runtime is
 
    procedure Create
      (Descriptor : Runtime_Descriptor;
-      Tasking    : RTG.Runtime.Tasking_Profile);
+      Tasking    : Boolean);
 
 private
 

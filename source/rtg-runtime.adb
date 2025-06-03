@@ -159,18 +159,18 @@ package body RTG.Runtime is
 
    procedure Create
      (Descriptor : Runtime_Descriptor;
-      Tasking    : RTG.Runtime.Tasking_Profile) is
+      Tasking    : Boolean) is
    begin
       Descriptor.Runtime_Directory.Make_Dir;
       Descriptor.Runtime_Source_Directory.Make_Dir;
 
-      Generate_Ada_Source_Path (Descriptor, Tasking /= No);
-      Generate_Ada_Object_Path (Descriptor, Tasking /= No);
+      Generate_Ada_Source_Path (Descriptor, Tasking);
+      Generate_Ada_Object_Path (Descriptor, Tasking);
       Generate_Build_Runtime_Project (Descriptor);
       Generate_Runtime_XML (Descriptor);
       Copy_Runtime_Sources (Descriptor);
 
-      if Tasking /= No then
+      if Tasking then
          Descriptor.Tasking_Source_Directory.Make_Dir;
          Generate_Build_Tasking_Project (Descriptor);
          Copy_Tasking_Sources (Descriptor);
