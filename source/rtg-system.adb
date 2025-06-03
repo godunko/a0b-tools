@@ -98,6 +98,10 @@ package body RTG.System is
          PL ("pragma Restrictions (No_Implicit_Dynamic_Code);");
       end if;
 
+      if Parameters.Restrictions (GCC14.No_Task_At_Interrupt_Priority) then
+         PL ("pragma Restrictions (No_Task_At_Interrupt_Priority);");
+      end if;
+
       if Parameters.Restrictions (GCC14.No_Tasking) then
          PL ("pragma Restrictions (No_Tasking);");
       end if;

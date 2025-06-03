@@ -60,11 +60,12 @@ procedure RTG.Driver is
          RTG.System.GCC14.Use_Ada_Main_Program_Name => False,
          RTG.System.GCC14.ZCX_By_Default            => True],
       Restrictions =>
-        [RTG.System.GCC14.No_Exception_Propagation  => True,
-         RTG.System.GCC14.No_Exception_Registration => True,
-         RTG.System.GCC14.No_Finalization           => True,
-         RTG.System.GCC14.No_Implicit_Dynamic_Code  => True,
-         RTG.System.GCC14.No_Tasking                => True],
+        [RTG.System.GCC14.No_Exception_Propagation      => True,
+         RTG.System.GCC14.No_Exception_Registration     => True,
+         RTG.System.GCC14.No_Finalization               => True,
+         RTG.System.GCC14.No_Implicit_Dynamic_Code      => True,
+         RTG.System.GCC14.No_Task_At_Interrupt_Priority => False,
+         RTG.System.GCC14.No_Tasking                    => True],
       Profile      => RTG.System.GCC14.No);
    --  It is set of parameters for ARM Cortex-M `light` runtime
    Scenarios : RTG.GNAT_RTS_Sources.Scenario_Maps.Map;

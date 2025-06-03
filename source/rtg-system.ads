@@ -44,6 +44,7 @@ package RTG.System is
          No_Exception_Registration,
          No_Finalization,
          No_Implicit_Dynamic_Code,
+         No_Task_At_Interrupt_Priority,
          No_Tasking);
 
       type Restrictions is array (Restriction) of Boolean;

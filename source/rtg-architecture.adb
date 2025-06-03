@@ -7,6 +7,7 @@
 with VSS.Strings.Templates;
 
 with RTG.Diagnostics;
+with RTG.Tasking;
 
 package body RTG.Architecture is
 
@@ -56,6 +57,11 @@ package body RTG.Architecture is
          Check_Set ("Has_FMA", "no");
          Check_Set ("Has_Compare_And_Swap", "yes");
          Check_Set ("Has_CHERI", "no");
+
+         if RTG.Tasking.Use_GNAT_Tasking (Scenarios) then
+            System_Parameters.Restrictions
+              (RTG.System.GCC14.No_Task_At_Interrupt_Priority) := True;
+         end if;
 
       else
          RTG.Diagnostics.Error ("unsupported ""dt_cpu""");
