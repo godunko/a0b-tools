@@ -6,6 +6,8 @@
 
 with "../config/a0b_runtime_generator_config.gpr";
 
+with "vss_xml_xmlada.gpr";
+
 project RTG is
 
    for Source_Dirs use ("../source");

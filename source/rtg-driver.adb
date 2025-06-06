@@ -15,11 +15,14 @@ with VSS.Strings.Conversions;
 
 with RTG.Architecture;
 with RTG.GNAT_RTS_Sources;
+with RTG.MCU_Interrupts;
 with RTG.Runtime;
 with RTG.Runtime_Reader;
+with RTG.SVD_Reader;
 with RTG.System;
 with RTG.System_BB_MCU_Parameters;
 with RTG.System_BB_Parameters;
+with RTG.System_BB_MCU_Vectors;
 with RTG.Tasking;
 
 procedure RTG.Driver is
@@ -29,8 +32,14 @@ procedure RTG.Driver is
       Short_Name  => <>,
       Long_Name   => "bb-runtimes",
       Value_Name  => "path");
+   SVD_Option         : constant VSS.Command_Line.Value_Option :=
+     (Description => "Path to SVD file",
+      Short_Name  => <>,
+      Long_Name   => "svd",
+      Value_Name  => "path");
 
    BB_Runtimes_Directory : GNATCOLL.VFS.Virtual_File;
+   SVD_File              : GNATCOLL.VFS.Virtual_File;
 
    Runtime    : RTG.Runtime.Runtime_Descriptor;
    Parameters : RTG.System.System_Descriptor :=
@@ -68,10 +77,12 @@ procedure RTG.Driver is
          RTG.System.GCC14.No_Tasking                    => True],
       Profile      => RTG.System.GCC14.No);
    --  It is set of parameters for ARM Cortex-M `light` runtime
-   Scenarios : RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
+   Scenarios  : RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
+   Interrupts : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector;
 
 begin
    VSS.Command_Line.Add_Option (BB_Runtimes_Option);
+   VSS.Command_Line.Add_Option (SVD_Option);
 
    VSS.Command_Line.Process;
 
@@ -92,9 +103,25 @@ begin
         ("BB Runtimes directory is not specified");
    end if;
 
+   if VSS.Command_Line.Is_Specified (SVD_Option) then
+      SVD_File :=
+        GNATCOLL.VFS.Create
+          (GNATCOLL.VFS.Filesystem_String
+             (VSS.Strings.Conversions.To_UTF_8_String
+                (VSS.Command_Line.Value (SVD_Option))));
+
+      if not SVD_File.Is_Regular_File then
+         VSS.Command_Line.Report_Error ("SVD file not found");
+      end if;
+
+   else
+      VSS.Command_Line.Report_Error ("SVD file is not specified");
+   end if;
+
    RTG.Runtime.Initialize (Runtime, BB_Runtimes_Directory);
 
    RTG.Runtime_Reader.Read (GNATCOLL.VFS.Create ("runtime.json"), Scenarios);
+   RTG.SVD_Reader.Read (SVD_File, Interrupts);
 
    RTG.Architecture.Process (Scenarios, Parameters);
    RTG.Tasking.Process (Scenarios, Parameters);
@@ -105,6 +132,7 @@ begin
    if RTG.Tasking.Use_GNAT_Tasking (Scenarios) then
       RTG.System_BB_MCU_Parameters.Generate (Runtime);  --  tasking only
       RTG.System_BB_Parameters.Generate (Runtime);      --  tasking only
+      RTG.System_BB_MCU_Vectors.Generate (Runtime, Interrupts);
    end if;
 
    RTG.GNAT_RTS_Sources.Copy
