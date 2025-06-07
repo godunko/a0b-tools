@@ -6,13 +6,13 @@
 
 with GNATCOLL.VFS;
 
-with RTG.MCU_Interrupts;
+with RTG.System_BB_MCU_Vectors;
 
 package RTG.SVD_Reader is
 
    procedure Read
      (File       : GNATCOLL.VFS.Virtual_File;
       Interrupts : out
-        RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector);
+        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector);
 
 end RTG.SVD_Reader;

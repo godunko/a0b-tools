@@ -14,11 +14,11 @@ package body RTG.System_BB_MCU_Vectors is
 
    procedure Generate_Specification
      (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector);
+      Interrupts : Interrupt_Information_Vectors.Vector);
 
    procedure Generate_Implementation
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts   : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector;
+      Interrupts   : Interrupt_Information_Vectors.Vector;
       Startup      : Boolean;
       Static       : Boolean;
       GNAT_Tasking : Boolean);
@@ -29,7 +29,7 @@ package body RTG.System_BB_MCU_Vectors is
 
    procedure Generate
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts   : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector;
+      Interrupts   : Interrupt_Information_Vectors.Vector;
       Startup      : Boolean;
       Static       : Boolean;
       GNAT_Tasking : Boolean) is
@@ -45,7 +45,7 @@ package body RTG.System_BB_MCU_Vectors is
 
    procedure Generate_Implementation
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts   : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector;
+      Interrupts   : Interrupt_Information_Vectors.Vector;
       Startup      : Boolean;
       Static       : Boolean;
       GNAT_Tasking : Boolean)
@@ -212,7 +212,7 @@ package body RTG.System_BB_MCU_Vectors is
 
    procedure Generate_Specification
      (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector)
+      Interrupts : Interrupt_Information_Vectors.Vector)
    is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
@@ -260,8 +260,7 @@ package body RTG.System_BB_MCU_Vectors is
       Linker_Alias_Template : constant
         VSS.Strings.Templates.Virtual_String_Template :=
           "   pragma Linker_Alias ({}_Handler, ""Dummy_Exception_Handler"");";
-      Position             :
-        RTG.MCU_Interrupts.Interrupt_Information_Vectors.Cursor;
+      Position             : Interrupt_Information_Vectors.Cursor;
 
    begin
       Output.Create
@@ -359,10 +358,7 @@ package body RTG.System_BB_MCU_Vectors is
       Position := Interrupts.First;
 
       for J in 0 .. Interrupts.Last_Element.Value loop
-         if RTG.MCU_Interrupts.Interrupt_Information_Vectors.Element (Position)
-              .Value
-           = J
-         then
+         if Interrupt_Information_Vectors.Element (Position).Value = J then
             PL
               (Vector_Template.Format
                  (VSS.Strings.Formatters.Integers.Image (J),
@@ -373,19 +369,13 @@ package body RTG.System_BB_MCU_Vectors is
                         else ","))));
 
             loop
-               RTG.MCU_Interrupts.Interrupt_Information_Vectors.Next (Position);
+               Interrupt_Information_Vectors.Next (Position);
 
                exit when
-                 not RTG
-                       .MCU_Interrupts
-                       .Interrupt_Information_Vectors
-                       .Has_Element (Position);
+                 not Interrupt_Information_Vectors.Has_Element (Position);
 
                exit when
-                 RTG.MCU_Interrupts.Interrupt_Information_Vectors.Element
-                   (Position)
-                   .Value
-                 > J;
+                 Interrupt_Information_Vectors.Element (Position).Value > J;
             end loop;
 
          else

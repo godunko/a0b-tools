@@ -15,7 +15,6 @@ with VSS.Strings.Conversions;
 
 with RTG.Architecture;
 with RTG.GNAT_RTS_Sources;
-with RTG.MCU_Interrupts;
 with RTG.Runtime;
 with RTG.Runtime_Reader;
 with RTG.SVD_Reader;
@@ -78,7 +77,7 @@ procedure RTG.Driver is
       Profile      => RTG.System.GCC14.No);
    --  It is set of parameters for ARM Cortex-M `light` runtime
    Scenarios  : RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
-   Interrupts : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector;
+   Interrupts : RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
 
 begin
    VSS.Command_Line.Add_Option (BB_Runtimes_Option);
