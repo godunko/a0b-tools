@@ -188,6 +188,12 @@ package body RTG.System_BB_MCU_Vectors is
       NL;
       PL ("package body System.BB.MCU_Vectors is");
 
+      if Startup then
+         NL;
+         PL ("   Stack_End : constant System.Address");
+         PL ("     with Import, Convention => C, External_Name => ""__stack_end"";");
+      end if;
+
       NL;
       PL ("   procedure Dummy_Exception_Handler");
       PL ("     with Export, Convention => C, External_Name => ""Dummy_Exception_Handler"";");
@@ -294,7 +300,7 @@ package body RTG.System_BB_MCU_Vectors is
            (Vectors0_Template.Format
               (VSS.Strings.Formatters.Integers.Image
                  (if Static then Interrupts.Last_Element.Value else -1)));
-         PL ("    (-16 => System.Null_Address,");  --  Stack !!!
+         PL ("    (-16 => Stack_End'Address,");
          PL ("     -15 => Reset_Handler'Address,");
          PL ("     -14 => NMI_Handler'Address,");
          PL ("     -13 => HardFault_Handler'Address,");
