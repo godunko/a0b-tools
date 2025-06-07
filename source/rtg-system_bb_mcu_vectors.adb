@@ -214,50 +214,43 @@ package body RTG.System_BB_MCU_Vectors is
         (Name  => "UsageFault",
          Weak  => True,
          Alias => "Dummy_Exception_Handler");
-      Generate_Handler_Specification
-        (Name     => "SVC",
-         Is_Null  => not GNAT_Tasking,
-         Kind     => (if GNAT_Tasking then Import else Export),
-         External =>
-           VSS.Strings.Virtual_String'
-             (if GNAT_Tasking then "__gnat_sv_call_trap" else ""),
-         Weak     => not GNAT_Tasking,
-         Alias    =>
-           VSS.Strings.Virtual_String'
-             (if GNAT_Tasking then "" else "Dummy_Exception_Handler"));
-      Generate_Handler_Specification
-        (Name     => "DebugMon",
-         Is_Null  => not GNAT_Tasking,
-         Kind     => (if GNAT_Tasking then Import else Export),
-         External =>
-           VSS.Strings.Virtual_String'
-             (if GNAT_Tasking then "__gnat_bkpt_trap" else ""),
-         Weak     => not GNAT_Tasking,
-         Alias    =>
-           VSS.Strings.Virtual_String'
-             (if GNAT_Tasking then "" else "Dummy_Exception_Handler"));
-      Generate_Handler_Specification
-        (Name     => "PendSV",
-         Is_Null  => not GNAT_Tasking,
-         Kind     => (if GNAT_Tasking then Import else Export),
-         External =>
-           VSS.Strings.Virtual_String'
-             (if GNAT_Tasking then "__gnat_pend_sv_trap" else ""),
-         Weak     => not GNAT_Tasking,
-         Alias    =>
-           VSS.Strings.Virtual_String'
-             (if GNAT_Tasking then "" else "Dummy_Exception_Handler"));
-      Generate_Handler_Specification
-        (Name     => "SysTick",
-         Is_Null  => not GNAT_Tasking,
-         Kind     => (if GNAT_Tasking then Import else Export),
-         External =>
-           VSS.Strings.Virtual_String'
-             (if GNAT_Tasking then "__gnat_sys_tick_trap" else ""),
-         Weak     => not GNAT_Tasking,
-         Alias    =>
-           VSS.Strings.Virtual_String'
-             (if GNAT_Tasking then "" else "Dummy_Exception_Handler"));
+
+      if GNAT_Tasking then
+         Generate_Handler_Specification
+           (Name     => "SVC",
+            Is_Null  => False,
+            Kind     => Import,
+            External => "__gnat_sv_call_trap");
+         Generate_Handler_Specification
+           (Name     => "DebugMon",
+            Is_Null  => False,
+            Kind     => Import,
+            External => "__gnat_bkpt_trap");
+         Generate_Handler_Specification
+           (Name     => "PendSV",
+            Is_Null  => False,
+            Kind     =>  Import,
+            External => "__gnat_pend_sv_trap");
+         Generate_Handler_Specification
+           (Name     => "SysTick",
+            Is_Null  => False,
+            Kind     => Import,
+            External => "__gnat_sys_tick_trap");
+
+      else
+         Generate_Handler_Specification
+           (Name => "SVC", Weak => True, Alias => "Dummy_Exception_Handler");
+         Generate_Handler_Specification
+           (Name  => "DebugMon",
+            Weak  => True,
+            Alias => "Dummy_Exception_Handler");
+         Generate_Handler_Specification
+           (Name => "PendSV", Weak => True, Alias => "Dummy_Exception_Handler");
+         Generate_Handler_Specification
+           (Name  => "SysTick",
+            Weak  => True,
+            Alias => "Dummy_Exception_Handler");
+      end if;
 
       if GNAT_Tasking then
          Generate_Handler_Specification
