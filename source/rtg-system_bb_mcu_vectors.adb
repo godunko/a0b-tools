@@ -4,6 +4,8 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
+pragma Style_Checks ("M90");
+
 with VSS.Strings.Conversions;
 with VSS.Strings.Formatters.Integers;
 with VSS.Strings.Formatters.Strings;
@@ -13,8 +15,7 @@ with VSS.Text_Streams.File_Output;
 package body RTG.System_BB_MCU_Vectors is
 
    procedure Generate_Specification
-     (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts : Interrupt_Information_Vectors.Vector);
+     (Runtime : RTG.Runtime.Runtime_Descriptor'Class);
 
    procedure Generate_Implementation
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
@@ -34,7 +35,7 @@ package body RTG.System_BB_MCU_Vectors is
       Static       : Boolean;
       GNAT_Tasking : Boolean) is
    begin
-      Generate_Specification (Runtime, Interrupts);
+      Generate_Specification (Runtime);
       Generate_Implementation
         (Runtime, Interrupts, Startup, Static, GNAT_Tasking);
    end Generate;
@@ -86,9 +87,95 @@ package body RTG.System_BB_MCU_Vectors is
          Output.Put (Item, Success);
       end PS;
 
-      Vectors0_Template : constant
+      type External_Kind is (Import, Export);
+
+      ------------------------------------
+      -- Generate_Handler_Specification --
+      ------------------------------------
+
+      procedure Generate_Handler_Specification
+        (Name     : VSS.Strings.Virtual_String;
+         Is_Null  : Boolean                    := True;
+         Kind     : External_Kind              := Export;
+         External : VSS.Strings.Virtual_String :=
+           VSS.Strings.Empty_Virtual_String;
+         Weak     : Boolean := False;
+         Alias    : VSS.Strings.Virtual_String :=
+           VSS.Strings.Empty_Virtual_String)
+      is
+         use VSS.Strings.Formatters.Strings;
+         use VSS.Strings.Templates;
+
+         Handler_Template         : constant Virtual_String_Template :=
+           "   procedure {}_Handler{}";
+         Export_Template          : constant Virtual_String_Template :=
+           "     with {}, Convention => C, External_Name => ""{}_Handler"";";
+         Export_External_Template : constant Virtual_String_Template :=
+           "     with {}, Convention => C, External_Name => ""{}"";";
+         Weak_External_Template   : constant Virtual_String_Template :=
+           "   pragma Weak_External ({}_Handler);";
+         Linker_Alias_Template    : constant Virtual_String_Template :=
+           "   pragma Linker_Alias ({}_Handler, ""{}"");";
+
+      begin
+         NL;
+
+         PL
+           (Handler_Template.Format
+              (Image (Name),
+               Image
+                 (VSS.Strings.Virtual_String'
+                    (if Is_Null then " is null" else ""))));
+
+         if External.Is_Empty then
+            PL
+              (Export_Template.Format
+                 (Image
+                    (VSS.Strings.Virtual_String'
+                       (case Kind is
+                          when Import => "Import",
+                          when Export => "Export")),
+                  Image (Name)));
+
+         else
+            PL
+              (Export_External_Template.Format
+                 (Image
+                    (VSS.Strings.Virtual_String'
+                       (case Kind is
+                          when Import => "Import",
+                          when Export => "Export")),
+                  Image (External)));
+         end if;
+
+         if Weak then
+            PL (Weak_External_Template.Format (Image (Name)));
+         end if;
+
+         if not Alias.Is_Empty then
+            PL (Linker_Alias_Template.Format (Image (Name), Image (Alias)));
+         end if;
+      end Generate_Handler_Specification;
+
+      Vectors0_Template      : constant
         VSS.Strings.Templates.Virtual_String_Template :=
           "   Vectors0 : constant array (Integer range -16 .. {}) of System.Address :=";
+      Vector0_Template       : constant
+        VSS.Strings.Templates.Virtual_String_Template :=
+          "     {3} => {}_Handler'Address{}";
+      Vectors_Template       : constant
+        VSS.Strings.Templates.Virtual_String_Template :=
+          "   Vectors : constant array (Integer range -16 .. {}) of System.Address :=";
+      Vector_Template        : constant
+        VSS.Strings.Templates.Virtual_String_Template :=
+          "     {3} => IRQ_Handler'Address{}";
+      Unspecified_Template   : constant
+        VSS.Strings.Templates.Virtual_String_Template :=
+          "     {3} => System.Null_Address,";
+
+      Position               : Interrupt_Information_Vectors.Cursor;
+
+      use RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors;
 
    begin
       Output.Create
@@ -97,20 +184,124 @@ package body RTG.System_BB_MCU_Vectors is
                 ("s-bbmcve.adb").Display_Full_Name));
 
       NL;
+      PL ("pragma Style_Checks (""M132"");");
+      NL;
       PL ("package body System.BB.MCU_Vectors is");
 
       NL;
-      PL ("   procedure Fault");
-      PL ("     with Export, Convention => C, External_Name => ""fault"";");
-      PL ("   pragma Weak_External (Fault);");
+      PL ("   procedure Dummy_Exception_Handler");
+      PL ("     with Export, Convention => C, External_Name => ""Dummy_Exception_Handler"";");
+      PL ("   pragma Weak_External (Dummy_Exception_Handler);");
+
+      if Startup and Static then
+         NL;
+         PL ("   procedure Dummy_Interrupt_Handler");
+         PL ("     with Export, Convention => C, External_Name => ""Dummy_Interrupt_Handler"";");
+         PL ("   pragma Weak_External (Dummy_Interrupt_Handler);");
+      end if;
+
+      Generate_Handler_Specification
+        (Name => "Reset", Is_Null => False, Kind => Import);
+      Generate_Handler_Specification
+        (Name => "NMI", Weak => True, Alias => "Dummy_Exception_Handler");
+      Generate_Handler_Specification
+        (Name => "HardFault", Weak => True, Alias => "Dummy_Exception_Handler");
+      Generate_Handler_Specification
+        (Name => "MemManage", Weak => True, Alias => "Dummy_Exception_Handler");
+      Generate_Handler_Specification
+        (Name => "BusFault", Weak => True, Alias => "Dummy_Exception_Handler");
+      Generate_Handler_Specification
+        (Name  => "UsageFault",
+         Weak  => True,
+         Alias => "Dummy_Exception_Handler");
+      Generate_Handler_Specification
+        (Name     => "SVC",
+         Is_Null  => not GNAT_Tasking,
+         Kind     => (if GNAT_Tasking then Import else Export),
+         External =>
+           VSS.Strings.Virtual_String'
+             (if GNAT_Tasking then "__gnat_sv_call_trap" else ""),
+         Weak     => not GNAT_Tasking,
+         Alias    =>
+           VSS.Strings.Virtual_String'
+             (if GNAT_Tasking then "" else "Dummy_Exception_Handler"));
+      Generate_Handler_Specification
+        (Name     => "DebugMon",
+         Is_Null  => not GNAT_Tasking,
+         Kind     => (if GNAT_Tasking then Import else Export),
+         External =>
+           VSS.Strings.Virtual_String'
+             (if GNAT_Tasking then "__gnat_bkpt_trap" else ""),
+         Weak     => not GNAT_Tasking,
+         Alias    =>
+           VSS.Strings.Virtual_String'
+             (if GNAT_Tasking then "" else "Dummy_Exception_Handler"));
+      Generate_Handler_Specification
+        (Name     => "PendSV",
+         Is_Null  => not GNAT_Tasking,
+         Kind     => (if GNAT_Tasking then Import else Export),
+         External =>
+           VSS.Strings.Virtual_String'
+             (if GNAT_Tasking then "__gnat_pend_sv_trap" else ""),
+         Weak     => not GNAT_Tasking,
+         Alias    =>
+           VSS.Strings.Virtual_String'
+             (if GNAT_Tasking then "" else "Dummy_Exception_Handler"));
+      Generate_Handler_Specification
+        (Name     => "SysTick",
+         Is_Null  => not GNAT_Tasking,
+         Kind     => (if GNAT_Tasking then Import else Export),
+         External =>
+           VSS.Strings.Virtual_String'
+             (if GNAT_Tasking then "__gnat_sys_tick_trap" else ""),
+         Weak     => not GNAT_Tasking,
+         Alias    =>
+           VSS.Strings.Virtual_String'
+             (if GNAT_Tasking then "" else "Dummy_Exception_Handler"));
+
+      if GNAT_Tasking then
+         Generate_Handler_Specification
+           (Name     => "IRQ",
+            Is_Null  => False,
+            Kind     => Import,
+            External => "__gnat_irq_trap",
+            Weak     => False);
+      end if;
 
       if Startup then
+         if Static then
+            Position := Interrupts.First;
+
+            for J in 0 .. Interrupts.Last_Element.Value loop
+               declare
+                  Interrupt : constant Interrupt_Information :=
+                    Interrupt_Information_Vectors.Element (Position);
+
+               begin
+                  if Interrupt.Value = J then
+                     Generate_Handler_Specification
+                       (Name  => Interrupt.Name,
+                        Weak  => True,
+                        Alias => "Dummy_Interrupt_Handler");
+
+                     loop
+                        Next (Position);
+
+                        exit when not Has_Element (Position);
+
+                        exit when Element (Position).Value > J;
+                     end loop;
+                  end if;
+               end;
+            end loop;
+         end if;
+
          NL;
          PL
            (Vectors0_Template.Format
               (VSS.Strings.Formatters.Integers.Image
                  (if Static then Interrupts.Last_Element.Value else -1)));
-         PL ("    (-16 => System.Null_Address,");  --  Stack
+         PL ("    (-16 => System.Null_Address,");  --  Stack !!!
          PL ("     -15 => Reset_Handler'Address,");
          PL ("     -14 => NMI_Handler'Address,");
          PL ("     -13 => HardFault_Handler'Address,");
@@ -126,79 +317,145 @@ package body RTG.System_BB_MCU_Vectors is
          PL ("     -3  => System.Null_Address,");
          PL ("     -2  => PendSV_Handler'Address,");
          PS ("     -1  => SysTick_Handler'Address");
+
+         if Static then
+            PL (",");
+
+            Position := Interrupts.First;
+
+            for J in 0 .. Interrupts.Last_Element.Value loop
+               if Interrupt_Information_Vectors.Element (Position).Value = J
+               then
+                  PL
+                    (Vector0_Template.Format
+                       (VSS.Strings.Formatters.Integers.Image (J),
+                        VSS.Strings.Formatters.Strings.Image
+                          (Interrupt_Information_Vectors.Element (Position)
+                             .Name),
+                        VSS.Strings.Formatters.Strings.Image
+                          (VSS.Strings.Virtual_String'
+                             (if J = Interrupts.Last_Element.Value
+                              then ")"
+                              else ","))));
+
+                  loop
+                     Interrupt_Information_Vectors.Next (Position);
+
+                     exit when
+                       not Interrupt_Information_Vectors.Has_Element (Position);
+
+                     exit when
+                       Interrupt_Information_Vectors.Element (Position).Value
+                       > J;
+                  end loop;
+
+               else
+                  PL
+                    (Unspecified_Template.Format
+                       (VSS.Strings.Formatters.Integers.Image (J)));
+               end if;
+            end loop;
+
+         else
+            PL (")");
+         end if;
+
+         PL ("     with Export,");
+         PL ("          Convention     => C,");
+         PL ("          Linker_Section => "".vectors"",");
+         PL ("          External_Name  => ""__vectors0"";");
       end if;
+
+      if GNAT_Tasking then
+         NL;
+         PL
+           (Vectors_Template.Format
+              (VSS.Strings.Formatters.Integers.Image
+                 (Interrupts.Last_Element.Value)));
+         PL ("    (-16 => System.Null_Address,");  --  Stack
+         PL ("     -15 => System.Null_Address,");  --  Reset handler
+         PL ("     -14 => NMI_Handler'Address,");
+         PL ("     -13 => HardFault_Handler'Address,");
+         PL ("     -12 => MemManage_Handler'Address,");
+         PL ("     -11 => BusFault_Handler'Address,");
+         PL ("     -10 => UsageFault_Handler'Address,");
+         PL ("     -9  => System.Null_Address,");
+         PL ("     -8  => System.Null_Address,");
+         PL ("     -7  => System.Null_Address,");
+         PL ("     -6  => System.Null_Address,");
+         PL ("     -5  => SVC_Handler'Address,");
+         PL ("     -4  => DebugMon_Handler'Address,");
+         PL ("     -3  => System.Null_Address,");
+         PL ("     -2  => PendSV_Handler'Address,");
+         PL ("     -1  => SysTick_Handler'Address,");
+         NL;
+
+         Position := Interrupts.First;
+
+         for J in 0 .. Interrupts.Last_Element.Value loop
+            declare
+               Interrupt : constant Interrupt_Information :=
+                 Interrupt_Information_Vectors.Element (Position);
+
+            begin
+               if Interrupt.Value = J then
+                  PL
+                    (Vector_Template.Format
+                       (VSS.Strings.Formatters.Integers.Image (J),
+                        VSS.Strings.Formatters.Strings.Image
+                          (VSS.Strings.Virtual_String'
+                             (if J = Interrupts.Last_Element.Value
+                              then ")"
+                              else ","))));
+
+                  loop
+                     Next (Position);
+
+                     exit when not Has_Element (Position);
+
+                     exit when Element (Position).Value > J;
+                  end loop;
+
+               else
+                  PL
+                    (Unspecified_Template.Format
+                       (VSS.Strings.Formatters.Integers.Image (J)));
+               end if;
+            end;
+         end loop;
+
+         PL ("     with Export,");
+         PL ("          Convention     => C,");
+         PL ("          Linker_Section => "".text"",");
+         PL ("          External_Name  => ""__vectors"";");
+
+      end if;
+
+      NL;
+      PL ("   -----------------------------");
+      PL ("   -- Dummy_Exception_Handler --");
+      PL ("   -----------------------------");
+      NL;
+      PL ("   procedure Dummy_Exception_Handler is");
+      PL ("   begin");
+      PL ("      loop");
+      PL ("         null;");
+      PL ("      end loop;");
+      PL ("   end Dummy_Exception_Handler;");
 
       if Static then
-         raise Program_Error;
-
-      else
-         PL (")");
+         NL;
+         PL ("   -----------------------------");
+         PL ("   -- Dummy_Interrupt_Handler --");
+         PL ("   -----------------------------");
+         NL;
+         PL ("   procedure Dummy_Interrupt_Handler is");
+         PL ("   begin");
+         PL ("      loop");
+         PL ("         null;");
+         PL ("      end loop;");
+         PL ("   end Dummy_Interrupt_Handler;");
       end if;
-
-      PL ("     with Export,");
-      PL ("          Convention     => C,");
-      PL ("          Linker_Section => "".vectors"",");
-      PL ("          External_Name  => ""__vectors0"";");
-
-      NL;
-      PL ("   ----------------------");
-      PL ("   -- DebugMon_Handler --");
-      PL ("   ----------------------");
-      NL;
-      PL ("   procedure DebugMon_Handler is");
-      PL ("   begin");
-      PL ("      loop");
-      PL ("         null;");
-      PL ("      end loop;");
-      PL ("   end DebugMon_Handler;");
-
-      NL;
-      PL ("   -----------");
-      PL ("   -- Fault --");
-      PL ("   -----------");
-      NL;
-      PL ("   procedure Fault is");
-      PL ("   begin");
-      PL ("      loop");
-      PL ("         null;");
-      PL ("      end loop;");
-      PL ("   end Fault;");
-
-      NL;
-      PL ("   --------------------");
-      PL ("   -- PendSV_Handler --");
-      PL ("   --------------------");
-      NL;
-      PL ("   procedure PendSV_Handler is");
-      PL ("   begin");
-      PL ("      loop");
-      PL ("         null;");
-      PL ("      end loop;");
-      PL ("   end PendSV_Handler;");
-
-      NL;
-      PL ("   -----------------");
-      PL ("   -- SVC_Handler --");
-      PL ("   -----------------");
-      NL;
-      PL ("   procedure SVC_Handler is");
-      PL ("   begin");
-      PL ("      loop");
-      PL ("         null;");
-      PL ("      end loop;");
-      PL ("   end SVC_Handler;");
-
-      NL;
-      PL ("   ---------------------");
-      PL ("   -- SysTick_Handler --");
-      PL ("   ---------------------");
-      NL;
-      PL ("   procedure SysTick_Handler is");
-      PL ("   begin");
-      PL ("      loop");
-      PL ("         null;");
-      PL ("      end loop;");
-      PL ("   end SysTick_Handler;");
 
       NL;
       PL ("end System.BB.MCU_Vectors;");
@@ -211,8 +468,7 @@ package body RTG.System_BB_MCU_Vectors is
    ----------------------------
 
    procedure Generate_Specification
-     (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts : Interrupt_Information_Vectors.Vector)
+     (Runtime : RTG.Runtime.Runtime_Descriptor'Class)
    is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
@@ -239,29 +495,6 @@ package body RTG.System_BB_MCU_Vectors is
          Output.Put_Line (Line, Success);
       end PL;
 
-      Vectors_Template       : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "   Vectors : constant array (Integer range -16 .. {}) of System.Address :=";
-      Vector_Template        : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "     {3} => IRQ_Handler'Address{}";
-      Unspecified_Template   : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "     {3} => System.Null_Address,";
-      Handler_Template       : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "   procedure {}_Handler";
-      Export_Template        : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "     with Export, Convention => C, External_Name => ""{}_Handler"";";
-      Weak_External_Template : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "   pragma Weak_External ({}_Handler);";
-      Linker_Alias_Template : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "   pragma Linker_Alias ({}_Handler, ""Dummy_Exception_Handler"");";
-      Position             : Interrupt_Information_Vectors.Cursor;
-
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
@@ -270,126 +503,8 @@ package body RTG.System_BB_MCU_Vectors is
 
       NL;
       PL ("package System.BB.MCU_Vectors");
-      PL ("  with Pure, No_Elaboration_Code_All");
+      PL ("  with Pure, Elaborate_Body, No_Elaboration_Code_All");
       PL ("is");
-
-      NL;
-      PL ("   procedure Reset_Handler");
-      PL ("     with Import, Convention => C, External_Name => ""Reset_Handler"";");
-
-      NL;
-      PL ("   procedure NMI_Handler is null");
-      PL ("     with Export, Convention => C, External_Name => ""NMI_Handler"";");
-      PL ("   pragma Weak_External (NMI_Handler);");
-      PL ("   pragma Linker_Alias (NMI_Handler, ""fault"");");
-
-      NL;
-      PL ("   procedure HardFault_Handler is null");
-      PL ("     with Export, Convention => C, External_Name => ""HardFault_Handler"";");
-      PL ("   pragma Weak_External (HardFault_Handler);");
-      PL ("   pragma Linker_Alias (HardFault_Handler, ""fault"");");
-
-      NL;
-      PL ("   procedure MemManage_Handler is null");
-      PL ("     with Export, Convention => C, External_Name => ""MemManage_Handler"";");
-      PL ("   pragma Weak_External (MemManage_Handler);");
-      PL ("   pragma Linker_Alias (MemManage_Handler, ""fault"");");
-
-      NL;
-      PL ("   procedure BusFault_Handler is null");
-      PL ("     with Export, Convention => C, External_Name => ""BusFault_Handler"";");
-      PL ("   pragma Weak_External (BusFault_Handler);");
-      PL ("   pragma Linker_Alias (BusFault_Handler, ""fault"");");
-
-      NL;
-      PL ("   procedure UsageFault_Handler is null");
-      PL ("     with Export, Convention => C, External_Name => ""UsageFault_Handler"";");
-      PL ("   pragma Weak_External (UsageFault_Handler);");
-      PL ("   pragma Linker_Alias (UsageFault_Handler, ""fault"");");
-
-      NL;
-      PL ("   procedure SVC_Handler");
-      PL ("     with Export, Convention => C, External_Name => ""__gnat_sv_call_trap"";");
-      PL ("   pragma Weak_External (SVC_Handler);");
-
-      NL;
-      PL ("   procedure DebugMon_Handler");
-      PL ("     with Export, Convention => C, External_Name => ""__gnat_bkpt_trap"";");
-      PL ("   pragma Weak_External (DebugMon_Handler);");
-
-      NL;
-      PL ("   procedure PendSV_Handler");
-      PL ("     with Export, Convention => C, External_Name => ""__gnat_pend_sv_trap"";");
-      PL ("   pragma Weak_External (PendSV_Handler);");
-
-      NL;
-      PL ("   procedure SysTick_Handler");
-      PL ("     with Export, Convention => C, External_Name => ""__gnat_sys_tick_trap"";");
-      PL ("   pragma Weak_External (SysTick_Handler);");
-
-      NL;
-      PL ("   procedure IRQ_Handler is null");
-      PL ("     with Export, Convention => C, External_Name => ""__gnat_irq_trap"";");
-      PL ("   pragma Weak_External (IRQ_Handler);");
-
-      NL;
-      PL
-        (Vectors_Template.Format
-           (VSS.Strings.Formatters.Integers.Image
-              (Interrupts.Last_Element.Value)));
-      PL ("    (-16 => System.Null_Address,");  --  Stack
-      PL ("     -15 => System.Null_Address,");  --  Reset handler
-      PL ("     -14 => NMI_Handler'Address,");
-      PL ("     -13 => HardFault_Handler'Address,");
-      PL ("     -12 => MemManage_Handler'Address,");
-      PL ("     -11 => BusFault_Handler'Address,");
-      PL ("     -10 => UsageFault_Handler'Address,");
-      PL ("     -9  => System.Null_Address,");
-      PL ("     -8  => System.Null_Address,");
-      PL ("     -7  => System.Null_Address,");
-      PL ("     -6  => System.Null_Address,");
-      PL ("     -5  => SVC_Handler'Address,");
-      PL ("     -4  => DebugMon_Handler'Address,");
-      PL ("     -3  => System.Null_Address,");
-      PL ("     -2  => PendSV_Handler'Address,");
-      PL ("     -1  => SysTick_Handler'Address,");
-      NL;
-
-      Position := Interrupts.First;
-
-      for J in 0 .. Interrupts.Last_Element.Value loop
-         if Interrupt_Information_Vectors.Element (Position).Value = J then
-            PL
-              (Vector_Template.Format
-                 (VSS.Strings.Formatters.Integers.Image (J),
-                  VSS.Strings.Formatters.Strings.Image
-                    (VSS.Strings.Virtual_String'
-                       (if J = Interrupts.Last_Element.Value
-                        then ")"
-                        else ","))));
-
-            loop
-               Interrupt_Information_Vectors.Next (Position);
-
-               exit when
-                 not Interrupt_Information_Vectors.Has_Element (Position);
-
-               exit when
-                 Interrupt_Information_Vectors.Element (Position).Value > J;
-            end loop;
-
-         else
-            PL
-              (Unspecified_Template.Format
-                 (VSS.Strings.Formatters.Integers.Image (J)));
-         end if;
-      end loop;
-
-      PL ("     with Export,");
-      PL ("          Convention     => C,");
-      PL ("          Linker_Section => "".text"",");
-      PL ("          External_Name  => ""__vectors"";");
-
       NL;
       PL ("end System.BB.MCU_Vectors;");
 
