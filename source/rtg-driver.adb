@@ -128,11 +128,16 @@ begin
 
    RTG.Runtime.Create (Runtime, RTG.Tasking.Use_GNAT_Tasking (Scenarios));
    RTG.System.Generate (Runtime, Parameters);
+   RTG.System_BB_MCU_Vectors.Generate
+     (Runtime      => Runtime,
+      Interrupts   => Interrupts,
+      Startup      => True,        --  Might be False for custom RTOS
+      Static       => not RTG.Tasking.Use_GNAT_Tasking (Scenarios),
+      GNAT_Tasking => RTG.Tasking.Use_GNAT_Tasking (Scenarios));
 
    if RTG.Tasking.Use_GNAT_Tasking (Scenarios) then
       RTG.System_BB_MCU_Parameters.Generate (Runtime);  --  tasking only
       RTG.System_BB_Parameters.Generate (Runtime);      --  tasking only
-      RTG.System_BB_MCU_Vectors.Generate (Runtime, Interrupts);
    end if;
 
    RTG.GNAT_RTS_Sources.Copy

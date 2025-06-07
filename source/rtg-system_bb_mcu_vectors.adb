@@ -17,18 +17,26 @@ package body RTG.System_BB_MCU_Vectors is
       Interrupts : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector);
 
    procedure Generate_Implementation
-     (Runtime : RTG.Runtime.Runtime_Descriptor'Class);
+     (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
+      Interrupts   : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector;
+      Startup      : Boolean;
+      Static       : Boolean;
+      GNAT_Tasking : Boolean);
 
    --------------
    -- Generate --
    --------------
 
    procedure Generate
-     (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector) is
+     (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
+      Interrupts   : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector;
+      Startup      : Boolean;
+      Static       : Boolean;
+      GNAT_Tasking : Boolean) is
    begin
       Generate_Specification (Runtime, Interrupts);
-      Generate_Implementation (Runtime);
+      Generate_Implementation
+        (Runtime, Interrupts, Startup, Static, GNAT_Tasking);
    end Generate;
 
    -----------------------------
@@ -36,12 +44,18 @@ package body RTG.System_BB_MCU_Vectors is
    -----------------------------
 
    procedure Generate_Implementation
-     (Runtime : RTG.Runtime.Runtime_Descriptor'Class)
+     (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
+      Interrupts   : RTG.MCU_Interrupts.Interrupt_Information_Vectors.Vector;
+      Startup      : Boolean;
+      Static       : Boolean;
+      GNAT_Tasking : Boolean)
    is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
 
       procedure PL (Line : VSS.Strings.Virtual_String);
+
+      procedure PS (Item : VSS.Strings.Virtual_String);
 
       procedure NL;
 
@@ -63,10 +77,23 @@ package body RTG.System_BB_MCU_Vectors is
          Output.Put_Line (Line, Success);
       end PL;
 
+      --------
+      -- PS --
+      --------
+
+      procedure PS (Item : VSS.Strings.Virtual_String) is
+      begin
+         Output.Put (Item, Success);
+      end PS;
+
+      Vectors0_Template : constant
+        VSS.Strings.Templates.Virtual_String_Template :=
+          "   Vectors0 : constant array (Integer range -16 .. {}) of System.Address :=";
+
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Runtime.Tasking_Source_Directory.Create_From_Dir
+           (Runtime.Runtime_Source_Directory.Create_From_Dir
                 ("s-bbmcve.adb").Display_Full_Name));
 
       NL;
@@ -76,6 +103,42 @@ package body RTG.System_BB_MCU_Vectors is
       PL ("   procedure Fault");
       PL ("     with Export, Convention => C, External_Name => ""fault"";");
       PL ("   pragma Weak_External (Fault);");
+
+      if Startup then
+         NL;
+         PL
+           (Vectors0_Template.Format
+              (VSS.Strings.Formatters.Integers.Image
+                 (if Static then Interrupts.Last_Element.Value else -1)));
+         PL ("    (-16 => System.Null_Address,");  --  Stack
+         PL ("     -15 => Reset_Handler'Address,");
+         PL ("     -14 => NMI_Handler'Address,");
+         PL ("     -13 => HardFault_Handler'Address,");
+         PL ("     -12 => MemManage_Handler'Address,");
+         PL ("     -11 => BusFault_Handler'Address,");
+         PL ("     -10 => UsageFault_Handler'Address,");
+         PL ("     -9  => System.Null_Address,");
+         PL ("     -8  => System.Null_Address,");
+         PL ("     -7  => System.Null_Address,");
+         PL ("     -6  => System.Null_Address,");
+         PL ("     -5  => SVC_Handler'Address,");
+         PL ("     -4  => DebugMon_Handler'Address,");
+         PL ("     -3  => System.Null_Address,");
+         PL ("     -2  => PendSV_Handler'Address,");
+         PS ("     -1  => SysTick_Handler'Address");
+      end if;
+
+      if Static then
+         raise Program_Error;
+
+      else
+         PL (")");
+      end if;
+
+      PL ("     with Export,");
+      PL ("          Convention     => C,");
+      PL ("          Linker_Section => "".vectors"",");
+      PL ("          External_Name  => ""__vectors0"";");
 
       NL;
       PL ("   ----------------------");
@@ -203,7 +266,7 @@ package body RTG.System_BB_MCU_Vectors is
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Runtime.Tasking_Source_Directory.Create_From_Dir
+           (Runtime.Runtime_Source_Directory.Create_From_Dir
                 ("s-bbmcve.ads").Display_Full_Name));
 
       NL;
@@ -276,7 +339,7 @@ package body RTG.System_BB_MCU_Vectors is
            (VSS.Strings.Formatters.Integers.Image
               (Interrupts.Last_Element.Value)));
       PL ("    (-16 => System.Null_Address,");  --  Stack
-      PL ("     -15 => Reset_Handler'Address,");
+      PL ("     -15 => System.Null_Address,");  --  Reset handler
       PL ("     -14 => NMI_Handler'Address,");
       PL ("     -13 => HardFault_Handler'Address,");
       PL ("     -12 => MemManage_Handler'Address,");
