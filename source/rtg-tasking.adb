@@ -52,11 +52,13 @@ package body RTG.Tasking is
       end Check_Set;
 
    begin
-      if not Scenarios.Contains ("tasking")
-        or else Scenarios ("tasking") = "no"
-      then
+      if not Scenarios.Contains ("tasking") then
          RTG.Diagnostics.Warning
-           ("""tasking"" is not specified, assume ""light""");
+           ("""tasking"" is not specified, assume ""no""");
+         Scenarios.Insert ("tasking", "no");
+      end if;
+
+      if Scenarios ("tasking") = "no" then
          Check_Set ("RTS_Profile", "light");
          System_Parameters.Profile := RTG.System.GCC14.No;
          System_Parameters.Restrictions (No_Exception_Propagation)  := True;
