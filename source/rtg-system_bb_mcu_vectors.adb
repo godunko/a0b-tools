@@ -229,9 +229,9 @@ package body RTG.System_BB_MCU_Vectors is
             External => "__gnat_sv_call_trap");
          Generate_Handler_Specification
            (Name     => "DebugMon",
-            Is_Null  => False,
-            Kind     => Import,
-            External => "__gnat_bkpt_trap");
+            External => "__gnat_bkpt_trap",
+            Weak     => True,
+            Alias    => "Dummy_Exception_Handler");
          Generate_Handler_Specification
            (Name     => "PendSV",
             Is_Null  => False,
