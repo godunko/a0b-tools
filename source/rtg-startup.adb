@@ -262,9 +262,12 @@ package body RTG.Startup is
       PL ("   procedure Reset_Handler");
       PL ("     with Export, Convention => C, External_Name => ""Reset_Handler"";");
       NL;
+      PL ("   procedure Main");
+      PL ("     with Import, Convention => C, External_Name => ""main"";");
+      NL;
       PL ("   procedure Reset_Handler is");
       PL ("   begin");
-      PL ("      null;");
+      PL ("      Main;");
       PL ("   end Reset_Handler;");
       NL;
       PL ("end System_Startup;");
