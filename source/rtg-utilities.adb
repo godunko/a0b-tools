@@ -42,7 +42,7 @@ package body RTG.Utilities is
                Target := Target_Directory.Create_From_Dir (Source.Base_Name);
 
                if Target.Is_Regular_File then
-                  RTG.Diagnostics.Warning (Target, "owerritten");
+                  RTG.Diagnostics.Warning (Target, "is overwritten");
                end if;
 
                Source.Copy (Target.Full_Name.all, Success);
