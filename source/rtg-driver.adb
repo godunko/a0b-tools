@@ -18,6 +18,7 @@ with RTG.GNAT_RTS_Sources;
 with RTG.Runtime;
 with RTG.Runtime_Reader;
 with RTG.SVD_Reader;
+with RTG.Startup;
 with RTG.System;
 with RTG.System_BB_MCU_Parameters;
 with RTG.System_BB_Parameters;
@@ -78,6 +79,7 @@ procedure RTG.Driver is
    --  It is set of parameters for ARM Cortex-M `light` runtime
    Scenarios  : RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
    Interrupts : RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
+   Startup    : RTG.Startup.Startup_Descriptor;
 
 begin
    VSS.Command_Line.Add_Option (BB_Runtimes_Option);
@@ -118,6 +120,7 @@ begin
    end if;
 
    RTG.Runtime.Initialize (Runtime, BB_Runtimes_Directory);
+   RTG.Startup.Initialize (Startup);
 
    RTG.Runtime_Reader.Read (GNATCOLL.VFS.Create ("runtime.json"), Scenarios);
    RTG.SVD_Reader.Read (SVD_File, Interrupts);
@@ -144,6 +147,8 @@ begin
       Scenarios,
       BB_Runtimes_Directory.Create_From_Dir
         ("gnat_rts_sources/lib/gnat/rts-sources.json"));
+
+   RTG.Startup.Create (Startup);
 
 exception
    when RTG.Internal_Error =>
