@@ -352,7 +352,7 @@ package body RTG.Runtime is
      (Self        : in out Runtime_Descriptor;
       BB_Runtimes : GNATCOLL.VFS.Virtual_File) is
    begin
-      Self.Runtime_Directory          := GNATCOLL.VFS.Create ("rtl");
+      Self.Runtime_Directory          := GNATCOLL.VFS.Create ("runtime");
       Self.GNAT_RTS_Sources_Directory :=
         BB_Runtimes.Create_From_Dir ("gnat_rts_sources");
    end Initialize;
