@@ -12,11 +12,19 @@ with RTG.Diagnostics;
 
 package body RTG.Startup is
 
+   procedure Generate_Libstartup_Project (Descriptor : Startup_Descriptor);
+
    procedure Generate_Startup_Project (Descriptor : Startup_Descriptor);
 
    procedure Generate_Startup_Linker_Script (Descriptor : Startup_Descriptor);
 
    procedure Copy_Linker_Scripts (Descriptor : Startup_Descriptor);
+
+   procedure Generate_System_Startup_Specification
+     (Descriptor : Startup_Descriptor);
+
+   procedure Generate_System_Startup_Implementation
+     (Descriptor : Startup_Descriptor);
 
    -------------------------
    -- Copy_Linker_Scripts --
@@ -38,10 +46,60 @@ package body RTG.Startup is
    procedure Create (Descriptor : Startup_Descriptor) is
    begin
       Descriptor.Startup_Directory.Make_Dir;
+      Generate_Libstartup_Project (Descriptor);
       Generate_Startup_Project (Descriptor);
       Generate_Startup_Linker_Script (Descriptor);
       Copy_Linker_Scripts (Descriptor);
+      Generate_System_Startup_Specification (Descriptor);
+      Generate_System_Startup_Implementation (Descriptor);
    end Create;
+
+   ---------------------------------
+   -- Generate_Libstartup_Project --
+   ---------------------------------
+
+   procedure Generate_Libstartup_Project (Descriptor : Startup_Descriptor) is
+      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
+      Success : Boolean := True;
+
+      procedure PL (Line : VSS.Strings.Virtual_String);
+
+      procedure NL;
+
+      --------
+      -- NL --
+      --------
+
+      procedure NL is
+      begin
+         Output.New_Line (Success);
+      end NL;
+
+      --------
+      -- PL --
+      --------
+
+      procedure PL (Line : VSS.Strings.Virtual_String) is
+      begin
+         Output.Put_Line (Line, Success);
+      end PL;
+
+   begin
+      Output.Create
+        (VSS.Strings.Conversions.To_Virtual_String
+           (Descriptor.Startup_Directory.Create_From_Dir ("libstartup.gpr")
+              .Display_Full_Name));
+
+      NL;
+      PL ("library project LibStartup is");
+      NL;
+      PL ("   for Library_Name use ""gnatstartup"";");
+      PL ("   for Library_Dir use ""lib"";");
+      NL;
+      PL ("end LibStartup;");
+
+      Output.Close;
+   end Generate_Libstartup_Project;
 
    ------------------------------------
    -- Generate_Startup_Linker_Script --
@@ -146,17 +204,119 @@ package body RTG.Startup is
               .Display_Full_Name));
 
       NL;
-      PL ("project Startup is");
+      PL ("with ""libstartup.gpr"";");
+      NL;
+      PL ("abstract project Startup is");
       NL;
       PL ("   package Linker is");
       PL ("      for Switches (""Ada"") use");
-      PL ("        Linker'Required_Switches & (""-T"", ""startup.ld"");");
+      PL ("        Linker'Required_Switches & (""-L"", Project'Project_Dir, ""-T"", ""startup.ld"");");
       PL ("   end Linker;");
       NL;
       PL ("end Startup;");
 
       Output.Close;
    end Generate_Startup_Project;
+
+   --------------------------------------------
+   -- Generate_System_Startup_Implementation --
+   --------------------------------------------
+
+   procedure Generate_System_Startup_Implementation
+     (Descriptor : Startup_Descriptor)
+   is
+      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
+      Success : Boolean := True;
+
+      procedure PL (Line : VSS.Strings.Virtual_String);
+
+      procedure NL;
+
+      --------
+      -- NL --
+      --------
+
+      procedure NL is
+      begin
+         Output.New_Line (Success);
+      end NL;
+
+      --------
+      -- PL --
+      --------
+
+      procedure PL (Line : VSS.Strings.Virtual_String) is
+      begin
+         Output.Put_Line (Line, Success);
+      end PL;
+
+   begin
+      Output.Create
+        (VSS.Strings.Conversions.To_Virtual_String
+           (Descriptor.Startup_Directory.Create_From_Dir ("system_startup.adb")
+              .Display_Full_Name));
+
+      NL;
+      PL ("package body System_Startup is");
+      NL;
+      PL ("   procedure Reset_Handler");
+      PL ("     with Export, Convention => C, External_Name => ""Reset_Handler"";");
+      NL;
+      PL ("   procedure Reset_Handler is");
+      PL ("   begin");
+      PL ("      null;");
+      PL ("   end Reset_Handler;");
+      NL;
+      PL ("end System_Startup;");
+
+      Output.Close;
+   end Generate_System_Startup_Implementation;
+
+   -------------------------------------------
+   -- Generate_System_Startup_Specification --
+   -------------------------------------------
+
+   procedure Generate_System_Startup_Specification
+     (Descriptor : Startup_Descriptor)
+   is
+      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
+      Success : Boolean := True;
+
+      procedure PL (Line : VSS.Strings.Virtual_String);
+
+      procedure NL;
+
+      --------
+      -- NL --
+      --------
+
+      procedure NL is
+      begin
+         Output.New_Line (Success);
+      end NL;
+
+      --------
+      -- PL --
+      --------
+
+      procedure PL (Line : VSS.Strings.Virtual_String) is
+      begin
+         Output.Put_Line (Line, Success);
+      end PL;
+
+   begin
+      Output.Create
+        (VSS.Strings.Conversions.To_Virtual_String
+           (Descriptor.Startup_Directory.Create_From_Dir ("system_startup.ads")
+              .Display_Full_Name));
+
+      NL;
+      PL ("package System_Startup with Pure, Elaborate_Body, No_Elaboration_Code_All is");
+      NL;
+      PL ("end System_Startup;");
+
+      Output.Close;
+   end Generate_System_Startup_Specification;
 
    ----------------
    -- Initialize --
