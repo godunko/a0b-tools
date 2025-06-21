@@ -8,11 +8,12 @@ Startup code and linker script should be provided by the application for now.
 
 Typical content of the `runtime.json`
 
-```
+```json
 {
   "tasking": "light",
   "dt:&cpu0:compatible": "arm,cortex-m4f",
-  "dt:&cpu0:clock-frequency": "150000000",
+  "dt:&cpu0:clock-frequency": "150_000_000",
+  "dt:&nvic:arm,num-irq-priority-bits": "4",
 
   "scenarios":
   {
@@ -51,6 +52,7 @@ Supported parameters are:
 * `tasking`: tasking profile for runtime library, possible values are `no`, `light`, `embedded`
 * `dt:&cpu0:compatible`: CPU architecture, only supported value is `arm,cortex-m4f`
 * `dt:&cpu0:clock-frequency`: CPU frequency
+* `dt:&nvic:arm,num-irq-priority-bits` number of bits of priority supported by MCU's NVIC
 * `scenarios`: scenario variables to be used to construct GNAT runtime
 
 ## Run runtime generator
