@@ -49,10 +49,10 @@ package body RTG.Architecture is
       end Check_Set;
 
    begin
-      if not Scenarios.Contains ("dt:cpu") then
-         RTG.Diagnostics.Error ("""dt:cpu"" is not specified");
+      if not Scenarios.Contains ("dt:&cpu0:compatible") then
+         RTG.Diagnostics.Error ("""dt:&cpu0:compatible"" is not specified");
 
-      elsif Scenarios ("dt:cpu") = "arm,cortex-m4f" then
+      elsif Scenarios ("dt:&cpu0:compatible") = "arm,cortex-m4f" then
          Check_Set ("CPU_Family", "arm");
          Check_Set ("Target_Word_Size", "32");
          Check_Set ("Has_FMA", "no");
@@ -76,7 +76,7 @@ package body RTG.Architecture is
          end if;
 
       else
-         RTG.Diagnostics.Error ("unsupported ""dt:cpu""");
+         RTG.Diagnostics.Error ("unsupported ""dt:&cpu0:compatible""");
       end if;
    end Process;
 
