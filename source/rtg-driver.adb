@@ -141,7 +141,7 @@ begin
       GNAT_Tasking => RTG.Tasking.Use_GNAT_Tasking (Scenarios));
 
    if RTG.Tasking.Use_GNAT_Tasking (Scenarios) then
-      RTG.System_BB_MCU_Parameters.Generate (Runtime);  --  tasking only
+      RTG.System_BB_MCU_Parameters.Generate (Runtime, Interrupts);
       RTG.System_BB_Parameters.Generate (Runtime, System_BB_MCU_Parameters);
    end if;
 

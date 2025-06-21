@@ -78,7 +78,7 @@ package body RTG.System_BB_Parameters is
       PL ("   subtype Cortex_Priority_Bits_Width is Integer range 1 .. 8;");
       PL
         (NVIC_Priority_Bits_Template.Format
-           (Image (Descriptor.ARM_Num_IRQ_Priority_Bits));
+           (Image (Descriptor.ARM_Num_IRQ_Priority_Bits)));
       NL;
       PL ("   subtype Interrupt_Range is Integer");
       PL ("     range -1 .. MCU_Parameters.Number_Of_Interrupts;");
