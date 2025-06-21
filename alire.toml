@@ -1,16 +1,16 @@
-name = "a0b_runtime_generator"
-description = "Custom Runtime Generator"
-website = "https://github.com/godunko/a0b-runtime_generator"
+name = "a0b_tools"
+description = "A0B Tools: Runtime Generator"
+website = "https://github.com/godunko/a0b-tools"
 version = "0.1.0-dev"
 
 authors = ["Vadim Godunko"]
 maintainers = ["Vadim Godunko <vgodunko@gmail.com>"]
 maintainers-logins = ["godunko"]
-licenses = "Apache-2.0 WITH LLVM-exception"
+licenses = "GPL-3.0-or-later"
 
-project-files=["gnat/rtg.gpr"]
+project-files=["gnat/a0b_tools.gpr"]
 
-tags = ["a0b", "embedded"]
+tags = ["a0b", "tools", "runtime"]
 
 [configuration]
 generate_ada = false
