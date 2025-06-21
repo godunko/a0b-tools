@@ -61,3 +61,15 @@ Supported parameters are:
 
 * `--bb-runtimes` path to `bb-runtimes` repository
 * `--svd` path to SVD file of the MCU
+
+## Use of generated runtime
+
+To use generated runtime it is enough to set `Runtime ("Ada")` attribute to path to generated runtime.
+
+```ada
+project My_BB_Application is
+   ...
+   for Runtime ("Ada") use "runtime";
+   ...
+end My_BB_Application;
+```
