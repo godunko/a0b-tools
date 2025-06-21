@@ -79,6 +79,9 @@ procedure RTG.Driver is
    --  It is set of parameters for ARM Cortex-M `light` runtime
    Scenarios  : RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
    Interrupts : RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
+   System_BB_MCU_Parameters :
+     RTG.System_BB_Parameters.System_BB_Parameters_Descriptor;
+
    Startup    : RTG.Startup.Startup_Descriptor;
 
 begin
@@ -125,7 +128,7 @@ begin
    RTG.Runtime_Reader.Read (GNATCOLL.VFS.Create ("runtime.json"), Scenarios);
    RTG.SVD_Reader.Read (SVD_File, Interrupts);
 
-   RTG.Architecture.Process (Scenarios, Parameters);
+   RTG.Architecture.Process (Scenarios, Parameters, System_BB_MCU_Parameters);
    RTG.Tasking.Process (Scenarios, Parameters);
 
    RTG.Runtime.Create (Runtime, RTG.Tasking.Use_GNAT_Tasking (Scenarios));
@@ -139,7 +142,7 @@ begin
 
    if RTG.Tasking.Use_GNAT_Tasking (Scenarios) then
       RTG.System_BB_MCU_Parameters.Generate (Runtime);  --  tasking only
-      RTG.System_BB_Parameters.Generate (Runtime);      --  tasking only
+      RTG.System_BB_Parameters.Generate (Runtime, System_BB_MCU_Parameters);
    end if;
 
    RTG.GNAT_RTS_Sources.Copy

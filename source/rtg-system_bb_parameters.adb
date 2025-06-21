@@ -5,15 +5,23 @@
 --
 
 with VSS.Strings.Conversions;
+with VSS.Strings.Formatters.Strings;
+with VSS.Strings.Templates;
 with VSS.Text_Streams.File_Output;
 
 package body RTG.System_BB_Parameters is
+
+   use VSS.Strings.Formatters.Strings;
+   use VSS.Strings.Templates;
 
    --------------
    -- Generate --
    --------------
 
-   procedure Generate (Runtime : RTG.Runtime.Runtime_Descriptor'Class) is
+   procedure Generate
+     (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
+      Descriptor : System_BB_Parameters_Descriptor)
+   is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
 
@@ -39,11 +47,14 @@ package body RTG.System_BB_Parameters is
          Output.Put_Line (Line, Success);
       end PL;
 
+      Clock_Frequency_Template : Virtual_String_Template :=
+        "   Clock_Frequency : constant := {};";
+
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Runtime.Tasking_Source_Directory.Create_From_Dir
-                ("s-bbpara.ads").Display_Full_Name));
+           (Runtime.Tasking_Source_Directory.Create_From_Dir ("s-bbpara.ads")
+              .Display_Full_Name));
 
       --  XXX It might be ARM Cortex-M specific info
 
@@ -53,7 +64,8 @@ package body RTG.System_BB_Parameters is
       PL ("  with Preelaborate, No_Elaboration_Code_All");
       PL ("is");
       NL;
-      PL ("   Clock_Frequency : constant := 84_000_000;");
+      PL
+        (Clock_Frequency_Template.Format (Image (Descriptor.Clock_Frequency)));
       PL ("   Ticks_Per_Second : constant := Clock_Frequency;");
       NL;
       PL ("   Has_FPU : constant Boolean := True;");

@@ -16,8 +16,10 @@ package body RTG.Architecture is
    -------------
 
    procedure Process
-     (Scenarios         : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
-      System_Parameters : in out RTG.System.System_Descriptor)
+     (Scenarios            : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
+      System_Parameters    : in out RTG.System.System_Descriptor;
+      System_BB_Parameters : in out
+        RTG.System_BB_Parameters.System_BB_Parameters_Descriptor)
    is
       use type VSS.Strings.Virtual_String;
       use all type RTG.System.GCC14.System_Implementation_Parameter;
@@ -77,6 +79,15 @@ package body RTG.Architecture is
 
       else
          RTG.Diagnostics.Error ("unsupported ""dt:&cpu0:compatible""");
+      end if;
+
+      if not Scenarios.Contains ("dt:&cpu0:clock-frequency") then
+         RTG.Diagnostics.Error
+           ("""dt:&cpu0:clock-frequency"" is not specified");
+
+      else
+         System_BB_Parameters.Clock_Frequency :=
+           Scenarios ("dt:&cpu0:clock-frequency");
       end if;
    end Process;
 
