@@ -11,7 +11,8 @@ with RTG.Runtime;
 package RTG.System_BB_Parameters is
 
    type System_BB_Parameters_Descriptor is record
-      Clock_Frequency : VSS.Strings.Virtual_String;
+      Clock_Frequency           : VSS.Strings.Virtual_String;
+      ARM_Num_IRQ_Priority_Bits : VSS.Strings.Virtual_String;
    end record;
 
    procedure Generate

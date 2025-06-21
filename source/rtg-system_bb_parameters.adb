@@ -47,8 +47,10 @@ package body RTG.System_BB_Parameters is
          Output.Put_Line (Line, Success);
       end PL;
 
-      Clock_Frequency_Template : Virtual_String_Template :=
+      Clock_Frequency_Template    : Virtual_String_Template :=
         "   Clock_Frequency : constant := {};";
+      NVIC_Priority_Bits_Template : Virtual_String_Template :=
+        "   NVIC_Priority_Bits : constant Cortex_Priority_Bits_Width := {};";
 
    begin
       Output.Create
@@ -74,7 +76,9 @@ package body RTG.System_BB_Parameters is
       PL ("   Is_ARMv6m : constant Boolean := False;");
       NL;
       PL ("   subtype Cortex_Priority_Bits_Width is Integer range 1 .. 8;");
-      PL ("   NVIC_Priority_Bits : constant Cortex_Priority_Bits_Width := 4;");
+      PL
+        (NVIC_Priority_Bits_Template.Format
+           (Image (Descriptor.ARM_Num_IRQ_Priority_Bits));
       NL;
       PL ("   subtype Interrupt_Range is Integer");
       PL ("     range -1 .. MCU_Parameters.Number_Of_Interrupts;");

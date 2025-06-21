@@ -89,6 +89,15 @@ package body RTG.Architecture is
          System_BB_Parameters.Clock_Frequency :=
            Scenarios ("dt:&cpu0:clock-frequency");
       end if;
+
+      if not Scenarios.Contains ("dt:&nvic:arm,num-irq-priority-bits") then
+         RTG.Diagnostics.Error
+           ("""dt:&nvic:arm,num-irq-priority-bits"" is not specified");
+
+      else
+         System_BB_Parameters.ARM_Num_IRQ_Priority_Bits :=
+           Scenarios ("dt:&nvic:arm,num-irq-priority-bits");
+      end if;
    end Process;
 
 end RTG.Architecture;
