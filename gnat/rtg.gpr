@@ -16,7 +16,7 @@ project RTG is
    for Main use ("rtg-driver.adb");
 
    package Builder is
-      for Executable ("rtg-driver.adb") use "rtg";
+      for Executable ("rtg-driver.adb") use "a0b-runtime";
    end Builder;
 
    package Compiler is
