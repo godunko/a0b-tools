@@ -51,6 +51,8 @@ package body RTG.System_BB_MCU_Vectors is
       Static       : Boolean;
       GNAT_Tasking : Boolean)
    is
+      use VSS.Strings.Templates;
+
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
 
@@ -104,7 +106,6 @@ package body RTG.System_BB_MCU_Vectors is
            VSS.Strings.Empty_Virtual_String)
       is
          use VSS.Strings.Formatters.Strings;
-         use VSS.Strings.Templates;
 
          Handler_Template         : constant Virtual_String_Template :=
            "   procedure {}_Handler{}";
@@ -157,21 +158,16 @@ package body RTG.System_BB_MCU_Vectors is
          end if;
       end Generate_Handler_Specification;
 
-      Vectors0_Template      : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "   Vectors0 : constant array (Integer range -16 .. {}) of System.Address :=";
-      Vector0_Template       : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "     {3} => {}_Handler'Address{}";
-      Vectors_Template       : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "   Vectors : constant array (Integer range -16 .. {}) of System.Address :=";
-      Vector_Template        : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "     {3} => IRQ_Handler'Address{}";
-      Unspecified_Template   : constant
-        VSS.Strings.Templates.Virtual_String_Template :=
-          "     {3} => System.Null_Address,";
+      Vectors0_Template      : constant Virtual_String_Template :=
+        "   Vectors0 : constant array (Integer range -16 .. {}) of System.Address :=";
+      Vector0_Template       : constant Virtual_String_Template :=
+        "     {3} => {}_Handler'Address{}";
+      Vectors_Template       : constant Virtual_String_Template :=
+        "   Vectors : constant array (Integer range -16 .. {}) of System.Address :=";
+      Vector_Template        : constant Virtual_String_Template :=
+        "     {3} => IRQ_Handler'Address{}";
+      Unspecified_Template   : constant Virtual_String_Template :=
+        "     {3} => System.Null_Address,";
 
       Position               : Interrupt_Information_Vectors.Cursor;
 
