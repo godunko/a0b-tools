@@ -6,8 +6,9 @@ Startup code and linker script should be provided by the application for now.
 
 ## Ideas
 
-* Separate GNAT runtime from startup code and hardware configuration.
-* Support different tasking profiles, including GNAT's and custom RTOSes.
+* Separate GNAT runtime from startup code and hardware configuration
+* Fine tuning of GNAT runtime (set of packages, stack size, etc.) with single configuration file
+* Support different tasking profiles, including GNAT's and custom RTOSes
 
 ## Runtime descriptor file
 
