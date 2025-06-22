@@ -2,7 +2,7 @@
 
 This crate provides utility to construct custom GNAT runtime for bare board applications. 
 It supports construction of three well known runtime profiles: `light`, `light-tasking` and `embedded` with necessary customization for particular project.
-Startup code and linker script should be provided by the application for now.
+Optionally, it generates simple startup code and linker script.
 
 ## Ideas
 
