@@ -97,6 +97,10 @@ package body RTG.Startup is
       PL ("   for Library_Dir use ""lib"";");
       PL ("   for Object_Dir use "".objs"";");
       NL;
+      PL ("   package Compiler is");
+      PL ("      for Switches (""Ada"") use (""-g"", ""-O2"");");
+      PL ("   end Compiler;");
+      NL;
       PL ("end LibStartup;");
 
       Output.Close;
