@@ -1,8 +1,13 @@
 # A0B Tools: Runtime Generator
 
 This crate provides utility to construct custom GNAT runtime for bare board applications. 
-It supports construction of three well known runtime profiles: `light`, `light-tasking` and `embedded`.
+It supports construction of three well known runtime profiles: `light`, `light-tasking` and `embedded` with necessary customization for particular project.
 Startup code and linker script should be provided by the application for now.
+
+## Ideas
+
+* Separate GNAT runtime from startup code and hardware configuration.
+* Support different tasking profiles, including GNAT's and custom RTOSes.
 
 ## Runtime descriptor file
 
