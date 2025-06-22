@@ -10,6 +10,37 @@ Optionally, it generates simple startup code and linker script.
 * Fine tuning of GNAT runtime (set of packages, stack size, etc.) by single configuration file
 * Support different tasking profiles, including GNAT's and custom RTOSes
 
+## Run runtime generator
+
+`a0b-runtime --bb-runtimes=<path> --svd=<path>`
+
+* `--bb-runtimes` path to `bb-runtimes` repository
+* `--svd` path to SVD file of the MCU
+
+## Use of generated runtime
+
+To use generated runtime it is enough to set `Runtime ("Ada")` attribute to path to generated runtime.
+
+```ada
+project My_BB_Application is
+   ...
+   for Runtime ("Ada") use "runtime";
+   ...
+end My_BB_Application;
+```
+
+## Use of generated runtime and startup code/linker script
+
+```ada
+project Test extends "startup/startup.gpr" is
+   ...
+   for Target use "arm-eabi";
+   for Runtime ("Ada") use "runtime";
+   ...
+end Test;
+
+```
+
 ## Runtime descriptor file
 
 Typical content of the `runtime.json`
@@ -61,33 +92,3 @@ Supported parameters are:
 * `dt:&nvic:arm,num-irq-priority-bits` number of bits of priority supported by MCU's NVIC
 * `scenarios`: scenario variables to be used to construct GNAT runtime
 
-## Run runtime generator
-
-`a0b-runtime --bb-runtimes=<path> --svd=<path>`
-
-* `--bb-runtimes` path to `bb-runtimes` repository
-* `--svd` path to SVD file of the MCU
-
-## Use of generated runtime
-
-To use generated runtime it is enough to set `Runtime ("Ada")` attribute to path to generated runtime.
-
-```ada
-project My_BB_Application is
-   ...
-   for Runtime ("Ada") use "runtime";
-   ...
-end My_BB_Application;
-```
-
-## Use of generated runtime and startup code/linker script
-
-```ada
-project Test extends "startup/startup.gpr" is
-   ...
-   for Target use "arm-eabi";
-   for Runtime ("Ada") use "runtime";
-   ...
-end Test;
-
-```
