@@ -79,3 +79,15 @@ project My_BB_Application is
    ...
 end My_BB_Application;
 ```
+
+## Use of generated runtime and startup code/linker script
+
+```ada
+project Test extends "startup/startup.gpr" is
+   ...
+   for Target use "arm-eabi";
+   for Runtime ("Ada") use "runtime";
+   ...
+end Test;
+
+```
