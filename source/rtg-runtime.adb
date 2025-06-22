@@ -334,7 +334,8 @@ package body RTG.Runtime is
       NL;
       PL ("   package Linker is");
       PL ("      for Required_Switches use Linker'Required_Switches &");
-      PL ("        (""-nostartfiles"", ""-nolibc"");");
+      PL ("        (""-nostartfiles"", ""-nolibc"")");
+      PL ("           & Compiler.Common_Required_Switches;");
       PL ("   end Linker;");
       PL ("      ]]>");
       PL ("    </config>");
