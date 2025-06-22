@@ -95,6 +95,7 @@ package body RTG.Startup is
       NL;
       PL ("   for Library_Name use ""gnatstartup"";");
       PL ("   for Library_Dir use ""lib"";");
+      PL ("   for Object_Dir use "".objs"";");
       NL;
       PL ("end LibStartup;");
 
