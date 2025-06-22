@@ -90,6 +90,7 @@ package body RTG.Startup is
            (Descriptor.Startup_Directory.Create_From_Dir ("libstartup.gpr")
               .Display_Full_Name));
 
+      PL ("with ""a0b_armv7m.gpr"";");
       NL;
       PL ("library project LibStartup is");
       NL;
@@ -261,17 +262,23 @@ package body RTG.Startup is
            (Descriptor.Startup_Directory.Create_From_Dir ("system_startup.adb")
               .Display_Full_Name));
 
+      PL ("with A0B.ARMv7M.Startup_Utilities.Copy_Data_Section;");
+      PL ("with A0B.ARMv7M.Startup_Utilities.Enable_FPU;");
+      PL ("with A0B.ARMv7M.Startup_Utilities.Fill_BSS_Section;");
       NL;
       PL ("package body System_Startup is");
       NL;
       PL ("   procedure Reset_Handler");
-      PL ("     with Export, Convention => C, External_Name => ""Reset_Handler"";");
+      PL ("     with Export, Convention => C, External_Name => ""Reset_Handler"", No_Return;");
       NL;
       PL ("   procedure Main");
-      PL ("     with Import, Convention => C, External_Name => ""main"";");
+      PL ("     with Import, Convention => C, External_Name => ""main"", No_Return;");
       NL;
       PL ("   procedure Reset_Handler is");
       PL ("   begin");
+      PL ("      A0B.ARMv7M.Startup_Utilities.Enable_FPU;");
+      PL ("      A0B.ARMv7M.Startup_Utilities.Copy_Data_Section;");
+      PL ("      A0B.ARMv7M.Startup_Utilities.Fill_BSS_Section;");
       PL ("      Main;");
       PL ("   end Reset_Handler;");
       NL;
@@ -319,7 +326,9 @@ package body RTG.Startup is
               .Display_Full_Name));
 
       NL;
-      PL ("package System_Startup with Pure, Elaborate_Body, No_Elaboration_Code_All is");
+      PL ("package System_Startup");
+      PL ("  with Preelaborate, Elaborate_Body, No_Elaboration_Code_All");
+      PL (" is");
       NL;
       PL ("end System_Startup;");
 
