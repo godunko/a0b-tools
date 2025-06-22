@@ -4,7 +4,7 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
-pragma Style_Checks ("M90");
+pragma Style_Checks ("M100");
 
 with VSS.Strings.Conversions;
 with VSS.Strings.Formatters.Integers;
