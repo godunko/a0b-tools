@@ -12,6 +12,8 @@ with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
 with VSS.Text_Streams.File_Output;
 
+with A0B.Types.GCC_Builtins;
+
 package body RTG.System_BB_MCU_Vectors is
 
    procedure Generate_Specification
@@ -23,6 +25,10 @@ package body RTG.System_BB_MCU_Vectors is
       Startup      : Boolean;
       Static       : Boolean;
       GNAT_Tasking : Boolean);
+
+   function Vector_Table_Alignment
+     (Interrupts : Interrupt_Information_Vectors.Vector) return Positive;
+   --  Compute alignment of the interrupt vector table for ARM Cortex-M CPU
 
    --------------
    -- Generate --
@@ -168,6 +174,8 @@ package body RTG.System_BB_MCU_Vectors is
         "     {3} => IRQ_Handler'Address{}";
       Unspecified_Template   : constant Virtual_String_Template :=
         "     {3} => System.Null_Address,";
+      Alignment_Template     : constant Virtual_String_Template :=
+        "          Alignment      => {};";
 
       Position               : Interrupt_Information_Vectors.Cursor;
 
@@ -359,6 +367,8 @@ package body RTG.System_BB_MCU_Vectors is
          PL ("          Convention     => C,");
          PL ("          Linker_Section => "".vectors"",");
          PL ("          External_Name  => ""__vectors0"";");
+         --  Alignment of the initial interrupt vector table is enforced by the
+         --  linker script.
       end if;
 
       if GNAT_Tasking then
@@ -422,8 +432,11 @@ package body RTG.System_BB_MCU_Vectors is
          PL ("     with Export,");
          PL ("          Convention     => C,");
          PL ("          Linker_Section => "".text"",");
-         PL ("          External_Name  => ""__vectors"";");
-
+         PL ("          External_Name  => ""__vectors"",");
+         PL
+           (Alignment_Template.Format
+              (VSS.Strings.Formatters.Integers.Image
+                 (Vector_Table_Alignment (Interrupts))));
       end if;
 
       NL;
@@ -505,5 +518,23 @@ package body RTG.System_BB_MCU_Vectors is
 
       Output.Close;
    end Generate_Specification;
+
+   ----------------------------
+   -- Vector_Table_Alignment --
+   ----------------------------
+
+   function Vector_Table_Alignment
+     (Interrupts : Interrupt_Information_Vectors.Vector) return Positive
+   is
+      Minimum_Power_Of_Two : constant Positive :=
+        32 -
+          Positive
+            (A0B.Types.GCC_Builtins.clz
+               (A0B.Types.Unsigned_32
+                  (Interrupts.Last_Element.Value + 16)));
+
+   begin
+      return 2 ** (Minimum_Power_Of_Two + 2);
+   end Vector_Table_Alignment;
 
 end RTG.System_BB_MCU_Vectors;
