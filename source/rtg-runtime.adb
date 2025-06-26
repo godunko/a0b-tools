@@ -401,9 +401,29 @@ package body RTG.Runtime is
       PL ("   end Compiler;");
       NL;
       PL ("   package Linker is");
-      PL ("      for Required_Switches use Linker'Required_Switches &");
-      PL ("        (""-nostartfiles"", ""-nolibc"")");
-      PL ("           & Compiler.Common_Required_Switches;");
+      PL ("      for Required_Switches use");
+      PL ("         Linker'Required_Switches");
+      for J in Descriptor.Linker_Required_Switches.First_Index
+                 .. Descriptor.Linker_Required_Switches.Last_Index
+      loop
+         if J = Descriptor.Linker_Required_Switches.First_Index then
+            P ("         & (");
+
+         else
+            PL (",");
+            P ("            ");
+         end if;
+
+         P
+           (Switch_Templates.Format
+              (Image (Descriptor.Linker_Required_Switches (J))));
+
+         if J = Descriptor.Linker_Required_Switches.Last_Index then
+            PL (")");
+         end if;
+      end loop;
+
+      PL ("         & Compiler.Common_Required_Switches;");
       PL ("   end Linker;");
       PL ("      ]]>");
       PL ("    </config>");

@@ -113,20 +113,22 @@ package body RTG.Runtime_Reader is
                when Key_Name =>
                   Key := Reader.Key_Name;
 
-                  if Key not in "common_required_switches" then
+                  if Key /= "common_required_switches"
+                    and Key /= "linker_required_switches"
+                  then
                      RTG.Diagnostics.Warning
                        ("`{}` is unknown runtime configuration parameter",
                         Key);
                   end if;
 
-               --  when String_Value =>
-               --     Scenarios.Insert (Key, Reader.String_Value);
-               --
                when Start_Array =>
                   Read_Values;
 
                   if Key = "common_required_switches" then
                      Runtime.Common_Required_Switches := Values;
+
+                  elsif Key = "linker_required_switches" then
+                     Runtime.Linker_Required_Switches := Values;
 
                   else
                      RTG.Diagnostics.Warning

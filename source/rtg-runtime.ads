@@ -15,6 +15,7 @@ package RTG.Runtime is
       GNAT_RTS_Sources_Directory : GNATCOLL.VFS.Virtual_File;
 
       Common_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
+      Linker_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
    end record;
 
    procedure Initialize
