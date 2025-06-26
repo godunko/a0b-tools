@@ -6,16 +6,20 @@
 
 with GNATCOLL.VFS;
 
+with VSS.String_Vectors;
+
 package RTG.Runtime is
 
-   type Runtime_Descriptor is tagged limited private;
+   type Runtime_Descriptor is tagged limited record
+      Runtime_Directory          : GNATCOLL.VFS.Virtual_File;
+      GNAT_RTS_Sources_Directory : GNATCOLL.VFS.Virtual_File;
+
+      Common_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
+   end record;
 
    procedure Initialize
      (Self        : in out Runtime_Descriptor;
       BB_Runtimes : GNATCOLL.VFS.Virtual_File);
-
-   --  function Root_Directory
-   --    (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
 
    function Runtime_Source_Directory
      (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
@@ -26,12 +30,5 @@ package RTG.Runtime is
    procedure Create
      (Descriptor : Runtime_Descriptor;
       Tasking    : Boolean);
-
-private
-
-   type Runtime_Descriptor is tagged limited record
-      Runtime_Directory          : GNATCOLL.VFS.Virtual_File;
-      GNAT_RTS_Sources_Directory : GNATCOLL.VFS.Virtual_File;
-   end record;
 
 end RTG.Runtime;

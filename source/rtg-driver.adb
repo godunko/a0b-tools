@@ -125,7 +125,8 @@ begin
    RTG.Runtime.Initialize (Runtime, BB_Runtimes_Directory);
    RTG.Startup.Initialize (Startup);
 
-   RTG.Runtime_Reader.Read (GNATCOLL.VFS.Create ("runtime.json"), Scenarios);
+   RTG.Runtime_Reader.Read
+     (GNATCOLL.VFS.Create ("runtime.json"), Runtime, Scenarios);
    RTG.SVD_Reader.Read (SVD_File, Interrupts);
 
    RTG.Architecture.Process (Scenarios, Parameters, System_BB_MCU_Parameters);

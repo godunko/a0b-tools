@@ -5,6 +5,8 @@
 --
 
 with VSS.Strings.Conversions;
+with VSS.Strings.Formatters.Strings;
+with VSS.Strings.Templates;
 with VSS.Text_Streams.File_Output;
 
 package body RTG.Runtime is
@@ -288,10 +290,15 @@ package body RTG.Runtime is
    --------------------------
 
    procedure Generate_Runtime_XML (Descriptor : Runtime_Descriptor) is
+      use VSS.Strings.Formatters.Strings;
+      use VSS.Strings.Templates;
+
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
 
       procedure PL (Line : VSS.Strings.Virtual_String);
+
+      procedure P (Text : VSS.Strings.Virtual_String);
 
       procedure NL;
 
@@ -304,6 +311,15 @@ package body RTG.Runtime is
          Output.New_Line (Success);
       end NL;
 
+      -------
+      -- P --
+      -------
+
+      procedure P (Text : VSS.Strings.Virtual_String) is
+      begin
+         Output.Put (Text, Success);
+      end P;
+
       --------
       -- PL --
       --------
@@ -312,6 +328,9 @@ package body RTG.Runtime is
       begin
          Output.Put_Line (Line, Success);
       end PL;
+
+      Switch_Templates : constant Virtual_String_Template :=
+        """{}""";
 
    begin
       Output.Create
@@ -325,8 +344,27 @@ package body RTG.Runtime is
       PL ("  <configuration>");
       PL ("    <config><![CDATA[");
       PL ("   package Compiler is");
-      --  PL ("      Common_Required_Switches := (""-mfloat-abi=hard"", ""-mcpu=cortex-m4"", ""-mfpu=fpv4-sp-d16"");");
-      PL ("      Common_Required_Switches := (""-mfloat-abi=hard"", ""-mcpu=cortex-m4"");");
+
+      PL ("      Common_Required_Switches :=");
+
+      for J in Descriptor.Common_Required_Switches.First_Index
+                 .. Descriptor.Common_Required_Switches.Last_Index
+      loop
+         if J = Descriptor.Common_Required_Switches.First_Index then
+            P ("        (");
+
+         else
+            PL (",");
+            P ("         ");
+         end if;
+
+         P
+           (Switch_Templates.Format
+              (Image (Descriptor.Common_Required_Switches (J))));
+      end loop;
+
+      PL (");");
+
       PL ("      for Leading_Required_Switches (""Ada"") use");
       PL ("        Compiler'Leading_Required_Switches (""Ada"")");
       PL ("        & Common_Required_Switches;");
