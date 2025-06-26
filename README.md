@@ -52,6 +52,11 @@ Typical content of the `runtime.json`
   "dt:&cpu0:clock-frequency": "150_000_000",
   "dt:&nvic:arm,num-irq-priority-bits": "4",
 
+  "runtime":
+  {
+    "common_required_switches": ["-mfloat-abi=hard", "-mcpu=cortex-m4"]
+  }
+
   "scenarios":
   {
     "Target_Word_Size": "32",
@@ -85,10 +90,16 @@ Typical content of the `runtime.json`
 }
 ```
 
-Supported parameters are:
+### General Parameter
+
 * `tasking`: tasking profile for runtime library, possible values are `no`, `light`, `embedded`
 * `dt:&cpu0:compatible`: CPU architecture, only supported value is `arm,cortex-m4f`
 * `dt:&cpu0:clock-frequency`: CPU frequency
 * `dt:&nvic:arm,num-irq-priority-bits` number of bits of priority supported by MCU's NVIC
+* `runtime`: configuration parameters of runtime
 * `scenarios`: scenario variables to be used to construct GNAT runtime
 
+#### Runtime Configuration Parameters
+
+* `common_required_switches`: list of required switches for compiler and linker to build runtime and application.
+  Architecture specific switches should be listed here.
