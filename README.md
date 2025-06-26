@@ -54,7 +54,8 @@ Typical content of the `runtime.json`
 
   "runtime":
   {
-    "common_required_switches": ["-mfloat-abi=hard", "-mcpu=cortex-m4"]
+    "common_required_switches": ["-mfloat-abi=hard", "-mcpu=cortex-m4"],
+    "linker_required_switches": ["-nostartfiles", "-nolibc"]
   }
 
   "scenarios":
@@ -103,3 +104,5 @@ Typical content of the `runtime.json`
 
 * `common_required_switches`: list of required switches for compiler and linker to build runtime and application.
   Architecture specific switches should be listed here.
+* `linker_required_switches`: list of required switches to be used by linker.
+  Usually switches to ignore default startup files and standard C library.
