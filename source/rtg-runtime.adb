@@ -260,6 +260,8 @@ package body RTG.Runtime is
       Output.Put_Line ("         ""-O2"",", Success);
       Output.Put_Line ("         ""-fno-delete-null-pointer-checks"",", Success);
       Output.Put_Line ("         ""-gnatg"",", Success);
+      Output.Put_Line ("         ""-gnatp"",", Success);
+      Output.Put_Line ("         ""-gnatn2"",", Success);
       Output.Put_Line ("         ""-nostdinc"",", Success);
       Output.Put_Line ("         ""-ffunction-sections"",", Success);
       Output.Put_Line ("         ""-fdata-sections"");", Success);
@@ -301,6 +303,8 @@ package body RTG.Runtime is
       Output.Put_Line ("         ""-O2"",", Success);
       Output.Put_Line ("         ""-fno-delete-null-pointer-checks"",", Success);
       Output.Put_Line ("         ""-gnatg"",", Success);
+      Output.Put_Line ("         ""-gnatp"",", Success);
+      Output.Put_Line ("         ""-gnatn2"",", Success);
       Output.Put_Line ("         ""-nostdinc"",", Success);
       Output.Put_Line ("         ""-ffunction-sections"",", Success);
       Output.Put_Line ("         ""-fdata-sections"");", Success);
