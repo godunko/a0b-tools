@@ -4,6 +4,8 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
+pragma Style_Checks ("M90");
+
 with VSS.Strings.Conversions;
 with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
@@ -251,6 +253,18 @@ package body RTG.Runtime is
       Output.Put_Line ("   for Source_Dirs use (""gnat"");", Success);
       Output.Put_Line ("   for Object_Dir use ""obj/gnat"";", Success);
       Output.Put_Line ("   for Library_Dir use ""lib"";", Success);
+      Output.New_Line (Success);
+      Output.Put_Line ("   package Compiler is", Success);
+      Output.Put_Line ("      for Switches (""Ada"") use", Success);
+      Output.Put_Line ("        (""-g"",", Success);
+      Output.Put_Line ("         ""-O2"",", Success);
+      Output.Put_Line ("         ""-fno-delete-null-pointer-checks"",", Success);
+      Output.Put_Line ("         ""-gnatg"",", Success);
+      Output.Put_Line ("         ""-nostdinc"",", Success);
+      Output.Put_Line ("         ""-ffunction-sections"",", Success);
+      Output.Put_Line ("         ""-fdata-sections"");", Success);
+      Output.Put_Line ("   end Compiler;", Success);
+      Output.New_Line (Success);
       Output.Put_Line ("end Build_Runtime;", Success);
 
       Output.Close;
@@ -280,6 +294,18 @@ package body RTG.Runtime is
       Output.Put_Line ("   for Source_Dirs use (""gnarl"");", Success);
       Output.Put_Line ("   for Object_Dir use ""obj/gnarl"";", Success);
       Output.Put_Line ("   for Library_Dir use ""lib"";", Success);
+      Output.New_Line (Success);
+      Output.Put_Line ("   package Compiler is", Success);
+      Output.Put_Line ("      for Switches (""Ada"") use", Success);
+      Output.Put_Line ("        (""-g"",", Success);
+      Output.Put_Line ("         ""-O2"",", Success);
+      Output.Put_Line ("         ""-fno-delete-null-pointer-checks"",", Success);
+      Output.Put_Line ("         ""-gnatg"",", Success);
+      Output.Put_Line ("         ""-nostdinc"",", Success);
+      Output.Put_Line ("         ""-ffunction-sections"",", Success);
+      Output.Put_Line ("         ""-fdata-sections"");", Success);
+      Output.Put_Line ("   end Compiler;", Success);
+      Output.New_Line (Success);
       Output.Put_Line ("end Build_Tasking;", Success);
 
       Output.Close;
