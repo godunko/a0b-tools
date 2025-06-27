@@ -60,62 +60,20 @@ package body RTG.Runtime is
    --------------------------
 
    procedure Copy_Tasking_Sources (Descriptor : Runtime_Descriptor) is
-      Success : Boolean;
+      use type VSS.Strings.Virtual_String;
 
    begin
-      --------------------
-      --  Custom files  --
-      --------------------
+      for File of Descriptor.Tasking_Files loop
+         if File.Crate /= "bb_runtimes" then
+            RTG.Diagnostics.Error ("only ""bb_runtimes"" crate is supported");
+         end if;
 
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../src/s-bbcppr__old.ads"),
-         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbcppr.ads")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../src/s-bbcppr__armv7m.adb"),
-         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbcppr.adb")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../src/s-bbbosu__armv7m.adb"),
-         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbbosu.adb")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../src/s-bbcpsp__arm.ads"),
-         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbcpsp.ads")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../src/s-bcpcst__pendsv.adb"),
-         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bcpcst.adb")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../src/s-bcpcst__armvXm.ads"),
-         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bcpcst.ads")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../src/s-bbsumu__generic.adb"),
-         Descriptor.Tasking_Source_Directory.Create_From_Dir ("s-bbsumu.adb")
-           .Full_Name.all,
-         Success);
-
-      --  GNATCOLL.VFS.Copy
-      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-      --       ("/include/rts-sources/"),
-      --     Descriptor.Tasking_Source_Directory.Create_From_Dir ("")
-      --       .Full_Name.all,
-      --     Success);
+         RTG.Utilities.Copy_File
+           (Descriptor.GNAT_RTS_Sources_Directory.Dir,
+            File.Path,
+            Descriptor.Tasking_Source_Directory,
+            File.File);
+      end loop;
    end Copy_Tasking_Sources;
 
    ------------

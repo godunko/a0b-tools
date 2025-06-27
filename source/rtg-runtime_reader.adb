@@ -39,9 +39,14 @@ package body RTG.Runtime_Reader is
         with Pre  => Reader.Element_Kind = Start_Object,
              Post => Reader.Element_Kind = End_Object;
 
-      procedure Read_Files_Section
+      procedure Read_Tasking
         with Pre  => Reader.Element_Kind = Start_Object,
              Post => Reader.Element_Kind = End_Object;
+
+      procedure Read_Files_Section
+        (Files : in out RTG.Runtime.File_Descriptor_Vectors.Vector)
+           with Pre  => Reader.Element_Kind = Start_Object,
+                Post => Reader.Element_Kind = End_Object;
 
       ------------------------
       -- Read_Configuration --
@@ -64,6 +69,9 @@ package body RTG.Runtime_Reader is
                   if Key = "runtime" then
                      Read_Runtime;
 
+                  elsif Key = "tasking" then
+                     Read_Tasking;
+
                   else
                      Depth := @ + 1;
                   end if;
@@ -83,7 +91,9 @@ package body RTG.Runtime_Reader is
       -- Read_Files_Section --
       ------------------------
 
-      procedure Read_Files_Section is
+      procedure Read_Files_Section
+        (Files : in out RTG.Runtime.File_Descriptor_Vectors.Vector)
+      is
          Information : RTG.Runtime.File_Descriptor;
 
          procedure Read_File_Information
@@ -146,7 +156,7 @@ package body RTG.Runtime_Reader is
 
                when Start_Object =>
                   Read_File_Information;
-                  Runtime.Runtime_Files.Append (Information);
+                  Files.Append (Information);
 
                when End_Object =>
                   exit;
@@ -223,7 +233,7 @@ package body RTG.Runtime_Reader is
 
                when Start_Object =>
                   if Key = "files" then
-                     Read_Files_Section;
+                     Read_Files_Section (Runtime.Runtime_Files);
 
                   else
                      RTG.Diagnostics.Warning
@@ -240,6 +250,45 @@ package body RTG.Runtime_Reader is
             end case;
          end loop;
       end Read_Runtime;
+
+      ------------------
+      -- Read_Tasking --
+      ------------------
+
+      procedure Read_Tasking is
+         Key : VSS.Strings.Virtual_String;
+
+      begin
+         loop
+            case Reader.Read_Next is
+               when Key_Name =>
+                  Key := Reader.Key_Name;
+
+                  if Key /= "files" then
+                     RTG.Diagnostics.Warning
+                       ("`{}` is unknown tasking configuration parameter",
+                        Key);
+                  end if;
+
+               when Start_Object =>
+                  if Key = "files" then
+                     Read_Files_Section (Runtime.Tasking_Files);
+
+                  else
+                     RTG.Diagnostics.Warning
+                       ("`{}` tasking configuration parameter is not object",
+                        Key);
+                     Reader.Skip_Current_Object;
+                  end if;
+
+               when End_Object =>
+                  exit;
+
+               when others =>
+                  raise Program_Error with Reader.Element_Kind'Img;
+            end case;
+         end loop;
+      end Read_Tasking;
 
    begin
       Input.Open
