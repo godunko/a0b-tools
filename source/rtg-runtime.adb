@@ -24,9 +24,7 @@ package body RTG.Runtime is
      (Descriptor : Runtime_Descriptor;
       Tasking    : Boolean);
 
-   procedure Generate_Ada_Object_Path
-     (Descriptor : Runtime_Descriptor;
-      Tasking    : Boolean);
+   procedure Generate_Ada_Object_Path (Descriptor : Runtime_Descriptor);
 
    procedure Generate_Runtime_XML (Descriptor : Runtime_Descriptor);
 
@@ -88,7 +86,7 @@ package body RTG.Runtime is
       Descriptor.Runtime_Source_Directory.Make_Dir;
 
       Generate_Ada_Source_Path (Descriptor, Tasking);
-      Generate_Ada_Object_Path (Descriptor, Tasking);
+      Generate_Ada_Object_Path (Descriptor);
       Generate_Build_Runtime_Project (Descriptor);
       Generate_Runtime_XML (Descriptor);
       Copy_Runtime_Sources (Descriptor);
@@ -130,10 +128,7 @@ package body RTG.Runtime is
    -- Generate_Ada_Object_Path --
    ------------------------------
 
-   procedure Generate_Ada_Object_Path
-     (Descriptor : Runtime_Descriptor;
-      Tasking    : Boolean)
-   is
+   procedure Generate_Ada_Object_Path (Descriptor : Runtime_Descriptor) is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
 
