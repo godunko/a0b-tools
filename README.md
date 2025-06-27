@@ -49,7 +49,6 @@ Typical content of the file:
 
 ```json5
 {
-  "tasking": "light",
   "dt:&cpu0:compatible": "arm,cortex-m4f",
   "dt:&cpu0:clock-frequency": "150_000_000",
   "dt:&nvic:arm,num-irq-priority-bits": "4",
@@ -114,7 +113,6 @@ Typical content of the file:
 
 ### General Parameter
 
-* `tasking`: tasking profile for runtime library, possible values are `no`, `light`, `embedded`
 * `dt:&cpu0:compatible`: CPU architecture, only supported value is `arm,cortex-m4f`
 * `dt:&cpu0:clock-frequency`: CPU frequency
 * `dt:&nvic:arm,num-irq-priority-bits` number of bits of priority supported by MCU's NVIC
@@ -131,4 +129,7 @@ Typical content of the file:
 
 #### Tasking Configuration Parameters
 
+`tasking` section allows to define parameters of Ada tasking.  When it is omitted, regular `light` GNAT Runtime is generated.
+
+* `kernel`: tasking kernel for runtime library, possible values are `light`, `embedded` for GNAT tasking, or custom name.
 * `files`: additional files to be copied into tasking source directory.
