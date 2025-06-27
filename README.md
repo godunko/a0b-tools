@@ -43,9 +43,11 @@ end Test;
 
 ## Runtime descriptor file
 
-Typical content of the `runtime.json`
+`runtime.json` file contains configuration information to generate runtime library for the particular application.
+It uses JSON5 format, which allows single line and multi line comments.
+Typical content of the file:
 
-```json
+```json5
 {
   "tasking": "light",
   "dt:&cpu0:compatible": "arm,cortex-m4f",
