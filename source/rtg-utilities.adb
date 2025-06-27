@@ -4,6 +4,8 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
+with VSS.Strings.Conversions;
+
 with RTG.Diagnostics;
 
 package body RTG.Utilities is
@@ -54,5 +56,38 @@ package body RTG.Utilities is
          end loop;
       end;
    end Copy_Files;
+
+   ---------------
+   -- Copy_File --
+   ---------------
+
+   procedure Copy_File
+     (Source_Base      : GNATCOLL.VFS.Virtual_File;
+      Source_Path      : VSS.Strings.Virtual_String;
+      Target_Directory : GNATCOLL.VFS.Virtual_File;
+      Target_Name      : VSS.Strings.Virtual_String)
+   is
+      Success : Boolean;
+      Source  : GNATCOLL.VFS.Virtual_File;
+      Target  : GNATCOLL.VFS.Virtual_File;
+
+   begin
+      Source :=
+        GNATCOLL.VFS.Create_From_Dir
+          (Source_Base,
+           GNATCOLL.VFS.Filesystem_String
+             (VSS.Strings.Conversions.To_UTF_8_String (Source_Path)));
+      Target :=
+        GNATCOLL.VFS.Create_From_Dir
+          (Target_Directory,
+           GNATCOLL.VFS.Filesystem_String
+             (VSS.Strings.Conversions.To_UTF_8_String (Target_Name)));
+
+      Source.Copy (Target.Full_Name.all, Success);
+
+      if not Success then
+         RTG.Diagnostics.Error (Target, "unable to copy file");
+      end if;
+   end Copy_File;
 
 end RTG.Utilities;

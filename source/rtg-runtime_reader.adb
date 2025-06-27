@@ -39,6 +39,10 @@ package body RTG.Runtime_Reader is
         with Pre  => Reader.Element_Kind = Start_Object,
              Post => Reader.Element_Kind = End_Object;
 
+      procedure Read_Files_Section
+        with Pre  => Reader.Element_Kind = Start_Object,
+             Post => Reader.Element_Kind = End_Object;
+
       ------------------------
       -- Read_Configuration --
       ------------------------
@@ -74,6 +78,84 @@ package body RTG.Runtime_Reader is
             end case;
          end loop;
       end Read_Configuration;
+
+      ------------------------
+      -- Read_Files_Section --
+      ------------------------
+
+      procedure Read_Files_Section is
+         Information : RTG.Runtime.File_Descriptor;
+
+         procedure Read_File_Information
+           with Pre  => Reader.Element_Kind = Start_Object,
+                Post => Reader.Element_Kind = End_Object;
+
+         ---------------------------
+         -- Read_File_Information --
+         ---------------------------
+
+         procedure Read_File_Information is
+            type Parameter_Kind is (Unknown, Crate, Path);
+
+            Parameter : Parameter_Kind;
+            Key       : VSS.Strings.Virtual_String;
+
+         begin
+            loop
+               case Reader.Read_Next is
+                  when Key_Name =>
+                     Key := Reader.Key_Name;
+
+                     if Key = "crate" then
+                        Parameter := Crate;
+
+                     elsif Key = "path" then
+                        Parameter := Path;
+
+                     else
+                        RTG.Diagnostics.Warning
+                          ("source file parameter `{}` is unknown", Key);
+                     end if;
+
+                  when String_Value =>
+                     case Parameter is
+                        when Unknown =>
+                           null;
+
+                        when Crate =>
+                           Information.Crate := Reader.String_Value;
+
+                        when Path =>
+                           Information.Path := Reader.String_Value;
+                     end case;
+
+                  when End_Object =>
+                     exit;
+
+                  when others =>
+                     raise Program_Error with Reader.Element_Kind'Img;
+               end case;
+            end loop;
+         end Read_File_Information;
+
+      begin
+         loop
+            case Reader.Read_Next is
+               when Key_Name =>
+                  Information.File := Reader.Key_Name;
+
+               when Start_Object =>
+                  Read_File_Information;
+                  Runtime.Runtime_Files.Append (Information);
+
+               when End_Object =>
+                  exit;
+
+               when others =>
+                  raise Program_Error with Reader.Element_Kind'Img;
+            end case;
+         end loop;
+      end Read_Files_Section;
 
       ------------------
       -- Read_Runtime --
@@ -114,6 +196,7 @@ package body RTG.Runtime_Reader is
                   Key := Reader.Key_Name;
 
                   if Key /= "common_required_switches"
+                    and Key /= "files"
                     and Key /= "linker_required_switches"
                   then
                      RTG.Diagnostics.Warning
@@ -137,6 +220,17 @@ package body RTG.Runtime_Reader is
                   end if;
 
                   Values.Clear;
+
+               when Start_Object =>
+                  if Key = "files" then
+                     Read_Files_Section;
+
+                  else
+                     RTG.Diagnostics.Warning
+                       ("`{}` runtime configuration parameter is not object",
+                        Key);
+                     Reader.Skip_Current_Object;
+                  end if;
 
                when End_Object =>
                   exit;

@@ -11,6 +11,9 @@ with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
 with VSS.Text_Streams.File_Output;
 
+with RTG.Diagnostics;
+with RTG.Utilities;
+
 package body RTG.Runtime is
 
    procedure Generate_Build_Runtime_Project (Descriptor : Runtime_Descriptor);
@@ -36,62 +39,20 @@ package body RTG.Runtime is
    --------------------------
 
    procedure Copy_Runtime_Sources (Descriptor : Runtime_Descriptor) is
-      Success : Boolean;
+      use type VSS.Strings.Virtual_String;
 
    begin
-      null;
+      for File of Descriptor.Runtime_Files loop
+         if File.Crate /= "bb_runtimes" then
+            RTG.Diagnostics.Error ("only ""bb_runtimes"" crate is supported");
+         end if;
 
-      --------------------
-      --  Custom files  --
-      --------------------
-
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../src/s-macres__cortexm3.adb"),
-         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-macres.adb")
-           .Full_Name.all,
-         Success);
-      GNATCOLL.VFS.Copy
-        (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-           ("/include/rts-sources/../../../src/s-sgshca__cortexm.adb"),
-         Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-sgshca.adb")
-           .Full_Name.all,
-         Success);
-
-      --  GNATCOLL.VFS.Copy
-      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-      --       ("/include/rts-sources/../../../arm/stm32/stm32f40x/svd"),
-      --     Descriptor.Runtime_Source_Directory.Full_Name.all,
-      --     Success);
-      --  GNATCOLL.VFS.Copy
-      --    (GNATCOLL.VFS.Create ("../s-bbbopa.ads"),
-      --     Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbbopa.ads")
-      --       .Full_Name.all,
-      --     Success);
-      --  GNATCOLL.VFS.Copy
-      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-      --       ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-bbmcpa.ads"),
-      --     Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbmcpa.ads")
-      --       .Full_Name.all,
-      --     Success);
-      --  GNATCOLL.VFS.Copy
-      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-      --       ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-bbmcpa.adb"),
-      --     Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-bbmcpa.adb")
-      --       .Full_Name.all,
-      --     Success);
-      --  GNATCOLL.VFS.Copy
-      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-      --       ("/include/rts-sources/../../../arm/stm32/s-stm32.ads"),
-      --     Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-stm32.ads")
-      --       .Full_Name.all,
-      --     Success);
-      --  GNATCOLL.VFS.Copy
-      --    (Descriptor.GNAT_RTS_Sources_Directory.Create_From_Dir
-      --       ("/include/rts-sources/../../../arm/stm32/stm32f40x/s-stm32.adb"),
-      --     Descriptor.Runtime_Source_Directory.Create_From_Dir ("s-stm32.adb")
-      --       .Full_Name.all,
-      --     Success);
+         RTG.Utilities.Copy_File
+           (Descriptor.GNAT_RTS_Sources_Directory.Dir,
+            File.Path,
+            Descriptor.Runtime_Source_Directory,
+            File.File);
+      end loop;
    end Copy_Runtime_Sources;
 
    --------------------------
