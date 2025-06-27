@@ -4,25 +4,13 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
-with Ada.Containers.Vectors;
-
 with GNATCOLL.VFS;
 
-with VSS.Strings;
 with VSS.String_Vectors;
 
 limited with RTG.Tasking;
 
 package RTG.Runtime is
-
-   type File_Descriptor is record
-      File  : VSS.Strings.Virtual_String;
-      Crate : VSS.Strings.Virtual_String;
-      Path  : VSS.Strings.Virtual_String;
-   end record;
-
-   package File_Descriptor_Vectors is
-     new Ada.Containers.Vectors (Positive, File_Descriptor);
 
    type Runtime_Descriptor is tagged limited record
       Runtime_Directory          : GNATCOLL.VFS.Virtual_File;
@@ -30,7 +18,7 @@ package RTG.Runtime is
 
       Common_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
       Linker_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
-      Runtime_Files              : File_Descriptor_Vectors.Vector;
+      Runtime_Files              : RTG.File_Descriptor_Vectors.Vector;
    end record;
 
    procedure Initialize

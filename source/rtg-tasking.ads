@@ -7,14 +7,13 @@
 with VSS.Strings;
 
 with RTG.GNAT_RTS_Sources;
-with RTG.Runtime;
 with RTG.System;
 
 package RTG.Tasking is
 
    type Tasking_Descriptor is record
       Kernel : VSS.Strings.Virtual_String;
-      Files  : RTG.Runtime.File_Descriptor_Vectors.Vector;
+      Files  : RTG.File_Descriptor_Vectors.Vector;
    end record;
 
    procedure Process

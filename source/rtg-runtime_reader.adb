@@ -46,7 +46,7 @@ package body RTG.Runtime_Reader is
              Post => Reader.Element_Kind = End_Object;
 
       procedure Read_Files_Section
-        (Files : in out RTG.Runtime.File_Descriptor_Vectors.Vector)
+        (Files : in out RTG.File_Descriptor_Vectors.Vector)
            with Pre  => Reader.Element_Kind = Start_Object,
                 Post => Reader.Element_Kind = End_Object;
 
@@ -94,9 +94,9 @@ package body RTG.Runtime_Reader is
       ------------------------
 
       procedure Read_Files_Section
-        (Files : in out RTG.Runtime.File_Descriptor_Vectors.Vector)
+        (Files : in out RTG.File_Descriptor_Vectors.Vector)
       is
-         Information : RTG.Runtime.File_Descriptor;
+         Information : RTG.File_Descriptor;
 
          procedure Read_File_Information
            with Pre  => Reader.Element_Kind = Start_Object,
