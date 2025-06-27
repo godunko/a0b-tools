@@ -55,8 +55,27 @@ Typical content of the `runtime.json`
   "runtime":
   {
     "common_required_switches": ["-mfloat-abi=hard", "-mcpu=cortex-m4"],
-    "linker_required_switches": ["-nostartfiles", "-nolibc"]
+    "linker_required_switches": ["-nostartfiles", "-nolibc"],
+    "files":
+    {
+      "s-macres.adb": { "crate": "bb_runtimes", "path": "src/s-macres__cortexm3.adb" },
+      "s-sgshca.adb": { "crate": "bb_runtimes", "path": "src/s-sgshca__cortexm.adb" }
+    }
   }
+
+  "tasking":
+  {
+    "files":
+    {
+      "s-bbbosu.adb": { "crate": "bb_runtimes", "path": "src/s-bbbosu__armv7m.adb" },  //  System.BB.Board_Support (body)
+      "s-bbcppr.ads": { "crate": "bb_runtimes", "path": "src/s-bbcppr__old.ads" },     //  System.BB.CPU_Primitives (spec)
+      "s-bbcppr.adb": { "crate": "bb_runtimes", "path": "src/s-bbcppr__armv7m.adb" },  //  System.BB.CPU_Primitives (body)
+      "s-bbcpsp.ads": { "crate": "bb_runtimes", "path": "src/s-bbcpsp__arm.ads" },     //  System.BB.CPU_Specific (spec)
+      "s-bcpcst.ads": { "crate": "bb_runtimes", "path": "src/s-bcpcst__armvXm.ads" },  //  System.BB.CPU_Primitives.Context_Switch_Trigger (spec)
+      "s-bcpcst.adb": { "crate": "bb_runtimes", "path": "src/s-bcpcst__pendsv.adb" },  //  System.BB.CPU_Primitives.Context_Switch_Trigger (body)
+      "s-bbsumu.adb": { "crate": "bb_runtimes", "path": "src/s-bbsumu__generic.adb" }  //  (System.BB.Board_Support).Multiprocessors
+    }
+  },
 
   "scenarios":
   {
@@ -106,3 +125,8 @@ Typical content of the `runtime.json`
   Architecture specific switches should be listed here.
 * `linker_required_switches`: list of required switches to be used by linker.
   Usually switches to ignore default startup files and standard C library.
+* `files`: additional files to be copied into runtime source directory.
+
+#### Tasking Configuration Parameters
+
+* `files`: additional files to be copied into tasking source directory.
