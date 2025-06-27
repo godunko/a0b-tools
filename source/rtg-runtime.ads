@@ -11,6 +11,8 @@ with GNATCOLL.VFS;
 with VSS.Strings;
 with VSS.String_Vectors;
 
+limited with RTG.Tasking;
+
 package RTG.Runtime is
 
    type File_Descriptor is record
@@ -29,8 +31,6 @@ package RTG.Runtime is
       Common_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
       Linker_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
       Runtime_Files              : File_Descriptor_Vectors.Vector;
-
-      Tasking_Files              : File_Descriptor_Vectors.Vector;
    end record;
 
    procedure Initialize
@@ -45,6 +45,6 @@ package RTG.Runtime is
 
    procedure Create
      (Descriptor : Runtime_Descriptor;
-      Tasking    : Boolean);
+      Tasking    : RTG.Tasking.Tasking_Descriptor);
 
 end RTG.Runtime;

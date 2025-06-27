@@ -12,6 +12,7 @@ with VSS.Strings.Templates;
 with VSS.Text_Streams.File_Output;
 
 with RTG.Diagnostics;
+with RTG.Tasking;
 with RTG.Utilities;
 
 package body RTG.Runtime is
@@ -30,7 +31,9 @@ package body RTG.Runtime is
 
    procedure Copy_Runtime_Sources (Descriptor : Runtime_Descriptor);
 
-   procedure Copy_Tasking_Sources (Descriptor : Runtime_Descriptor);
+   procedure Copy_Tasking_Sources
+     (Runtime : RTG.Runtime.Runtime_Descriptor;
+      Tasking : RTG.Tasking.Tasking_Descriptor);
 
    --------------------------
    -- Copy_Runtime_Sources --
@@ -57,19 +60,22 @@ package body RTG.Runtime is
    -- Copy_Tasking_Sources --
    --------------------------
 
-   procedure Copy_Tasking_Sources (Descriptor : Runtime_Descriptor) is
+   procedure Copy_Tasking_Sources
+     (Runtime : RTG.Runtime.Runtime_Descriptor;
+      Tasking : RTG.Tasking.Tasking_Descriptor)
+   is
       use type VSS.Strings.Virtual_String;
 
    begin
-      for File of Descriptor.Tasking_Files loop
+      for File of Tasking.Files loop
          if File.Crate /= "bb_runtimes" then
             RTG.Diagnostics.Error ("only ""bb_runtimes"" crate is supported");
          end if;
 
          RTG.Utilities.Copy_File
-           (Descriptor.GNAT_RTS_Sources_Directory.Dir,
+           (Runtime.GNAT_RTS_Sources_Directory.Dir,
             File.Path,
-            Descriptor.Tasking_Source_Directory,
+            Runtime.Tasking_Source_Directory,
             File.File);
       end loop;
    end Copy_Tasking_Sources;
@@ -80,21 +86,21 @@ package body RTG.Runtime is
 
    procedure Create
      (Descriptor : Runtime_Descriptor;
-      Tasking    : Boolean) is
+      Tasking    : RTG.Tasking.Tasking_Descriptor) is
    begin
       Descriptor.Runtime_Directory.Make_Dir;
       Descriptor.Runtime_Source_Directory.Make_Dir;
 
-      Generate_Ada_Source_Path (Descriptor, Tasking);
+      Generate_Ada_Source_Path (Descriptor, not Tasking.Kernel.Is_Empty);
       Generate_Ada_Object_Path (Descriptor);
       Generate_Build_Runtime_Project (Descriptor);
       Generate_Runtime_XML (Descriptor);
       Copy_Runtime_Sources (Descriptor);
 
-      if Tasking then
+      if not Tasking.Kernel.Is_Empty then
          Descriptor.Tasking_Source_Directory.Make_Dir;
          Generate_Build_Tasking_Project (Descriptor);
-         Copy_Tasking_Sources (Descriptor);
+         Copy_Tasking_Sources (Descriptor, Tasking);
       end if;
    end Create;
 

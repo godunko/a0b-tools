@@ -7,7 +7,6 @@
 with VSS.Strings.Templates;
 
 with RTG.Diagnostics;
-with RTG.Tasking;
 
 package body RTG.Architecture is
 
@@ -16,7 +15,8 @@ package body RTG.Architecture is
    -------------
 
    procedure Process
-     (Scenarios            : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
+     (Tasking              : RTG.Tasking.Tasking_Descriptor;
+      Scenarios            : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
       System_Parameters    : in out RTG.System.System_Descriptor;
       System_BB_Parameters : in out
         RTG.System_BB_Parameters.System_BB_Parameters_Descriptor)
@@ -72,7 +72,7 @@ package body RTG.Architecture is
          System_Parameters.Parameters (Machine_Rounds)            := True;
          System_Parameters.Parameters (Signed_Zeros)              := True;
 
-         if RTG.Tasking.Use_GNAT_Tasking (Scenarios) then
+         if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
             System_Parameters.Restrictions
               (RTG.System.GCC14.No_Task_At_Interrupt_Priority) := True;
          end if;

@@ -4,16 +4,25 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
+with VSS.Strings;
+
 with RTG.GNAT_RTS_Sources;
+with RTG.Runtime;
 with RTG.System;
 
 package RTG.Tasking is
 
+   type Tasking_Descriptor is record
+      Kernel : VSS.Strings.Virtual_String;
+      Files  : RTG.Runtime.File_Descriptor_Vectors.Vector;
+   end record;
+
    procedure Process
-     (Scenarios         : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
+     (Tasking           : RTG.Tasking.Tasking_Descriptor;
+      Scenarios         : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
       System_Parameters : in out RTG.System.System_Descriptor);
 
    function Use_GNAT_Tasking
-     (Scenarios : RTG.GNAT_RTS_Sources.Scenario_Maps.Map) return Boolean;
+     (Tasking : RTG.Tasking.Tasking_Descriptor) return Boolean;
 
 end RTG.Tasking;

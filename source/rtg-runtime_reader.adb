@@ -9,6 +9,7 @@ pragma Ada_2022;
 with VSS.JSON.Pull_Readers.JSON5;
 with VSS.JSON.Streams;
 with VSS.Strings.Conversions;
+with VSS.Strings.Templates;
 with VSS.String_Vectors;
 with VSS.Text_Streams.File_Input;
 
@@ -23,6 +24,7 @@ package body RTG.Runtime_Reader is
    procedure Read
      (File      : GNATCOLL.VFS.Virtual_File;
       Runtime   : in out RTG.Runtime.Runtime_Descriptor;
+      Tasking   : in out RTG.Tasking.Tasking_Descriptor;
       Scenarios : out RTG.GNAT_RTS_Sources.Scenario_Maps.Map)
    is
       use all type VSS.JSON.Streams.JSON_Stream_Element_Kind;
@@ -256,7 +258,15 @@ package body RTG.Runtime_Reader is
       ------------------
 
       procedure Read_Tasking is
-         Key : VSS.Strings.Virtual_String;
+
+         type Parameter_Kind is (Kernel, Files);
+
+         Not_An_Object : constant
+           VSS.Strings.Templates.Virtual_String_Template :=
+             "`{}` tasking configuration parameter is not an object";
+
+         Parameter : Parameter_Kind;
+         Key       : VSS.Strings.Virtual_String;
 
       begin
          loop
@@ -264,22 +274,36 @@ package body RTG.Runtime_Reader is
                when Key_Name =>
                   Key := Reader.Key_Name;
 
-                  if Key /= "files" then
+                  if Key = "files" then
+                     Parameter := Files;
+
+                  elsif Key = "kernel" then
+                     Parameter := Kernel;
+
+                  else
                      RTG.Diagnostics.Warning
                        ("`{}` is unknown tasking configuration parameter",
                         Key);
                   end if;
 
-               when Start_Object =>
-                  if Key = "files" then
-                     Read_Files_Section (Runtime.Tasking_Files);
+               when String_Value =>
+                  case Parameter is
+                     when Kernel =>
+                        Tasking.Kernel := Reader.String_Value;
 
-                  else
-                     RTG.Diagnostics.Warning
-                       ("`{}` tasking configuration parameter is not object",
-                        Key);
-                     Reader.Skip_Current_Object;
-                  end if;
+                     when others =>
+                        RTG.Diagnostics.Warning (Not_An_Object, Key);
+                  end case;
+
+               when Start_Object =>
+                  case Parameter is
+                     when Files =>
+                        Read_Files_Section (Tasking.Files);
+
+                     when others =>
+                        RTG.Diagnostics.Warning (Not_An_Object, Key);
+                        Reader.Skip_Current_Object;
+                  end case;
 
                when End_Object =>
                   exit;

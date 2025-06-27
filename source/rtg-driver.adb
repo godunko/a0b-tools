@@ -42,6 +42,7 @@ procedure RTG.Driver is
    SVD_File              : GNATCOLL.VFS.Virtual_File;
 
    Runtime    : RTG.Runtime.Runtime_Descriptor;
+   Tasking    : RTG.Tasking.Tasking_Descriptor;
    Parameters : RTG.System.System_Descriptor :=
      (Parameters   =>
         [RTG.System.GCC14.Always_Compatible_Rep     => True,
@@ -126,22 +127,26 @@ begin
    RTG.Startup.Initialize (Startup);
 
    RTG.Runtime_Reader.Read
-     (GNATCOLL.VFS.Create ("runtime.json"), Runtime, Scenarios);
+     (GNATCOLL.VFS.Create ("runtime.json"),
+      Runtime,
+      Tasking,
+      Scenarios);
    RTG.SVD_Reader.Read (SVD_File, Interrupts);
 
-   RTG.Architecture.Process (Scenarios, Parameters, System_BB_MCU_Parameters);
-   RTG.Tasking.Process (Scenarios, Parameters);
+   RTG.Architecture.Process
+     (Tasking, Scenarios, Parameters, System_BB_MCU_Parameters);
+   RTG.Tasking.Process (Tasking, Scenarios, Parameters);
 
-   RTG.Runtime.Create (Runtime, RTG.Tasking.Use_GNAT_Tasking (Scenarios));
+   RTG.Runtime.Create (Runtime, Tasking);
    RTG.System.Generate (Runtime, Parameters);
    RTG.System_BB_MCU_Vectors.Generate
      (Runtime      => Runtime,
       Interrupts   => Interrupts,
       Startup      => True,        --  Might be False for custom RTOS
-      Static       => not RTG.Tasking.Use_GNAT_Tasking (Scenarios),
-      GNAT_Tasking => RTG.Tasking.Use_GNAT_Tasking (Scenarios));
+      Static       => not RTG.Tasking.Use_GNAT_Tasking (Tasking),
+      GNAT_Tasking => RTG.Tasking.Use_GNAT_Tasking (Tasking));
 
-   if RTG.Tasking.Use_GNAT_Tasking (Scenarios) then
+   if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
       RTG.System_BB_MCU_Parameters.Generate (Runtime, Interrupts);
       RTG.System_BB_Parameters.Generate (Runtime, System_BB_MCU_Parameters);
    end if;

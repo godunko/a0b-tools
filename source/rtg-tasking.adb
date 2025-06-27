@@ -19,7 +19,8 @@ package body RTG.Tasking is
    -------------
 
    procedure Process
-     (Scenarios         : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
+     (Tasking           : RTG.Tasking.Tasking_Descriptor;
+      Scenarios         : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
       System_Parameters : in out RTG.System.System_Descriptor)
    is
       use all type RTG.System.GCC14.Restriction;
@@ -52,13 +53,7 @@ package body RTG.Tasking is
       end Check_Set;
 
    begin
-      if not Scenarios.Contains ("tasking") then
-         RTG.Diagnostics.Warning
-           ("""tasking"" is not specified, assume ""no""");
-         Scenarios.Insert ("tasking", "no");
-      end if;
-
-      if Scenarios ("tasking") = "no" then
+      if Tasking.Kernel.Is_Empty then
          Check_Set ("RTS_Profile", "light");
          System_Parameters.Profile := RTG.System.GCC14.No;
          System_Parameters.Restrictions (No_Exception_Propagation)  := True;
@@ -70,7 +65,7 @@ package body RTG.Tasking is
          System_Parameters.Parameters (Preallocated_Stacks)       := False;
          System_Parameters.Parameters (Suppress_Standard_Library) := True;
 
-      elsif Scenarios ("tasking") = "light" then
+      elsif Tasking.Kernel = "light" then
          Check_Set ("RTS_Profile", "light-tasking");
          System_Parameters.Profile := RTG.System.GCC14.Jorvik;
          System_Parameters.Restrictions (No_Exception_Propagation)  := True;
@@ -82,7 +77,7 @@ package body RTG.Tasking is
          System_Parameters.Parameters (Preallocated_Stacks)       := True;
          System_Parameters.Parameters (Suppress_Standard_Library) := True;
 
-      elsif Scenarios ("tasking") = "embedded" then
+      elsif Tasking.Kernel = "embedded" then
          Check_Set ("RTS_Profile", "embedded");
          System_Parameters.Profile := RTG.System.GCC14.Jorvik;
          System_Parameters.Restrictions (No_Exception_Propagation)  := False;
@@ -104,11 +99,9 @@ package body RTG.Tasking is
    ----------------------
 
    function Use_GNAT_Tasking
-     (Scenarios : RTG.GNAT_RTS_Sources.Scenario_Maps.Map) return Boolean is
+     (Tasking : RTG.Tasking.Tasking_Descriptor) return Boolean is
    begin
-      return Scenarios.Contains ("tasking")
-        and then (Scenarios ("tasking") = "light"
-                    or Scenarios ("tasking") = "embedded");
+      return Tasking.Kernel = "light" or Tasking.Kernel = "embedded";
    end Use_GNAT_Tasking;
 
 end RTG.Tasking;
