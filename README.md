@@ -66,6 +66,7 @@ Typical content of the file:
 
   "tasking":
   {
+    "kernel": "light",
     "files":
     {
       "s-bbbosu.adb": { "crate": "bb_runtimes", "path": "src/s-bbbosu__armv7m.adb" },  //  System.BB.Board_Support (body)
