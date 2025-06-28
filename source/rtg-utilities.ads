@@ -6,8 +6,6 @@
 
 with GNATCOLL.VFS;
 
-with VSS.Strings;
-
 package RTG.Utilities is
 
    procedure Copy_Files
@@ -19,5 +17,19 @@ package RTG.Utilities is
       Source_Path      : VSS.Strings.Virtual_String;
       Target_Directory : GNATCOLL.VFS.Virtual_File;
       Target_Name      : VSS.Strings.Virtual_String);
+
+   generic
+      Directory : GNATCOLL.VFS.Virtual_File;
+      File_Name : VSS.Strings.Virtual_String;
+
+   package Generic_Output is
+
+      procedure PS (Text : VSS.Strings.Virtual_String);
+
+      procedure PL (Text : VSS.Strings.Virtual_String);
+
+      procedure NL;
+
+   end Generic_Output;
 
 end RTG.Utilities;

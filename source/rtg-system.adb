@@ -4,14 +4,13 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
+pragma Style_Checks ("M90");
 pragma Ada_2022;
 
-with GNATCOLL.VFS;
-
-with VSS.Strings.Conversions;
 with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
-with VSS.Text_Streams.File_Output;
+
+with RTG.Utilities;
 
 package body RTG.System is
 
@@ -51,37 +50,12 @@ package body RTG.System is
      (Runtime    : RTG.Runtime.Runtime_Descriptor;
       Parameters : System_Descriptor)
    is
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
-
-      procedure PL (Line : VSS.Strings.Virtual_String);
-
-      procedure NL;
-
-      --------
-      -- NL --
-      --------
-
-      procedure NL is
-      begin
-         Output.New_Line (Success);
-      end NL;
-
-      --------
-      -- PL --
-      --------
-
-      procedure PL (Line : VSS.Strings.Virtual_String) is
-      begin
-         Output.Put_Line (Line, Success);
-      end PL;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Runtime.Runtime_Source_Directory, "system.ads");
+      use Output;
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Runtime.Runtime_Source_Directory.Create_From_Dir
-                ("system.ads").Display_Full_Name));
-
       if Parameters.Restrictions (GCC14.No_Exception_Propagation) then
          PL ("pragma Restrictions (No_Exception_Propagation);");
       end if;
@@ -168,8 +142,6 @@ package body RTG.System is
 
       NL;
       PL ("end System;");
-
-      Output.Close;
    end Generate;
 
 end RTG.System;

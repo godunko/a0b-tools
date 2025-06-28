@@ -5,6 +5,7 @@
 --
 
 with VSS.Strings.Conversions;
+with VSS.Text_Streams.File_Output;
 
 with RTG.Diagnostics;
 
@@ -89,5 +90,59 @@ package body RTG.Utilities is
          RTG.Diagnostics.Error (Target, "unable to copy file");
       end if;
    end Copy_File;
+
+   --------------------
+   -- Generic_Output --
+   --------------------
+
+   package body Generic_Output is
+
+      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
+      Success : Boolean := True;
+
+      --------
+      -- NL --
+      --------
+
+      procedure NL is
+      begin
+         Output.New_Line (Success);
+      end NL;
+
+      --------
+      -- PL --
+      --------
+
+      procedure PL (Text : VSS.Strings.Virtual_String) is
+      begin
+         Output.Put_Line (Text, Success);
+      end PL;
+
+      --------
+      -- PS --
+      --------
+
+      procedure PS (Text : VSS.Strings.Virtual_String) is
+      begin
+         Output.Put (Text, Success);
+      end PS;
+
+   begin
+      declare
+         File : constant GNATCOLL.VFS.Virtual_File :=
+           Directory.Create_From_Dir
+             (GNATCOLL.VFS.Filesystem_String
+                (VSS.Strings.Conversions.To_UTF_8_String (File_Name)));
+
+      begin
+         if File.Is_Regular_File then
+            RTG.Diagnostics.Warning (File, "is overwritten");
+         end if;
+
+         Output.Create
+           (VSS.Strings.Conversions.To_Virtual_String
+              (File.Display_Full_Name));
+      end;
+   end Generic_Output;
 
 end RTG.Utilities;

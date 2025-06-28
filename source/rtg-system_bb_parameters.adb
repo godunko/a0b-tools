@@ -4,10 +4,10 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
-with VSS.Strings.Conversions;
 with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
-with VSS.Text_Streams.File_Output;
+
+with RTG.Utilities;
 
 package body RTG.System_BB_Parameters is
 
@@ -22,30 +22,10 @@ package body RTG.System_BB_Parameters is
      (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
       Descriptor : System_BB_Parameters_Descriptor)
    is
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
-
-      procedure PL (Line : VSS.Strings.Virtual_String);
-
-      procedure NL;
-
-      --------
-      -- NL --
-      --------
-
-      procedure NL is
-      begin
-         Output.New_Line (Success);
-      end NL;
-
-      --------
-      -- PL --
-      --------
-
-      procedure PL (Line : VSS.Strings.Virtual_String) is
-      begin
-         Output.Put_Line (Line, Success);
-      end PL;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Runtime.Tasking_Source_Directory, "s-bbpara.ads");
+      use Output;
 
       Clock_Frequency_Template    : Virtual_String_Template :=
         "   Clock_Frequency : constant := {};";
@@ -53,11 +33,6 @@ package body RTG.System_BB_Parameters is
         "   NVIC_Priority_Bits : constant Cortex_Priority_Bits_Width := {};";
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Runtime.Tasking_Source_Directory.Create_From_Dir ("s-bbpara.ads")
-              .Display_Full_Name));
-
       --  XXX It might be ARM Cortex-M specific info
 
       PL ("with System.BB.MCU_Parameters;");
@@ -90,7 +65,6 @@ package body RTG.System_BB_Parameters is
       PL ("   Multiprocessor : constant Boolean := False;");
       NL;
       PL ("end System.BB.Parameters;");
-      Output.Close;
    end Generate;
 
 end RTG.System_BB_Parameters;

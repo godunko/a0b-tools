@@ -6,13 +6,13 @@
 
 pragma Style_Checks ("M100");
 
-with VSS.Strings.Conversions;
 with VSS.Strings.Formatters.Integers;
 with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
-with VSS.Text_Streams.File_Output;
 
 with A0B.Types.GCC_Builtins;
+
+with RTG.Utilities;
 
 package body RTG.System_BB_MCU_Vectors is
 
@@ -59,41 +59,10 @@ package body RTG.System_BB_MCU_Vectors is
    is
       use VSS.Strings.Templates;
 
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
-
-      procedure PL (Line : VSS.Strings.Virtual_String);
-
-      procedure PS (Item : VSS.Strings.Virtual_String);
-
-      procedure NL;
-
-      --------
-      -- NL --
-      --------
-
-      procedure NL is
-      begin
-         Output.New_Line (Success);
-      end NL;
-
-      --------
-      -- PL --
-      --------
-
-      procedure PL (Line : VSS.Strings.Virtual_String) is
-      begin
-         Output.Put_Line (Line, Success);
-      end PL;
-
-      --------
-      -- PS --
-      --------
-
-      procedure PS (Item : VSS.Strings.Virtual_String) is
-      begin
-         Output.Put (Item, Success);
-      end PS;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Runtime.Runtime_Source_Directory, "s-bbmcve.adb");
+      use Output;
 
       type External_Kind is (Import, Export);
 
@@ -182,11 +151,6 @@ package body RTG.System_BB_MCU_Vectors is
       use RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors;
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Runtime.Runtime_Source_Directory.Create_From_Dir
-                ("s-bbmcve.adb").Display_Full_Name));
-
       NL;
       PL ("pragma Style_Checks (""M132"");");
       NL;
@@ -467,8 +431,6 @@ package body RTG.System_BB_MCU_Vectors is
 
       NL;
       PL ("end System.BB.MCU_Vectors;");
-
-      Output.Close;
    end Generate_Implementation;
 
    ----------------------------
@@ -478,45 +440,18 @@ package body RTG.System_BB_MCU_Vectors is
    procedure Generate_Specification
      (Runtime : RTG.Runtime.Runtime_Descriptor'Class)
    is
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
-
-      procedure PL (Line : VSS.Strings.Virtual_String);
-
-      procedure NL;
-
-      --------
-      -- NL --
-      --------
-
-      procedure NL is
-      begin
-         Output.New_Line (Success);
-      end NL;
-
-      --------
-      -- PL --
-      --------
-
-      procedure PL (Line : VSS.Strings.Virtual_String) is
-      begin
-         Output.Put_Line (Line, Success);
-      end PL;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Runtime.Runtime_Source_Directory, "s-bbmcve.ads");
+      use Output;
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Runtime.Runtime_Source_Directory.Create_From_Dir
-                ("s-bbmcve.ads").Display_Full_Name));
-
       NL;
       PL ("package System.BB.MCU_Vectors");
       PL ("  with Pure, Elaborate_Body, No_Elaboration_Code_All");
       PL ("is");
       NL;
       PL ("end System.BB.MCU_Vectors;");
-
-      Output.Close;
    end Generate_Specification;
 
    ----------------------------
