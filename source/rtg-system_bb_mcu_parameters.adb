@@ -4,8 +4,6 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
-pragma Ada_2022;
-
 with VSS.Strings.Formatters.Integers;
 with VSS.Strings.Templates;
 
@@ -33,20 +31,15 @@ package body RTG.System_BB_MCU_Parameters is
       Number_Of_Interrupts_Template : constant Virtual_String_Template :=
         "   Number_Of_Interrupts : constant := {};";
 
-      Max_Interrupt : Natural := 0;
-
    begin
-
-      for Interrupt of Interrupts loop
-         Max_Interrupt := Integer'Max (@, Interrupt.Value);
-      end loop;
-
       NL;
       PL ("package System.BB.MCU_Parameters");
       PL ("  with Preelaborate, No_Elaboration_Code_All");
       PL ("is");
       NL;
-      PL (Number_Of_Interrupts_Template.Format (Image (Max_Interrupt)));
+      PL
+        (Number_Of_Interrupts_Template.Format
+           (Image (Interrupts.Last_Element.Value)));
       NL;
       PL ("end System.BB.MCU_Parameters;");
    end Generate;
