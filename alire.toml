@@ -22,3 +22,6 @@ a0b_base = "*"
 gnat_native = "*"
 gnatcoll = "*"
 vss = "*"
+
+[[pins]]
+vss = { path='../VSS' }
