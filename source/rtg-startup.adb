@@ -8,9 +8,9 @@ with VSS.Application;
 with VSS.Strings.Conversions;
 with VSS.Strings.Formatters.Generic_Modulars;
 with VSS.Strings.Templates;
-with VSS.Text_Streams.File_Output;
 
 with RTG.Diagnostics;
+with RTG.Utilities;
 
 package body RTG.Startup is
 
@@ -61,37 +61,13 @@ package body RTG.Startup is
    ---------------------------------
 
    procedure Generate_Libstartup_Project (Descriptor : Startup_Descriptor) is
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
 
-      procedure PL (Line : VSS.Strings.Virtual_String);
-
-      procedure NL;
-
-      --------
-      -- NL --
-      --------
-
-      procedure NL is
-      begin
-         Output.New_Line (Success);
-      end NL;
-
-      --------
-      -- PL --
-      --------
-
-      procedure PL (Line : VSS.Strings.Virtual_String) is
-      begin
-         Output.Put_Line (Line, Success);
-      end PL;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Descriptor.Startup_Directory, "libstartup.gpr");
+      use Output;
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.Startup_Directory.Create_From_Dir ("libstartup.gpr")
-              .Display_Full_Name));
-
       PL ("with ""a0b_armv7m.gpr"";");
       NL;
       PL ("library project LibStartup is");
@@ -105,8 +81,6 @@ package body RTG.Startup is
       PL ("   end Compiler;");
       NL;
       PL ("end LibStartup;");
-
-      Output.Close;
    end Generate_Libstartup_Project;
 
    ------------------------------------
@@ -122,30 +96,10 @@ package body RTG.Startup is
         new VSS.Strings.Formatters.Generic_Modulars (A0B.Types.Unsigned_64);
       use Unsigned_64_Formatters;
 
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
-
-      procedure PL (Line : VSS.Strings.Virtual_String);
-
-      procedure NL;
-
-      --------
-      -- NL --
-      --------
-
-      procedure NL is
-      begin
-         Output.New_Line (Success);
-      end NL;
-
-      --------
-      -- PL --
-      --------
-
-      procedure PL (Line : VSS.Strings.Virtual_String) is
-      begin
-         Output.Put_Line (Line, Success);
-      end PL;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Descriptor.Startup_Directory, "startup.ld");
+      use Output;
 
       Flash_Template : constant Virtual_String_Template :=
         "    flash (rx)     : ORIGIN = 0x{:08#16}, LENGTH = 0x{:08#16}";
@@ -153,11 +107,6 @@ package body RTG.Startup is
         "    sram (rx)      : ORIGIN = 0x{:08#16}, LENGTH = 0x{:08#16}";
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.Startup_Directory.Create_From_Dir ("startup.ld")
-              .Display_Full_Name));
-
       PL ("MEMORY");
       PL ("{");
       PL
@@ -188,8 +137,6 @@ package body RTG.Startup is
       PL ("DEFAULT_STACK_SIZE = 4 * 1024;");
 
       PL ("INCLUDE armv7m.ld");
-
-      Output.Close;
    end Generate_Startup_Linker_Script;
 
    ------------------------------
@@ -197,37 +144,13 @@ package body RTG.Startup is
    ------------------------------
 
    procedure Generate_Startup_Project (Descriptor : Startup_Descriptor) is
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
 
-      procedure PL (Line : VSS.Strings.Virtual_String);
-
-      procedure NL;
-
-      --------
-      -- NL --
-      --------
-
-      procedure NL is
-      begin
-         Output.New_Line (Success);
-      end NL;
-
-      --------
-      -- PL --
-      --------
-
-      procedure PL (Line : VSS.Strings.Virtual_String) is
-      begin
-         Output.Put_Line (Line, Success);
-      end PL;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Descriptor.Startup_Directory, "startup.gpr");
+      use Output;
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.Startup_Directory.Create_From_Dir ("startup.gpr")
-              .Display_Full_Name));
-
       NL;
       PL ("with ""libstartup.gpr"";");
       NL;
@@ -239,8 +162,6 @@ package body RTG.Startup is
       PL ("   end Linker;");
       NL;
       PL ("end Startup;");
-
-      Output.Close;
    end Generate_Startup_Project;
 
    --------------------------------------------
@@ -250,37 +171,12 @@ package body RTG.Startup is
    procedure Generate_System_Startup_Implementation
      (Descriptor : Startup_Descriptor)
    is
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
-
-      procedure PL (Line : VSS.Strings.Virtual_String);
-
-      procedure NL;
-
-      --------
-      -- NL --
-      --------
-
-      procedure NL is
-      begin
-         Output.New_Line (Success);
-      end NL;
-
-      --------
-      -- PL --
-      --------
-
-      procedure PL (Line : VSS.Strings.Virtual_String) is
-      begin
-         Output.Put_Line (Line, Success);
-      end PL;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Descriptor.Startup_Directory, "system_startup.adb");
+      use Output;
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.Startup_Directory.Create_From_Dir ("system_startup.adb")
-              .Display_Full_Name));
-
       PL ("with A0B.ARMv7M.Startup_Utilities.Copy_Data_Section;");
       PL ("with A0B.ARMv7M.Startup_Utilities.Enable_FPU;");
       PL ("with A0B.ARMv7M.Startup_Utilities.Fill_BSS_Section;");
@@ -302,8 +198,6 @@ package body RTG.Startup is
       PL ("   end Reset_Handler;");
       NL;
       PL ("end System_Startup;");
-
-      Output.Close;
    end Generate_System_Startup_Implementation;
 
    -------------------------------------------
@@ -313,45 +207,19 @@ package body RTG.Startup is
    procedure Generate_System_Startup_Specification
      (Descriptor : Startup_Descriptor)
    is
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
 
-      procedure PL (Line : VSS.Strings.Virtual_String);
-
-      procedure NL;
-
-      --------
-      -- NL --
-      --------
-
-      procedure NL is
-      begin
-         Output.New_Line (Success);
-      end NL;
-
-      --------
-      -- PL --
-      --------
-
-      procedure PL (Line : VSS.Strings.Virtual_String) is
-      begin
-         Output.Put_Line (Line, Success);
-      end PL;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Descriptor.Startup_Directory, "system_startup.ads");
+      use Output;
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.Startup_Directory.Create_From_Dir ("system_startup.ads")
-              .Display_Full_Name));
-
       NL;
       PL ("package System_Startup");
       PL ("  with Preelaborate, Elaborate_Body, No_Elaboration_Code_All");
       PL (" is");
       NL;
       PL ("end System_Startup;");
-
-      Output.Close;
    end Generate_System_Startup_Specification;
 
    ----------------
