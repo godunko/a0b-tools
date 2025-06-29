@@ -52,6 +52,8 @@ Typical content of the file:
   "dt:&cpu0:compatible": "arm,cortex-m4f",
   "dt:&cpu0:clock-frequency": "150_000_000",
   "dt:&nvic:arm,num-irq-priority-bits": "4",
+  "dt:/chosen/a0b,sram:reg": ["0x20000000", "DT_SIZE_K(32)"],
+  "dt:/chosen/a0b,flash:reg": ["0x08000000", "DT_SIZE_K(32)"],
 
   "runtime":
   {
@@ -117,6 +119,8 @@ Typical content of the file:
 * `dt:&cpu0:compatible`: CPU architecture, only supported value is `arm,cortex-m4f`
 * `dt:&cpu0:clock-frequency`: CPU frequency
 * `dt:&nvic:arm,num-irq-priority-bits` number of bits of priority supported by MCU's NVIC
+* `dt:/chosen/a0b,sram:reg`: SRAM address and size
+* `dt:/chosen/a0b,flash:reg`: FLASH address and size
 * `runtime`: configuration parameters of runtime
 * `scenarios`: scenario variables to be used to construct GNAT runtime
 
@@ -134,3 +138,5 @@ Typical content of the file:
 
 * `kernel`: tasking kernel for runtime library, possible values are `light`, `embedded` for GNAT tasking, or custom name.
 * `files`: additional files to be copied into tasking source directory.
+
+#### Startup Configuration Parameters
