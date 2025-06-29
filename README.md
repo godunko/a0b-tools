@@ -64,7 +64,7 @@ Typical content of the file:
       "s-macres.adb": { "crate": "bb_runtimes", "path": "src/s-macres__cortexm3.adb" },
       "s-sgshca.adb": { "crate": "bb_runtimes", "path": "src/s-sgshca__cortexm.adb" }
     }
-  }
+  },
 
   "tasking":
   {
