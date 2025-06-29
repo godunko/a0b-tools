@@ -8,7 +8,9 @@ pragma Ada_2022;
 
 with VSS.JSON.Pull_Readers.JSON5;
 with VSS.JSON.Streams;
+with VSS.Strings.Character_Iterators;
 with VSS.Strings.Conversions;
+with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
 with VSS.String_Vectors;
 with VSS.Text_Streams.File_Input;
@@ -25,6 +27,7 @@ package body RTG.Runtime_Reader is
      (File      : GNATCOLL.VFS.Virtual_File;
       Runtime   : in out RTG.Runtime.Runtime_Descriptor;
       Tasking   : in out RTG.Tasking.Tasking_Descriptor;
+      Startup   : in out RTG.Startup.Startup_Descriptor;
       Scenarios : out RTG.GNAT_RTS_Sources.Scenario_Maps.Map)
    is
       use all type VSS.JSON.Streams.JSON_Stream_Element_Kind;
@@ -50,6 +53,91 @@ package body RTG.Runtime_Reader is
            with Pre  => Reader.Element_Kind = Start_Object,
                 Post => Reader.Element_Kind = End_Object;
 
+      procedure Read_Values
+        (Values : in out VSS.String_Vectors.Virtual_String_Vector)
+           with Pre  => Reader.Element_Kind = Start_Array,
+                Post => Reader.Element_Kind = End_Array;
+
+      procedure Parse_Memory_Descriptor
+        (Values     : VSS.String_Vectors.Virtual_String_Vector;
+         Descriptor : in out RTG.Memory_Descriptor);
+
+      -----------------------------
+      -- Parse_Memory_Descriptor --
+      -----------------------------
+
+      procedure Parse_Memory_Descriptor
+        (Values     : VSS.String_Vectors.Virtual_String_Vector;
+         Descriptor : in out RTG.Memory_Descriptor)
+      is
+         use type A0B.Types.Unsigned_64;
+
+         Hex_Template : constant
+           VSS.Strings.Templates.Virtual_String_Template :=
+             "16#{}#";
+
+         Value        : VSS.Strings.Virtual_String;
+         First        : VSS.Strings.Character_Iterators.Character_Iterator;
+         Last         : VSS.Strings.Character_Iterators.Character_Iterator;
+         Success      : Boolean with Unreferenced;
+
+      begin
+         if Values.Length /= 2 then
+            RTG.Diagnostics.Error ("must have two components");
+         end if;
+
+         --  Convert address
+
+         Value := Values (1);
+
+         if not Value.Starts_With ("0x") then
+            RTG.Diagnostics.Error ("address must starts with 0x");
+         end if;
+
+         First.Set_At_First (Value);
+         Success := First.Forward;
+         Success := First.Forward;
+
+         Descriptor.Address :=
+           A0B.Types.Unsigned_64'Wide_Wide_Value
+             (VSS.Strings.Conversions.To_Wide_Wide_String
+                (Hex_Template.Format
+                   (VSS.Strings.Formatters.Strings.Image
+                      (Value.Tail_From (First)))));
+
+         --  Convert size
+
+         Value := Values (2);
+
+         if Value.Starts_With ("DT_SIZE_K(")
+           and Value.Ends_With (")")
+         then
+            First.Set_At_First (Value);
+            Success := First.Forward;
+            Success := First.Forward;
+            Success := First.Forward;
+            Success := First.Forward;
+            Success := First.Forward;
+            Success := First.Forward;
+            Success := First.Forward;
+            Success := First.Forward;
+            Success := First.Forward;
+            Success := First.Forward;
+
+            Last.Set_At_Last (Value);
+            Success := Last.Backward;
+
+            Descriptor.Size :=
+              1_024
+              * A0B.Types.Unsigned_64'Wide_Wide_Value
+                  (VSS.Strings.Conversions.To_Wide_Wide_String
+                     (Value.Slice (First, Last)));
+
+         else
+            raise Program_Error;
+         end if;
+      end Parse_Memory_Descriptor;
+
       ------------------------
       -- Read_Configuration --
       ------------------------
@@ -66,6 +154,31 @@ package body RTG.Runtime_Reader is
 
                when String_Value =>
                   Scenarios.Insert (Key, Reader.String_Value);
+
+               when Start_Array =>
+                  if Key = "dt:/chosen/a0b,flash:reg" then
+                     declare
+                        Values : VSS.String_Vectors.Virtual_String_Vector;
+
+                     begin
+                        Read_Values (Values);
+                        Parse_Memory_Descriptor (Values, Startup.Flash);
+                     end;
+
+                  elsif Key = "dt:/chosen/a0b,sram:reg" then
+                     declare
+                        Values : VSS.String_Vectors.Virtual_String_Vector;
+
+                     begin
+                        Read_Values (Values);
+                        Parse_Memory_Descriptor (Values, Startup.SRAM);
+                     end;
+
+                  else
+                     RTG.Diagnostics.Warning
+                       ("configuration parameter `{}` is not an array",
+                        Key);
+                  end if;
 
                when Start_Object =>
                   if Key = "runtime" then
@@ -174,32 +287,7 @@ package body RTG.Runtime_Reader is
       ------------------
 
       procedure Read_Runtime is
-         Key    : VSS.Strings.Virtual_String;
-         Values : VSS.String_Vectors.Virtual_String_Vector;
-
-         procedure Read_Values
-           with Pre  => Reader.Element_Kind = Start_Array,
-                Post => Reader.Element_Kind = End_Array;
-
-         -----------------
-         -- Read_Values --
-         -----------------
-
-         procedure Read_Values is
-         begin
-            loop
-               case Reader.Read_Next is
-                  when String_Value =>
-                     Values.Append (Reader.String_Value);
-
-                  when End_Array =>
-                     exit;
-
-                  when others =>
-                     raise Program_Error with Reader.Element_Kind'Img;
-               end case;
-            end loop;
-         end Read_Values;
+         Key : VSS.Strings.Virtual_String;
 
       begin
          loop
@@ -217,21 +305,18 @@ package body RTG.Runtime_Reader is
                   end if;
 
                when Start_Array =>
-                  Read_Values;
-
                   if Key = "common_required_switches" then
-                     Runtime.Common_Required_Switches := Values;
+                     Read_Values (Runtime.Common_Required_Switches);
 
                   elsif Key = "linker_required_switches" then
-                     Runtime.Linker_Required_Switches := Values;
+                     Read_Values (Runtime.Linker_Required_Switches);
 
                   else
                      RTG.Diagnostics.Warning
                        ("`{}` runtime configuration parameter is not an array",
                         Key);
+                     Reader.Skip_Current_Array;
                   end if;
-
-                  Values.Clear;
 
                when Start_Object =>
                   if Key = "files" then
@@ -313,6 +398,27 @@ package body RTG.Runtime_Reader is
             end case;
          end loop;
       end Read_Tasking;
+
+      -----------------
+      -- Read_Values --
+      -----------------
+
+      procedure Read_Values
+        (Values : in out VSS.String_Vectors.Virtual_String_Vector) is
+      begin
+         loop
+            case Reader.Read_Next is
+               when String_Value =>
+                  Values.Append (Reader.String_Value);
+
+               when End_Array =>
+                  exit;
+
+               when others =>
+                  raise Program_Error with Reader.Element_Kind'Img;
+            end case;
+         end loop;
+      end Read_Values;
 
    begin
       Input.Open

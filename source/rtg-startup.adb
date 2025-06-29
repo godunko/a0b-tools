@@ -6,6 +6,8 @@
 
 with VSS.Application;
 with VSS.Strings.Conversions;
+with VSS.Strings.Formatters.Generic_Modulars;
+with VSS.Strings.Templates;
 with VSS.Text_Streams.File_Output;
 
 with RTG.Diagnostics;
@@ -111,7 +113,15 @@ package body RTG.Startup is
    -- Generate_Startup_Linker_Script --
    ------------------------------------
 
-   procedure Generate_Startup_Linker_Script (Descriptor : Startup_Descriptor) is
+   procedure Generate_Startup_Linker_Script
+     (Descriptor : Startup_Descriptor)
+   is
+      use VSS.Strings.Templates;
+
+      package Unsigned_64_Formatters is
+        new VSS.Strings.Formatters.Generic_Modulars (A0B.Types.Unsigned_64);
+      use Unsigned_64_Formatters;
+
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
 
@@ -137,6 +147,11 @@ package body RTG.Startup is
          Output.Put_Line (Line, Success);
       end PL;
 
+      Flash_Template : constant Virtual_String_Template :=
+        "    flash (rx)     : ORIGIN = 0x{:08#16}, LENGTH = 0x{:08#16}";
+      SRAM_Template  : constant Virtual_String_Template :=
+        "    sram (rx)      : ORIGIN = 0x{:08#16}, LENGTH = 0x{:08#16}";
+
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
@@ -145,25 +160,29 @@ package body RTG.Startup is
 
       PL ("MEMORY");
       PL ("{");
-      PL ("    flash (rx)     : ORIGIN = 0x08000000, LENGTH = 512K");
-      PL ("    ccm_sram (xrw) : ORIGIN = 0x10000000, LENGTH = 32K");
-      PL ("    sram1 (xrw)    : ORIGIN = 0x20000000, LENGTH = 80K");
-      PL ("    sram2 (xrw)    : ORIGIN = 0x20014000, LENGTH = 16K");
+      PL
+        (Flash_Template.Format
+           (Image (Descriptor.Flash.Address),
+            Image (Descriptor.Flash.Size)));
+      PL
+        (SRAM_Template.Format
+           (Image (Descriptor.SRAM.Address),
+            Image (Descriptor.SRAM.Size)));
       PL ("}");
       NL;
       PL ("REGION_ALIAS(""DEFAULT_VECTORS"", flash);");
       PL ("REGION_ALIAS(""DEFAULT_TEXT"", flash);");
       PL ("REGION_ALIAS(""DEFAULT_RODATA"", flash);");
-      PL ("REGION_ALIAS(""DEFAULT_DATA"", sram1);");
+      PL ("REGION_ALIAS(""DEFAULT_DATA"", sram);");
       PL ("REGION_ALIAS(""DEFAULT_IDATA"", flash);");
-      PL ("REGION_ALIAS(""DEFAULT_BSS"", sram1);");
-      PL ("REGION_ALIAS(""DEFAULT_STACK"", sram2);");
+      PL ("REGION_ALIAS(""DEFAULT_BSS"", sram);");
+      PL ("REGION_ALIAS(""DEFAULT_STACK"", sram);");
       NL;
-      PL ("REGION_ALIAS (""ITCM_TEXT"", ccm_sram);");
+      PL ("REGION_ALIAS (""ITCM_TEXT"", sram);");
       PL ("REGION_ALIAS (""ITCM_ITEXT"", flash);");
-      PL ("REGION_ALIAS (""DTCM_DATA"", ccm_sram);");
+      PL ("REGION_ALIAS (""DTCM_DATA"", sram);");
       PL ("REGION_ALIAS (""DTCM_IDATA"", flash);");
-      PL ("REGION_ALIAS (""DTCM_BSS"", ccm_sram);");
+      PL ("REGION_ALIAS (""DTCM_BSS"", sram);");
 
       NL;
       PL ("DEFAULT_STACK_SIZE = 4 * 1024;");

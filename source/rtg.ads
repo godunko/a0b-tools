@@ -8,6 +8,8 @@ with Ada.Containers.Vectors;
 
 with VSS.Strings;
 
+with A0B.Types;
+
 package RTG with Preelaborate is
 
    type File_Descriptor is record
@@ -18,6 +20,11 @@ package RTG with Preelaborate is
 
    package File_Descriptor_Vectors is
      new Ada.Containers.Vectors (Positive, File_Descriptor);
+
+   type Memory_Descriptor is record
+      Address : A0B.Types.Unsigned_64;
+      Size    : A0B.Types.Unsigned_64;
+   end record;
 
    Internal_Error : exception;
 

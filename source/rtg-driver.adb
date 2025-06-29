@@ -130,6 +130,7 @@ begin
      (GNATCOLL.VFS.Create ("runtime.json"),
       Runtime,
       Tasking,
+      Startup,
       Scenarios);
    RTG.SVD_Reader.Read (SVD_File, Interrupts);
 
