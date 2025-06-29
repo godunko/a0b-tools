@@ -69,6 +69,7 @@ package body RTG.Startup is
 
    begin
       PL ("with ""a0b_armv7m.gpr"";");
+      PL ("with ""a0b_stm32g474.gpr"";");
       NL;
       PL ("library project LibStartup is");
       NL;
@@ -181,6 +182,8 @@ package body RTG.Startup is
       PL ("with A0B.ARMv7M.Startup_Utilities.Enable_FPU;");
       PL ("with A0B.ARMv7M.Startup_Utilities.Fill_BSS_Section;");
       NL;
+      PL ("with A0B.STM32G474.Startup_Utilities;");
+      NL;
       PL ("package body System_Startup is");
       NL;
       PL ("   procedure Reset_Handler");
@@ -189,11 +192,24 @@ package body RTG.Startup is
       PL ("   procedure Main");
       PL ("     with Import, Convention => C, External_Name => ""main"", No_Return;");
       NL;
+      PL ("   procedure Configure_System_Clocks is");
+      PL ("     new A0B.STM32G474.Startup_Utilities.Generic_Configure_System_Clocks");
+      PL ("       (FLASH_LATENCY => 4,");
+      PL ("        PLL_M         => 2,");
+      PL ("        PLL_N         => 75,");
+      PL ("        PLL_P         => 2,");
+      PL ("        PLL_Q         => 2,");
+      PL ("        PLL_R         => 2,");
+      PL ("        AHB           => 1,");
+      PL ("        APB1          => 1,");
+      PL ("        APB2          => 1);");
+      NL;
       PL ("   procedure Reset_Handler is");
       PL ("   begin");
       PL ("      A0B.ARMv7M.Startup_Utilities.Enable_FPU;");
       PL ("      A0B.ARMv7M.Startup_Utilities.Copy_Data_Section;");
       PL ("      A0B.ARMv7M.Startup_Utilities.Fill_BSS_Section;");
+      PL ("      Configure_System_Clocks;");
       PL ("      Main;");
       PL ("   end Reset_Handler;");
       NL;
