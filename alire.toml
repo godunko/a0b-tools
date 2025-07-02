@@ -18,6 +18,9 @@ generate_ada = false
 generate_gpr = true
 generate_c = false
 
+[environment]
+PATH.append = "${CRATE_ROOT}/bin"
+
 [[depends-on]]
 a0b_base = "*"
 gnat_native = "*"
