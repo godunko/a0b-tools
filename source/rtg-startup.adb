@@ -7,12 +7,16 @@
 with VSS.Application;
 with VSS.Strings.Conversions;
 with VSS.Strings.Formatters.Generic_Modulars;
+with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
 
 with RTG.Diagnostics;
 with RTG.Utilities;
 
 package body RTG.Startup is
+
+   use VSS.Strings.Formatters.Strings;
+   use VSS.Strings.Templates;
 
    procedure Generate_Libstartup_Project (Descriptor : Startup_Descriptor);
 
@@ -67,9 +71,12 @@ package body RTG.Startup is
           (Descriptor.Startup_Directory, "libstartup.gpr");
       use Output;
 
+      With_Unit_Template : constant Virtual_String_Template :=
+        "with ""{}"";";
+
    begin
       PL ("with ""a0b_armv7m.gpr"";");
-      PL ("with ""a0b_stm32g474.gpr"";");
+      PL (With_Unit_Template.Format (Image (Descriptor.Project_File_Name)));
       NL;
       PL ("library project LibStartup is");
       NL;
@@ -91,8 +98,6 @@ package body RTG.Startup is
    procedure Generate_Startup_Linker_Script
      (Descriptor : Startup_Descriptor)
    is
-      use VSS.Strings.Templates;
-
       package Unsigned_64_Formatters is
         new VSS.Strings.Formatters.Generic_Modulars (A0B.Types.Unsigned_64);
       use Unsigned_64_Formatters;
@@ -177,12 +182,19 @@ package body RTG.Startup is
           (Descriptor.Startup_Directory, "system_startup.adb");
       use Output;
 
+      With_Unit_Template     : constant Virtual_String_Template :=
+        "with {};";
+      Instantiation_Template : constant Virtual_String_Template :=
+        "     new {}";
+      Parameter_Template     : constant Virtual_String_Template :=
+        "{} => {}";
+
    begin
       PL ("with A0B.ARMv7M.Startup_Utilities.Copy_Data_Section;");
       PL ("with A0B.ARMv7M.Startup_Utilities.Enable_FPU;");
       PL ("with A0B.ARMv7M.Startup_Utilities.Fill_BSS_Section;");
       NL;
-      PL ("with A0B.STM32G474.Startup_Utilities;");
+      PL (With_Unit_Template.Format (Image (Descriptor.Compilation_Unit)));
       NL;
       PL ("package body System_Startup is");
       NL;
@@ -193,16 +205,35 @@ package body RTG.Startup is
       PL ("     with Import, Convention => C, External_Name => ""main"", No_Return;");
       NL;
       PL ("   procedure Configure_System_Clocks is");
-      PL ("     new A0B.STM32G474.Startup_Utilities.Generic_Configure_System_Clocks");
-      PL ("       (FLASH_LATENCY => 4,");
-      PL ("        PLL_M         => 2,");
-      PL ("        PLL_N         => 75,");
-      PL ("        PLL_P         => 2,");
-      PL ("        PLL_Q         => 2,");
-      PL ("        PLL_R         => 2,");
-      PL ("        AHB           => 1,");
-      PL ("        APB1          => 1,");
-      PL ("        APB2          => 1);");
+      PS
+        (Instantiation_Template.Format (Image (Descriptor.Generic_Subprogram)));
+
+      for J in Descriptor.Parameters.First_Index
+                 .. Descriptor.Parameters.Last_Index
+      loop
+         if J = Descriptor.Parameters.First_Index then
+            NL;
+            PS ("     (");
+
+         else
+            PS ("      ");
+         end if;
+
+         PS
+           (Parameter_Template.Format
+              (Image (Descriptor.Parameters (J).Name),
+               Image (Descriptor.Parameters (J).Value)));
+
+         if J = Descriptor.Parameters.Last_Index then
+            PS (")");
+
+         else
+            PL (",");
+         end if;
+      end loop;
+
+      PL (";");
+
       NL;
       PL ("   procedure Reset_Handler is");
       PL ("   begin");

@@ -17,6 +17,10 @@ package RTG.Diagnostics is
 
    procedure Error
      (Template    : VSS.Strings.Templates.Virtual_String_Template;
+      Parameter_1 : VSS.Strings.Virtual_String);
+
+   procedure Error
+     (Template    : VSS.Strings.Templates.Virtual_String_Template;
       Parameter_1 : VSS.Strings.Virtual_String;
       Parameter_2 : VSS.Strings.Virtual_String;
       Parameter_3 : VSS.Strings.Virtual_String);

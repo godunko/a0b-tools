@@ -10,15 +10,18 @@ with Ada.Command_Line;
 
 with GNATCOLL.VFS;
 
+with VSS.Application;
 with VSS.Command_Line;
 with VSS.Strings.Conversions;
+with VSS.Strings.Formatters.Strings;
+with VSS.Strings.Templates;
 
 with RTG.Architecture;
 with RTG.GNAT_RTS_Sources;
 with RTG.Runtime;
 with RTG.Runtime_Reader;
 with RTG.SVD_Reader;
-with RTG.Startup;
+with RTG.Startup.Reader;
 with RTG.System;
 with RTG.System_BB_MCU_Parameters;
 with RTG.System_BB_Parameters;
@@ -40,6 +43,7 @@ procedure RTG.Driver is
 
    BB_Runtimes_Directory : GNATCOLL.VFS.Virtual_File;
    SVD_File              : GNATCOLL.VFS.Virtual_File;
+   Startup_Binding_File  : GNATCOLL.VFS.Virtual_File;
 
    Runtime    : RTG.Runtime.Runtime_Descriptor;
    Tasking    : RTG.Tasking.Tasking_Descriptor;
@@ -123,8 +127,34 @@ begin
       VSS.Command_Line.Report_Error ("SVD file is not specified");
    end if;
 
+   if VSS.Application.System_Environment.Contains
+     ("A0B_TOOLS_BINDING_STARTUP")
+   then
+      Startup_Binding_File :=
+        GNATCOLL.VFS.Create_From_Base
+          (GNATCOLL.VFS.Filesystem_String
+             (VSS.Strings.Conversions.To_UTF_8_String
+                (VSS.Application.System_Environment.Value
+                     ("A0B_TOOLS_BINDING_STARTUP"))),
+           GNATCOLL.VFS.Get_Current_Dir.Full_Name.all);
+
+      if not Startup_Binding_File.Is_Regular_File then
+         VSS.Command_Line.Report_Error
+           (VSS.Strings.Templates.To_Virtual_String_Template
+              ("startup binding file {} not found").Format
+                (VSS.Strings.Formatters.Strings.Image
+                     (VSS.Strings.Conversions.To_Virtual_String
+                        (Startup_Binding_File.Display_Full_Name))));
+      end if;
+
+   else
+      VSS.Command_Line.Report_Error ("Startup binding file is not specified");
+   end if;
+
    RTG.Runtime.Initialize (Runtime, BB_Runtimes_Directory);
    RTG.Startup.Initialize (Startup);
+
+   --  Load files: runtime configuration, SVD file, startup binding.
 
    RTG.Runtime_Reader.Read
      (GNATCOLL.VFS.Create ("runtime.json"),
@@ -133,6 +163,7 @@ begin
       Startup,
       Scenarios);
    RTG.SVD_Reader.Read (SVD_File, Interrupts);
+   RTG.Startup.Reader.Read (Startup_Binding_File, Startup, Scenarios);
 
    RTG.Architecture.Process
      (Tasking, Scenarios, Parameters, System_BB_MCU_Parameters);
