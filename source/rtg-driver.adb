@@ -30,6 +30,8 @@ with RTG.Tasking;
 
 procedure RTG.Driver is
 
+   use type GNATCOLL.VFS.Virtual_File;
+
    BB_Runtimes_Option : constant VSS.Command_Line.Value_Option :=
      (Description => "Path to BB Runtimes sources",
       Short_Name  => <>,
@@ -112,20 +114,33 @@ begin
         ("BB Runtimes directory is not specified");
    end if;
 
+   --  SVD file
+
+   if VSS.Application.System_Environment.Contains ("A0B_TOOLS_SVD") then
+      SVD_File :=
+        GNATCOLL.VFS.Create_From_Base
+          (GNATCOLL.VFS.Filesystem_String
+             (VSS.Strings.Conversions.To_UTF_8_String
+                (VSS.Application.System_Environment.Value ("A0B_TOOLS_SVD"))),
+           GNATCOLL.VFS.Get_Current_Dir.Full_Name.all);
+   end if;
+
    if VSS.Command_Line.Is_Specified (SVD_Option) then
       SVD_File :=
         GNATCOLL.VFS.Create
           (GNATCOLL.VFS.Filesystem_String
              (VSS.Strings.Conversions.To_UTF_8_String
                 (VSS.Command_Line.Value (SVD_Option))));
-
-      if not SVD_File.Is_Regular_File then
-         VSS.Command_Line.Report_Error ("SVD file not found");
-      end if;
-
-   else
-      VSS.Command_Line.Report_Error ("SVD file is not specified");
    end if;
+
+   if SVD_File = GNATCOLL.VFS.No_File then
+      VSS.Command_Line.Report_Error ("SVD file not specified");
+
+   elsif not SVD_File.Is_Regular_File then
+      VSS.Command_Line.Report_Error ("SVD file not found");
+   end if;
+
+   --  Startup binding information
 
    if VSS.Application.System_Environment.Contains
      ("A0B_TOOLS_BINDING_STARTUP")
