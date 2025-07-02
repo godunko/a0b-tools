@@ -1,0 +1,47 @@
+name = "blink_led_tasking_weact_blackpill_stm32f401cc"
+description = "Blink LED Tasking on WeAct Blackpill STM32F401CC"
+version = "0.1.0-dev"
+
+authors = ["Vadim Godunko"]
+maintainers = ["Vadim Godunko <vgodunko@gmail.com>"]
+maintainers-logins = ["godunko"]
+licenses = "Apache-2.0 WITH LLVM-exception"
+tags = ["embedded"]
+
+project-files = ["gnat/weact_blackpill_stm32f401cc.gpr"]
+
+[configuration]
+generate_ada = false
+generate_c = false
+generate_gpr = true
+
+[configuration.values]
+a0b_armv7m.fpu_extension = "VFPv4"
+
+[[actions]]
+type = "pre-build"
+command = ["a0b-runtime", "--bb-runtimes=../../../bb-runtimes-15/"]
+[[actions]]
+type = "pre-build"
+command = ["gprbuild", "-j0", "runtime/build_runtime.gpr"]
+[[actions]]
+type = "pre-build"
+command = ["gprbuild", "-j0", "runtime/build_tasking.gpr"]
+
+[[actions]]
+type = "post-build"
+command = ["arm-eabi-objcopy", "-O", "binary", "bin/main.elf", "bin/main.bin"]
+
+[[depends-on]]
+gnat_arm_elf = ">=15"
+a0b_stm32f401_gpio = "*"
+a0b_tools = "*"
+
+[[pins]]
+a0b_armv7m = { path='../../../a0b-armv7m' }
+a0b_exti = { path='../../../a0b-exti' }
+a0b_gpio = { path='../../../a0b-gpio' }
+a0b_stm32f401 = { path='../../../a0b-stm32f401' }
+
+[[pins]]
+a0b_tools = { path='../..' }

@@ -1,0 +1,19 @@
+with "../config/blink_led_tasking_weact_blackpill_stm32f401cc_config.gpr";
+
+project WeAct_Blackpill_STM32F401CC extends "../startup/startup.gpr" is
+   for Target use "arm-eabi";
+   for Runtime ("Ada") use "../runtime";
+   for Source_Dirs use ("../source");
+   for Object_Dir use "../.objs";
+   for Exec_Dir use "../bin";
+   for Main use ("main.adb");
+
+   package Compiler is
+      for Switches ("Ada") use ("-g");
+   end Compiler;
+
+   package Builder is
+      for Executable ("main.adb") use "main.elf";
+   end Builder;
+
+end WeAct_Blackpill_STM32F401CC;
