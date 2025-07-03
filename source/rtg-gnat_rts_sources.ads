@@ -11,6 +11,7 @@ with GNATCOLL.VFS;
 with VSS.Strings.Hash;
 
 with RTG.Runtime;
+limited with RTG.Tasking;
 
 package RTG.GNAT_RTS_Sources is
 
@@ -23,7 +24,8 @@ package RTG.GNAT_RTS_Sources is
         "="             => VSS.Strings."=");
 
    procedure Copy
-     (Descriptor  : RTG.Runtime.Runtime_Descriptor'Class;
+     (Runtime     : RTG.Runtime.Runtime_Descriptor'Class;
+      Tasking     : RTG.Tasking.Tasking_Descriptor;
       Scenarios   : Scenario_Maps.Map;
       RTS_Sources : GNATCOLL.VFS.Virtual_File);
 

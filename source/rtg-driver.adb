@@ -200,6 +200,7 @@ begin
 
    RTG.GNAT_RTS_Sources.Copy
      (Runtime,
+      Tasking,
       Scenarios,
       BB_Runtimes_Directory.Create_From_Dir
         ("gnat_rts_sources/lib/gnat/rts-sources.json"));
