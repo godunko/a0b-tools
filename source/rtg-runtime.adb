@@ -323,8 +323,12 @@ package body RTG.Runtime is
       PL ("   end Compiler;");
       NL;
       PL ("   package Linker is");
+      PL ("      for Leading_Switches (""Ada"") use");
+      PL ("         Linker'Leading_Switches (""Ada"")");
+      PL ("         & (""${RUNTIME_DIR(ada)}/lib/libgnast.a"");");
       PL ("      for Required_Switches use");
       PL ("         Linker'Required_Switches");
+
       for J in Descriptor.Linker_Required_Switches.First_Index
                  .. Descriptor.Linker_Required_Switches.Last_Index
       loop
@@ -345,6 +349,8 @@ package body RTG.Runtime is
          end if;
       end loop;
 
+      PL ("         & (""-L"", ""${RUNTIME_DIR(ada)}/gnast"",");
+      PL ("            ""-T"", ""startup.ld"")");
       PL ("         & Compiler.Common_Required_Switches;");
       PL ("   end Linker;");
       PL ("      ]]>");

@@ -18,13 +18,9 @@ package body RTG.Startup is
    use VSS.Strings.Formatters.Strings;
    use VSS.Strings.Templates;
 
-   procedure Generate_Libstartup_Project
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Descriptor : Startup_Descriptor);
-
-   procedure Generate_Startup_Project
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Descriptor : Startup_Descriptor);
+   procedure Generate_Build_Startup_Project
+     (Runtime : RTG.Runtime.Runtime_Descriptor;
+      Startup : Startup_Descriptor);
 
    procedure Generate_Startup_Linker_Script
      (Runtime    : RTG.Runtime.Runtime_Descriptor;
@@ -66,47 +62,56 @@ package body RTG.Startup is
      (Runtime    : RTG.Runtime.Runtime_Descriptor;
       Descriptor : Startup_Descriptor) is
    begin
-      Generate_Libstartup_Project (Runtime, Descriptor);
-      Generate_Startup_Project (Runtime, Descriptor);
+      Generate_Build_Startup_Project (Runtime, Descriptor);
       Generate_Startup_Linker_Script (Runtime, Descriptor);
       Copy_Linker_Scripts (Runtime, Descriptor);
       Generate_System_Startup_Specification (Runtime, Descriptor);
       Generate_System_Startup_Implementation (Runtime, Descriptor);
    end Create;
 
-   ---------------------------------
-   -- Generate_Libstartup_Project --
-   ---------------------------------
+   ------------------------------------
+   -- Generate_Build_Startup_Project --
+   ------------------------------------
 
-   procedure Generate_Libstartup_Project
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Descriptor : Startup_Descriptor)
+   procedure Generate_Build_Startup_Project
+     (Runtime : RTG.Runtime.Runtime_Descriptor;
+      Startup : Startup_Descriptor)
    is
-
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Startup_Source_Directory, "libstartup.gpr");
+          (Runtime.Runtime_Directory, "build_startup.gpr");
       use Output;
 
-      With_Unit_Template : constant Virtual_String_Template :=
+      With_Project_Template : constant Virtual_String_Template :=
         "with ""{}"";";
 
    begin
       PL ("with ""a0b_armv7m.gpr"";");
-      PL (With_Unit_Template.Format (Image (Descriptor.Project_File_Name)));
+      PL (With_Project_Template.Format (Image (Startup.Project_File_Name)));
       NL;
-      PL ("library project LibStartup is");
-      NL;
-      PL ("   for Library_Name use ""gnatstartup"";");
+      PL ("library project Build_Startup is");
+      PL ("   for Target use ""arm-eabi"";");
+      PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
+      PL ("   for Library_Name use ""gnast"";");
+      PL ("   for Source_Dirs use (""gnast"");");
+      PL ("   for Object_Dir use ""obj/gnast"";");
       PL ("   for Library_Dir use ""lib"";");
-      PL ("   for Object_Dir use "".objs"";");
       NL;
       PL ("   package Compiler is");
-      PL ("      for Switches (""Ada"") use (""-g"", ""-O2"");");
+      PL ("      for Switches (""Ada"") use");
+      PL ("        (""-g"",");
+      PL ("         ""-O2"",");
+      PL ("         ""-fno-delete-null-pointer-checks"",");
+      PL ("         ""-gnatg"",");
+      PL ("         ""-gnatp"",");
+      PL ("         ""-gnatn2"",");
+      PL ("         ""-nostdinc"",");
+      PL ("         ""-ffunction-sections"",");
+      PL ("         ""-fdata-sections"");");
       PL ("   end Compiler;");
       NL;
-      PL ("end LibStartup;");
-   end Generate_Libstartup_Project;
+      PL ("end Build_Startup;");
+   end Generate_Build_Startup_Project;
 
    ------------------------------------
    -- Generate_Startup_Linker_Script --
@@ -162,33 +167,6 @@ package body RTG.Startup is
 
       PL ("INCLUDE armv7m.ld");
    end Generate_Startup_Linker_Script;
-
-   ------------------------------
-   -- Generate_Startup_Project --
-   ------------------------------
-
-   procedure Generate_Startup_Project
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Descriptor : Startup_Descriptor) is
-
-      package Output is
-        new RTG.Utilities.Generic_Output
-          (Runtime.Startup_Source_Directory, "startup.gpr");
-      use Output;
-
-   begin
-      NL;
-      PL ("with ""libstartup.gpr"";");
-      NL;
-      PL ("abstract project Startup is");
-      NL;
-      PL ("   package Linker is");
-      PL ("      for Switches (""Ada"") use");
-      PL ("        Linker'Required_Switches & (""-L"", Project'Project_Dir, ""-T"", ""startup.ld"");");
-      PL ("   end Linker;");
-      NL;
-      PL ("end Startup;");
-   end Generate_Startup_Project;
 
    --------------------------------------------
    -- Generate_System_Startup_Implementation --
