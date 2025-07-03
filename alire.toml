@@ -28,4 +28,4 @@ gnatcoll = "*"
 vss = "*"
 
 [[pins]]
-vss = { path='../VSS' }
+vss = { url='https://github.com/AdaCore/VSS.git' }
