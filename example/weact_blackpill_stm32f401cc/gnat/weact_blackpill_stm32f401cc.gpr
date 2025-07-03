@@ -1,6 +1,6 @@
 with "../config/blink_led_tasking_weact_blackpill_stm32f401cc_config.gpr";
 
-project WeAct_Blackpill_STM32F401CC extends "../startup/startup.gpr" is
+project WeAct_Blackpill_STM32F401CC is
    for Target use "arm-eabi";
    for Runtime ("Ada") use "../runtime";
    for Source_Dirs use ("../source");
