@@ -18,57 +18,74 @@ package body RTG.Startup is
    use VSS.Strings.Formatters.Strings;
    use VSS.Strings.Templates;
 
-   procedure Generate_Libstartup_Project (Descriptor : Startup_Descriptor);
+   procedure Generate_Libstartup_Project
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor);
 
-   procedure Generate_Startup_Project (Descriptor : Startup_Descriptor);
+   procedure Generate_Startup_Project
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor);
 
-   procedure Generate_Startup_Linker_Script (Descriptor : Startup_Descriptor);
+   procedure Generate_Startup_Linker_Script
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor);
 
-   procedure Copy_Linker_Scripts (Descriptor : Startup_Descriptor);
+   procedure Copy_Linker_Scripts
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor);
 
    procedure Generate_System_Startup_Specification
-     (Descriptor : Startup_Descriptor);
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor);
 
    procedure Generate_System_Startup_Implementation
-     (Descriptor : Startup_Descriptor);
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor);
 
    -------------------------
    -- Copy_Linker_Scripts --
    -------------------------
 
-   procedure Copy_Linker_Scripts (Descriptor : Startup_Descriptor) is
+   procedure Copy_Linker_Scripts
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor)
+   is
       Source  : constant GNATCOLL.VFS.Virtual_File :=
         Descriptor.A0B_ARMv7M_Prefix.Create_From_Dir ("source/ld/armv7m.ld");
       Success : Boolean;
 
    begin
-      Source.Copy (Descriptor.Startup_Directory.Full_Name.all, Success);
+      Source.Copy (Runtime.Startup_Source_Directory .Full_Name.all, Success);
    end Copy_Linker_Scripts;
 
    ------------
    -- Create --
    ------------
 
-   procedure Create (Descriptor : Startup_Descriptor) is
+   procedure Create
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor) is
    begin
-      Descriptor.Startup_Directory.Make_Dir;
-      Generate_Libstartup_Project (Descriptor);
-      Generate_Startup_Project (Descriptor);
-      Generate_Startup_Linker_Script (Descriptor);
-      Copy_Linker_Scripts (Descriptor);
-      Generate_System_Startup_Specification (Descriptor);
-      Generate_System_Startup_Implementation (Descriptor);
+      Generate_Libstartup_Project (Runtime, Descriptor);
+      Generate_Startup_Project (Runtime, Descriptor);
+      Generate_Startup_Linker_Script (Runtime, Descriptor);
+      Copy_Linker_Scripts (Runtime, Descriptor);
+      Generate_System_Startup_Specification (Runtime, Descriptor);
+      Generate_System_Startup_Implementation (Runtime, Descriptor);
    end Create;
 
    ---------------------------------
    -- Generate_Libstartup_Project --
    ---------------------------------
 
-   procedure Generate_Libstartup_Project (Descriptor : Startup_Descriptor) is
+   procedure Generate_Libstartup_Project
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor)
+   is
 
       package Output is
         new RTG.Utilities.Generic_Output
-          (Descriptor.Startup_Directory, "libstartup.gpr");
+          (Runtime.Startup_Source_Directory, "libstartup.gpr");
       use Output;
 
       With_Unit_Template : constant Virtual_String_Template :=
@@ -96,7 +113,8 @@ package body RTG.Startup is
    ------------------------------------
 
    procedure Generate_Startup_Linker_Script
-     (Descriptor : Startup_Descriptor)
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor)
    is
       package Unsigned_64_Formatters is
         new VSS.Strings.Formatters.Generic_Modulars (A0B.Types.Unsigned_64);
@@ -104,7 +122,7 @@ package body RTG.Startup is
 
       package Output is
         new RTG.Utilities.Generic_Output
-          (Descriptor.Startup_Directory, "startup.ld");
+          (Runtime.Startup_Source_Directory, "startup.ld");
       use Output;
 
       Flash_Template : constant Virtual_String_Template :=
@@ -149,11 +167,13 @@ package body RTG.Startup is
    -- Generate_Startup_Project --
    ------------------------------
 
-   procedure Generate_Startup_Project (Descriptor : Startup_Descriptor) is
+   procedure Generate_Startup_Project
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor) is
 
       package Output is
         new RTG.Utilities.Generic_Output
-          (Descriptor.Startup_Directory, "startup.gpr");
+          (Runtime.Startup_Source_Directory, "startup.gpr");
       use Output;
 
    begin
@@ -175,11 +195,12 @@ package body RTG.Startup is
    --------------------------------------------
 
    procedure Generate_System_Startup_Implementation
-     (Descriptor : Startup_Descriptor)
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor)
    is
       package Output is
         new RTG.Utilities.Generic_Output
-          (Descriptor.Startup_Directory, "system_startup.adb");
+          (Runtime.Startup_Source_Directory, "system_startup.adb");
       use Output;
 
       With_Unit_Template     : constant Virtual_String_Template :=
@@ -252,12 +273,13 @@ package body RTG.Startup is
    -------------------------------------------
 
    procedure Generate_System_Startup_Specification
-     (Descriptor : Startup_Descriptor)
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor)
    is
 
       package Output is
         new RTG.Utilities.Generic_Output
-          (Descriptor.Startup_Directory, "system_startup.ads");
+          (Runtime.Startup_Source_Directory, "system_startup.ads");
       use Output;
 
    begin
@@ -275,8 +297,6 @@ package body RTG.Startup is
 
    procedure Initialize (Self : in out Startup_Descriptor) is
    begin
-      Self.Startup_Directory := GNATCOLL.VFS.Create ("startup");
-
       if not VSS.Application.System_Environment.Contains
                ("A0B_ARMV7M_ALIRE_PREFIX")
       then

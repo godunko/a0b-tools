@@ -6,6 +6,8 @@
 
 with GNATCOLL.VFS;
 
+with RTG.Runtime;
+
 package RTG.Startup is
 
    type Parameter_Information is record
@@ -18,7 +20,6 @@ package RTG.Startup is
      new Ada.Containers.Vectors (Positive, Parameter_Information);
 
    type Startup_Descriptor is tagged limited record
-      Startup_Directory  : GNATCOLL.VFS.Virtual_File;
       A0B_ARMv7M_Prefix  : GNATCOLL.VFS.Virtual_File;
 
       Flash              : RTG.Memory_Descriptor;
@@ -32,6 +33,8 @@ package RTG.Startup is
 
    procedure Initialize (Self : in out Startup_Descriptor);
 
-   procedure Create (Descriptor : Startup_Descriptor);
+   procedure Create
+     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+      Descriptor : Startup_Descriptor);
 
 end RTG.Startup;

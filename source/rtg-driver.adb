@@ -204,7 +204,7 @@ begin
       BB_Runtimes_Directory.Create_From_Dir
         ("gnat_rts_sources/lib/gnat/rts-sources.json"));
 
-   RTG.Startup.Create (Startup);
+   RTG.Startup.Create (Runtime, Startup);
 
 exception
    when RTG.Internal_Error =>

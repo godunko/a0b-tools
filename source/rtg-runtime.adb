@@ -102,6 +102,8 @@ package body RTG.Runtime is
          Generate_Build_Tasking_Project (Descriptor);
          Copy_Tasking_Sources (Descriptor, Tasking);
       end if;
+
+      Descriptor.Startup_Source_Directory.Make_Dir;
    end Create;
 
    ------------------------------
@@ -375,6 +377,16 @@ package body RTG.Runtime is
    begin
       return Self.Runtime_Directory.Create_From_Dir ("gnat");
    end Runtime_Source_Directory;
+
+   ------------------------------
+   -- Startup_Source_Directory --
+   ------------------------------
+
+   function Startup_Source_Directory
+     (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File is
+   begin
+      return Self.Runtime_Directory.Create_From_Dir ("gnast");
+   end Startup_Source_Directory;
 
    ------------------------------
    -- Tasking_Source_Directory --
