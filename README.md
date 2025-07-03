@@ -1,21 +1,21 @@
 # A0B Tools: Runtime Generator
 
-This crate provides utility to construct custom GNAT runtime for bare board applications. 
+This crate provides utility to construct custom GNAT runtime for bare board application. 
 It supports construction of three well known runtime profiles: `light`, `light-tasking` and `embedded` with necessary customization for particular project.
-Optionally, it generates simple startup code and linker script.
+It generates startup code and linker script too.
 
 ## Ideas
 
 * Separate GNAT runtime from startup code and hardware configuration
 * Fine tuning of GNAT runtime (set of packages, stack size, etc.) by single configuration file
-* Support different tasking profiles, including GNAT's and custom RTOSes
+* Support different tasking profiles, including GNAT's `light-tasking`/`embedded` and custom RTOSes
 
 ## Run runtime generator
 
 `a0b-runtime --bb-runtimes=<path> --svd=<path>`
 
 * `--bb-runtimes` path to `bb-runtimes` repository
-* `--svd` path to SVD file of the MCU
+* `--svd` (optional) path to SVD file of the MCU
 
 ## Use of generated runtime
 
@@ -29,16 +29,25 @@ project My_BB_Application is
 end My_BB_Application;
 ```
 
-## Use of generated runtime and startup code/linker script
+## Alire integration
 
-```ada
-project Test extends "startup/startup.gpr" is
-   ...
-   for Target use "arm-eabi";
-   for Runtime ("Ada") use "runtime";
-   ...
-end Test;
+Runtime generator is expected to be used with Alire to build application.
+Board/MCU support crates provides information to generate startup code and linker script.
+Following code should be added to `alire.toml` to run generator by `alr build`:
 
+```
+[[actions]]
+type = "pre-build"
+command = ["a0b-runtime", "--bb-runtimes=../../../bb-runtimes-15/"]
+[[actions]]
+type = "pre-build"
+command = ["gprbuild", "-j0", "runtime/build_runtime.gpr"]
+[[actions]]
+type = "pre-build"
+command = ["gprbuild", "-j0", "runtime/build_tasking.gpr"]
+[[actions]]
+type = "pre-build"
+command = ["gprbuild", "-j0", "runtime/build_startup.gpr"]
 ```
 
 ## Runtime descriptor file
@@ -50,14 +59,23 @@ Typical content of the file:
 ```json5
 {
   "dt:&cpu0:compatible": "arm,cortex-m4f",
-  "dt:&cpu0:clock-frequency": "150_000_000",
+  "dt:&cpu0:clock-frequency": "84_000_000",
   "dt:&nvic:arm,num-irq-priority-bits": "4",
-  "dt:/chosen/a0b,sram:reg": ["0x20000000", "DT_SIZE_K(32)"],
-  "dt:/chosen/a0b,flash:reg": ["0x08000000", "DT_SIZE_K(32)"],
+  "dt:/chosen/a0b,sram:reg": ["0x20000000", "DT_SIZE_K(64)"],
+  "dt:/chosen/a0b,flash:reg": ["0x08000000", "DT_SIZE_K(256)"],
+  "dt:&flash:latency": "2",
+  "dt:&pwr:vos": "2",
+  "dt:&pll:div-m": "25",
+  "dt:&pll:mul-n": "336",
+  "dt:&pll:div-p": "4",
+  "dt:&pll:div-q": "7",
+  "dt:&rcc:ahb-prescaler": "1",
+  "dt:&rcc:apb1-prescaler": "2",
+  "dt:&rcc:apb2-prescaler": "1",
 
   "runtime":
   {
-    "common_required_switches": ["-mfloat-abi=hard", "-mcpu=cortex-m4"],
+    "common_required_switches": ["-mfloat-abi=hard", "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16"],
     "linker_required_switches": ["-nostartfiles", "-nolibc"],
     "files":
     {
@@ -119,8 +137,17 @@ Typical content of the file:
 * `dt:&cpu0:compatible`: CPU architecture, only supported value is `arm,cortex-m4f`
 * `dt:&cpu0:clock-frequency`: CPU frequency
 * `dt:&nvic:arm,num-irq-priority-bits` number of bits of priority supported by MCU's NVIC
-* `dt:/chosen/a0b,sram:reg`: SRAM address and size
-* `dt:/chosen/a0b,flash:reg`: FLASH address and size
+* `dt:/chosen/a0b,sram:reg`: SRAM address and size (required for linker script generation)
+* `dt:/chosen/a0b,flash:reg`: FLASH address and size (required for linker script generation)
+* `dt:&flash:latency`: flash latency (reqired for system clock configuration)
+* `dt:&pwr:vos`: voltage scaling (reqired for system clock configuration)
+* `dt:&pll:div-m`: PLL `M` divider (reqired for system clock configuration)
+* `dt:&pll:mul-n`: PLL `N` multiplier (reqired for system clock configuration)
+* `dt:&pll:div-p`: PLL `P` divider (reqired for system clock configuration)
+* `dt:&pll:div-q`: PLL `Q` divider (reqired for system clock configuration)
+* `dt:&rcc:ahb-prescaler`: AHB prescaler (reqired for system clock configuration)
+* `dt:&rcc:apb1-prescaler`: APB1 prescaler (reqired for system clock configuration)
+* `dt:&rcc:apb2-prescaler`: APB2 prescaler (reqired for system clock configuration)
 * `runtime`: configuration parameters of runtime
 * `scenarios`: scenario variables to be used to construct GNAT runtime
 
