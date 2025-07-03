@@ -41,10 +41,8 @@ a0b_stm32f401_gpio = "*"
 a0b_tools = "*"
 
 [[pins]]
-a0b_armv7m = { path='../../../a0b-armv7m' }
-a0b_exti = { path='../../../a0b-exti' }
-a0b_gpio = { path='../../../a0b-gpio' }
-a0b_stm32f401 = { path='../../../a0b-stm32f401' }
+a0b_tools = { path='../..' }
 
 [[pins]]
-a0b_tools = { path='../..' }
+a0b_armv7m = { url='https://github.com/godunko/a0b-armv7m.git' }
+a0b_stm32f401 = { url='https://github.com/godunko/a0b-stm32f401.git' }
