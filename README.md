@@ -18,7 +18,7 @@ It generates startup code and linker script too.
 ## Known Limitations
 
 * Only ARM Cortex-M3 and Cortex-M4F are supported
-* Only `light-tasking` is supported
+* Only `light-tasking` is tested
 
 ## Run runtime generator
 
