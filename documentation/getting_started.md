@@ -1,6 +1,6 @@
 # Getting Started
 
-Table Of Content
+Table of Content
 
 * [Install Alire](#install-alire)
 * [Download `bb-runtimes`](#download-bb-runtimes)
