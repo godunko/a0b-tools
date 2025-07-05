@@ -192,7 +192,7 @@ package body RTG.Startup is
 
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Startup_Source_Directory, "system_startup.adb");
+          (Runtime.Startup_Source_Directory, "s-startu.adb");
       use Output;
 
       type External_Kind is (Import, Export);
@@ -292,8 +292,6 @@ package body RTG.Startup is
       NL;
       PL ("pragma Style_Checks (""M132"");");
       NL;
-      PL ("with System;");
-      NL;
       PL ("with A0B.ARMv7M.Startup_Utilities.Copy_Data_Section;");
 
       if Descriptor.ARM_Enable_FPU then
@@ -304,7 +302,7 @@ package body RTG.Startup is
       NL;
       PL (With_Unit_Template.Format (Image (Descriptor.Compilation_Unit)));
       NL;
-      PL ("package body System_Startup is");
+      PL ("package body System.Startup is");
       NL;
       PL ("   procedure Main");
       PL ("     with Import, Convention => C, External_Name => ""main"", No_Return;");
@@ -541,7 +539,7 @@ package body RTG.Startup is
       PL ("      Main;");
       PL ("   end Reset_Handler;");
       NL;
-      PL ("end System_Startup;");
+      PL ("end System.Startup;");
    end Generate_System_Startup_Implementation;
 
    -------------------------------------------
@@ -554,16 +552,16 @@ package body RTG.Startup is
 
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Startup_Source_Directory, "system_startup.ads");
+          (Runtime.Startup_Source_Directory, "s-startu.ads");
       use Output;
 
    begin
       NL;
-      PL ("package System_Startup");
+      PL ("package System.Startup");
       PL ("  with Elaborate_Body, No_Elaboration_Code_All");
       PL ("is");
       NL;
-      PL ("end System_Startup;");
+      PL ("end System.Startup;");
    end Generate_System_Startup_Specification;
 
    ----------------
