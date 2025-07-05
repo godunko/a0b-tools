@@ -1,5 +1,16 @@
 # Getting Started
 
+Table Of Content
+
+* [Install Alire](#install-alire)
+* [Download `bb-runtimes`](#download-bb-runtimes)
+* [Create a new project](#create-a-new-project)
+  * [Create Alire crate and configure it](#create-alire-crate-and-configure-it)
+  * [Update project file](#update-project-file)
+  * [Add runtime description](#add-runtime-description)
+  * [Add application's code](#add-applications-code)
+  * [Build project](#build-project)
+
 ## Install Alire
 
 See [Alire documentation](https://alire.ada.dev/docs/#getting-started) how to install Alire on your computer.
@@ -15,8 +26,10 @@ git clone --branch=gnat-fsf-15 https://github.com/alire-project/bb-runtimes.git 
 
 ## Create a new project
 
-We will create Blink LED project like provided in the `example/weact_blackpill_stm32f401cc` directory.
+We will create Blink LED project like provided in the [`example/weact_blackpill_stm32f401cc`](../example/weact_blackpill_stm32f401cc) directory.
 It works on WeAct Blackpill STM32F401 board with 25 MHz external crystal resonator (there is version with 8 MHz external crystal resonator).
+
+### Create Alire crate and configure it
 
 First, create new Alire crate
 
@@ -68,6 +81,7 @@ command = ["gprbuild", "-j0", "runtime/build_startup.gpr"]
 [configuration.values]
 a0b_armv7m.fpu_extension = "VFPv4"
 ```
+### Update project file
 
 Project file `hello_led.gpr` need to be modified to use `arm-eabi` compiler and generated custom runtime:
 
@@ -79,6 +93,8 @@ project Hello_Led is
    ...
 end Hello_Led;
 ```
+
+### Add runtime description
 
 Next, runtime description file `runtime.json` need to be created in the root directory of the application crate.
 
@@ -158,6 +174,8 @@ Next, runtime description file `runtime.json` need to be created in the root dir
 }
 ```
 
+### Add application's code
+
 Last, modify `src/hello_led.adb` file to blink led
 
 ```
@@ -183,6 +201,8 @@ begin
    end loop;
 end Hello_Led;
 ```
+
+### Build project
 
 Now build project
 
