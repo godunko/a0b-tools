@@ -186,14 +186,14 @@ begin
 
    RTG.Runtime.Create (Runtime, Tasking);
    RTG.System.Generate (Runtime, Parameters);
-   RTG.System_BB_MCU_Vectors.Generate
-     (Runtime      => Runtime,
-      Interrupts   => Interrupts,
-      Startup      => True,        --  Might be False for custom RTOS
-      Static       => not RTG.Tasking.Use_GNAT_Tasking (Tasking),
-      GNAT_Tasking => RTG.Tasking.Use_GNAT_Tasking (Tasking));
 
    if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
+      RTG.System_BB_MCU_Vectors.Generate
+        (Runtime      => Runtime,
+         Interrupts   => Interrupts,
+         Startup      => True,        --  Might be False for custom RTOS
+         Static       => not RTG.Tasking.Use_GNAT_Tasking (Tasking),
+         GNAT_Tasking => RTG.Tasking.Use_GNAT_Tasking (Tasking));
       RTG.System_BB_MCU_Parameters.Generate (Runtime, Interrupts);
       RTG.System_BB_Parameters.Generate (Runtime, System_BB_MCU_Parameters);
    end if;
@@ -205,7 +205,12 @@ begin
       BB_Runtimes_Directory.Create_From_Dir
         ("gnat_rts_sources/lib/gnat/rts-sources.json"));
 
-   RTG.Startup.Create (Runtime, Startup);
+   RTG.Startup.Create
+     (Runtime,
+      Interrupts,
+      Startup,
+      not RTG.Tasking.Use_GNAT_Tasking (Tasking),
+      RTG.Tasking.Use_GNAT_Tasking (Tasking));
 
 exception
    when RTG.Internal_Error =>

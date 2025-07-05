@@ -57,6 +57,7 @@ package body RTG.System_BB_MCU_Vectors is
       Static       : Boolean;
       GNAT_Tasking : Boolean)
    is
+      use RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors;
       use VSS.Strings.Templates;
 
       package Output is
@@ -133,10 +134,6 @@ package body RTG.System_BB_MCU_Vectors is
          end if;
       end Generate_Handler_Specification;
 
-      Vectors0_Template      : constant Virtual_String_Template :=
-        "   Vectors0 : constant array (Integer range -16 .. {}) of System.Address :=";
-      Vector0_Template       : constant Virtual_String_Template :=
-        "     {3} => {}_Handler'Address{}";
       Vectors_Template       : constant Virtual_String_Template :=
         "   Vectors : constant array (Integer range -16 .. {}) of System.Address :=";
       Vector_Template        : constant Virtual_String_Template :=
@@ -148,34 +145,17 @@ package body RTG.System_BB_MCU_Vectors is
 
       Position               : Interrupt_Information_Vectors.Cursor;
 
-      use RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors;
-
    begin
       NL;
       PL ("pragma Style_Checks (""M132"");");
       NL;
       PL ("package body System.BB.MCU_Vectors is");
 
-      if Startup then
-         NL;
-         PL ("   Stack_End : constant System.Address");
-         PL ("     with Import, Convention => C, External_Name => ""__stack_end"";");
-      end if;
-
       NL;
       PL ("   procedure Dummy_Exception_Handler");
       PL ("     with Export, Convention => C, External_Name => ""Dummy_Exception_Handler"";");
       PL ("   pragma Weak_External (Dummy_Exception_Handler);");
 
-      if Startup and Static then
-         NL;
-         PL ("   procedure Dummy_Interrupt_Handler");
-         PL ("     with Export, Convention => C, External_Name => ""Dummy_Interrupt_Handler"";");
-         PL ("   pragma Weak_External (Dummy_Interrupt_Handler);");
-      end if;
-
-      Generate_Handler_Specification
-        (Name => "Reset", Is_Null => False, Kind => Import);
       Generate_Handler_Specification
         (Name => "NMI", Weak => True, Alias => "Dummy_Exception_Handler");
       Generate_Handler_Specification
@@ -233,106 +213,6 @@ package body RTG.System_BB_MCU_Vectors is
             Kind     => Import,
             External => "__gnat_irq_trap",
             Weak     => False);
-      end if;
-
-      if Startup then
-         if Static then
-            Position := Interrupts.First;
-
-            for J in 0 .. Interrupts.Last_Element.Value loop
-               declare
-                  Interrupt : constant Interrupt_Information :=
-                    Interrupt_Information_Vectors.Element (Position);
-
-               begin
-                  if Interrupt.Value = J then
-                     Generate_Handler_Specification
-                       (Name  => Interrupt.Name,
-                        Weak  => True,
-                        Alias => "Dummy_Interrupt_Handler");
-
-                     loop
-                        Next (Position);
-
-                        exit when not Has_Element (Position);
-
-                        exit when Element (Position).Value > J;
-                     end loop;
-                  end if;
-               end;
-            end loop;
-         end if;
-
-         NL;
-         PL
-           (Vectors0_Template.Format
-              (VSS.Strings.Formatters.Integers.Image
-                 (if Static then Interrupts.Last_Element.Value else -1)));
-         PL ("    (-16 => Stack_End'Address,");
-         PL ("     -15 => Reset_Handler'Address,");
-         PL ("     -14 => NMI_Handler'Address,");
-         PL ("     -13 => HardFault_Handler'Address,");
-         PL ("     -12 => MemManage_Handler'Address,");
-         PL ("     -11 => BusFault_Handler'Address,");
-         PL ("     -10 => UsageFault_Handler'Address,");
-         PL ("     -9  => System.Null_Address,");
-         PL ("     -8  => System.Null_Address,");
-         PL ("     -7  => System.Null_Address,");
-         PL ("     -6  => System.Null_Address,");
-         PL ("     -5  => SVC_Handler'Address,");
-         PL ("     -4  => DebugMon_Handler'Address,");
-         PL ("     -3  => System.Null_Address,");
-         PL ("     -2  => PendSV_Handler'Address,");
-         PS ("     -1  => SysTick_Handler'Address");
-
-         if Static then
-            PL (",");
-
-            Position := Interrupts.First;
-
-            for J in 0 .. Interrupts.Last_Element.Value loop
-               if Interrupt_Information_Vectors.Element (Position).Value = J
-               then
-                  PL
-                    (Vector0_Template.Format
-                       (VSS.Strings.Formatters.Integers.Image (J),
-                        VSS.Strings.Formatters.Strings.Image
-                          (Interrupt_Information_Vectors.Element (Position)
-                             .Name),
-                        VSS.Strings.Formatters.Strings.Image
-                          (VSS.Strings.Virtual_String'
-                             (if J = Interrupts.Last_Element.Value
-                              then ")"
-                              else ","))));
-
-                  loop
-                     Interrupt_Information_Vectors.Next (Position);
-
-                     exit when
-                       not Interrupt_Information_Vectors.Has_Element (Position);
-
-                     exit when
-                       Interrupt_Information_Vectors.Element (Position).Value
-                       > J;
-                  end loop;
-
-               else
-                  PL
-                    (Unspecified_Template.Format
-                       (VSS.Strings.Formatters.Integers.Image (J)));
-               end if;
-            end loop;
-
-         else
-            PL (")");
-         end if;
-
-         PL ("     with Export,");
-         PL ("          Convention     => C,");
-         PL ("          Linker_Section => "".vectors"",");
-         PL ("          External_Name  => ""__vectors0"";");
-         --  Alignment of the initial interrupt vector table is enforced by the
-         --  linker script.
       end if;
 
       if GNAT_Tasking then

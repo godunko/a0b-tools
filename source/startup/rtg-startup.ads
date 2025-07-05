@@ -7,6 +7,7 @@
 with GNATCOLL.VFS;
 
 with RTG.Runtime;
+with RTG.System_BB_MCU_Vectors;
 
 package RTG.Startup is
 
@@ -36,7 +37,11 @@ package RTG.Startup is
    procedure Initialize (Self : in out Startup_Descriptor);
 
    procedure Create
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Descriptor : Startup_Descriptor);
+     (Runtime      : RTG.Runtime.Runtime_Descriptor;
+      Interrupts   :
+        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
+      Descriptor   : Startup_Descriptor;
+      Static       : Boolean;
+      GNAT_Tasking : Boolean);
 
 end RTG.Startup;

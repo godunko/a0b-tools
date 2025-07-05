@@ -4,9 +4,12 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
+pragma Style_Checks ("M100");
+
 with VSS.Application;
 with VSS.Strings.Conversions;
 with VSS.Strings.Formatters.Generic_Modulars;
+with VSS.Strings.Formatters.Integers;
 with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
 
@@ -35,8 +38,12 @@ package body RTG.Startup is
       Descriptor : Startup_Descriptor);
 
    procedure Generate_System_Startup_Implementation
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Descriptor : Startup_Descriptor);
+     (Runtime      : RTG.Runtime.Runtime_Descriptor;
+      Interrupts   :
+        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
+      Descriptor   : Startup_Descriptor;
+      Static       : Boolean;
+      GNAT_Tasking : Boolean);
 
    -------------------------
    -- Copy_Linker_Scripts --
@@ -59,14 +66,19 @@ package body RTG.Startup is
    ------------
 
    procedure Create
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Descriptor : Startup_Descriptor) is
+     (Runtime      : RTG.Runtime.Runtime_Descriptor;
+      Interrupts   :
+        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
+      Descriptor   : Startup_Descriptor;
+      Static       : Boolean;
+      GNAT_Tasking : Boolean) is
    begin
       Generate_Build_Startup_Project (Runtime, Descriptor);
       Generate_Startup_Linker_Script (Runtime, Descriptor);
       Copy_Linker_Scripts (Runtime, Descriptor);
       Generate_System_Startup_Specification (Runtime, Descriptor);
-      Generate_System_Startup_Implementation (Runtime, Descriptor);
+      Generate_System_Startup_Implementation
+        (Runtime, Interrupts, Descriptor, Static, GNAT_Tasking);
    end Create;
 
    ------------------------------------
@@ -173,13 +185,96 @@ package body RTG.Startup is
    --------------------------------------------
 
    procedure Generate_System_Startup_Implementation
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Descriptor : Startup_Descriptor)
+     (Runtime      : RTG.Runtime.Runtime_Descriptor;
+      Interrupts   :
+        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
+      Descriptor   : Startup_Descriptor;
+      Static       : Boolean;
+      GNAT_Tasking : Boolean)
    is
+      use RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors;
+
       package Output is
         new RTG.Utilities.Generic_Output
           (Runtime.Startup_Source_Directory, "system_startup.adb");
       use Output;
+
+      type External_Kind is (Import, Export);
+
+      procedure Generate_Handler_Specification
+        (Name     : VSS.Strings.Virtual_String;
+         Is_Null  : Boolean                    := True;
+         Kind     : External_Kind              := Export;
+         External : VSS.Strings.Virtual_String :=
+           VSS.Strings.Empty_Virtual_String;
+         Weak     : Boolean := False;
+         Alias    : VSS.Strings.Virtual_String :=
+           VSS.Strings.Empty_Virtual_String);
+
+      ------------------------------------
+      -- Generate_Handler_Specification --
+      ------------------------------------
+
+      procedure Generate_Handler_Specification
+        (Name     : VSS.Strings.Virtual_String;
+         Is_Null  : Boolean                    := True;
+         Kind     : External_Kind              := Export;
+         External : VSS.Strings.Virtual_String :=
+           VSS.Strings.Empty_Virtual_String;
+         Weak     : Boolean := False;
+         Alias    : VSS.Strings.Virtual_String :=
+           VSS.Strings.Empty_Virtual_String)
+      is
+         Handler_Template         : constant Virtual_String_Template :=
+           "   procedure {}_Handler{}";
+         Export_Template          : constant Virtual_String_Template :=
+           "     with {}, Convention => C, External_Name => ""{}_Handler"";";
+         Export_External_Template : constant Virtual_String_Template :=
+           "     with {}, Convention => C, External_Name => ""{}"";";
+         Weak_External_Template   : constant Virtual_String_Template :=
+           "   pragma Weak_External ({}_Handler);";
+         Linker_Alias_Template    : constant Virtual_String_Template :=
+           "   pragma Linker_Alias ({}_Handler, ""{}"");";
+
+      begin
+         NL;
+
+         PL
+           (Handler_Template.Format
+              (Image (Name),
+               Image
+                 (VSS.Strings.Virtual_String'
+                    (if Is_Null then " is null" else ""))));
+
+         if External.Is_Empty then
+            PL
+              (Export_Template.Format
+                 (Image
+                    (VSS.Strings.Virtual_String'
+                       (case Kind is
+                          when Import => "Import",
+                          when Export => "Export")),
+                  Image (Name)));
+
+         else
+            PL
+              (Export_External_Template.Format
+                 (Image
+                    (VSS.Strings.Virtual_String'
+                       (case Kind is
+                          when Import => "Import",
+                          when Export => "Export")),
+                  Image (External)));
+         end if;
+
+         if Weak then
+            PL (Weak_External_Template.Format (Image (Name)));
+         end if;
+
+         if not Alias.Is_Empty then
+            PL (Linker_Alias_Template.Format (Image (Name), Image (Alias)));
+         end if;
+      end Generate_Handler_Specification;
 
       With_Unit_Template     : constant Virtual_String_Template :=
         "with {};";
@@ -187,8 +282,22 @@ package body RTG.Startup is
         "     new {}";
       Parameter_Template     : constant Virtual_String_Template :=
         "{} => {}";
+      Vectors0_Template      : constant Virtual_String_Template :=
+        "   Vectors0 : constant array (Integer range -16 .. {}) of System.Address :=";
+      Vector0_Template       : constant Virtual_String_Template :=
+        "     {3} => {}_Handler'Address{}";
+      Unspecified_Template   : constant Virtual_String_Template :=
+        "     {3} => System.Null_Address,";
+
+      Position               :
+        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Cursor;
 
    begin
+      NL;
+      PL ("pragma Style_Checks (""M132"");");
+      NL;
+      PL ("with System;");
+      NL;
       PL ("with A0B.ARMv7M.Startup_Utilities.Copy_Data_Section;");
 
       if Descriptor.ARM_Enable_FPU then
@@ -201,12 +310,10 @@ package body RTG.Startup is
       NL;
       PL ("package body System_Startup is");
       NL;
-      PL ("   procedure Reset_Handler");
-      PL ("     with Export, Convention => C, External_Name => ""Reset_Handler"", No_Return;");
-      NL;
       PL ("   procedure Main");
       PL ("     with Import, Convention => C, External_Name => ""main"", No_Return;");
       NL;
+
       PL ("   procedure Configure_System_Clocks is");
       PS
         (Instantiation_Template.Format (Image (Descriptor.Generic_Subprogram)));
@@ -236,6 +343,193 @@ package body RTG.Startup is
       end loop;
 
       PL (";");
+      NL;
+      PL ("   procedure Dummy_Exception_Handler");
+      PL ("     with Export, Convention => C, External_Name => ""Dummy_Exception_Handler"";");
+      PL ("   pragma Weak_External (Dummy_Exception_Handler);");
+
+      if Static then
+         NL;
+         PL ("   procedure Dummy_Interrupt_Handler");
+         PL ("     with Export, Convention => C, External_Name => ""Dummy_Interrupt_Handler"";");
+         PL ("   pragma Weak_External (Dummy_Interrupt_Handler);");
+      end if;
+
+      Generate_Handler_Specification
+        (Name => "Reset", Is_Null => False);
+      Generate_Handler_Specification
+        (Name => "NMI", Weak => True, Alias => "Dummy_Exception_Handler");
+      Generate_Handler_Specification
+        (Name => "HardFault", Weak => True, Alias => "Dummy_Exception_Handler");
+      Generate_Handler_Specification
+        (Name => "MemManage", Weak => True, Alias => "Dummy_Exception_Handler");
+      Generate_Handler_Specification
+        (Name => "BusFault", Weak => True, Alias => "Dummy_Exception_Handler");
+      Generate_Handler_Specification
+        (Name  => "UsageFault",
+         Weak  => True,
+         Alias => "Dummy_Exception_Handler");
+
+      if GNAT_Tasking then
+         Generate_Handler_Specification
+           (Name     => "SVC",
+            Is_Null  => False,
+            Kind     => Import,
+            External => "__gnat_sv_call_trap");
+         Generate_Handler_Specification
+           (Name     => "DebugMon",
+            External => "__gnat_bkpt_trap",
+            Weak     => True,
+            Alias    => "Dummy_Exception_Handler");
+         Generate_Handler_Specification
+           (Name     => "PendSV",
+            Is_Null  => False,
+            Kind     =>  Import,
+            External => "__gnat_pend_sv_trap");
+         Generate_Handler_Specification
+           (Name     => "SysTick",
+            Is_Null  => False,
+            Kind     => Import,
+            External => "__gnat_sys_tick_trap");
+
+      else
+         Generate_Handler_Specification
+           (Name => "SVC", Weak => True, Alias => "Dummy_Exception_Handler");
+         Generate_Handler_Specification
+           (Name  => "DebugMon",
+            Weak  => True,
+            Alias => "Dummy_Exception_Handler");
+         Generate_Handler_Specification
+           (Name => "PendSV", Weak => True, Alias => "Dummy_Exception_Handler");
+         Generate_Handler_Specification
+           (Name  => "SysTick",
+            Weak  => True,
+            Alias => "Dummy_Exception_Handler");
+      end if;
+
+      if Static then
+         Position := Interrupts.First;
+
+         for J in 0 .. Interrupts.Last_Element.Value loop
+            declare
+               Interrupt : constant
+                 RTG.System_BB_MCU_Vectors.Interrupt_Information :=
+                   Element (Position);
+
+            begin
+               if Interrupt.Value = J then
+                  Generate_Handler_Specification
+                    (Name  => Interrupt.Name,
+                     Weak  => True,
+                     Alias => "Dummy_Interrupt_Handler");
+
+                  loop
+                     Next (Position);
+
+                     exit when not Has_Element (Position);
+
+                     exit when Element (Position).Value > J;
+                  end loop;
+               end if;
+            end;
+         end loop;
+      end if;
+
+      NL;
+      PL ("   Stack_End : constant System.Address");
+      PL ("     with Import, Convention => C, External_Name => ""__stack_end"";");
+
+      NL;
+      PL
+        (Vectors0_Template.Format
+           (VSS.Strings.Formatters.Integers.Image
+               (if Static then Interrupts.Last_Element.Value else -1)));
+      PL ("    (-16 => Stack_End'Address,");
+      PL ("     -15 => Reset_Handler'Address,");
+      PL ("     -14 => NMI_Handler'Address,");
+      PL ("     -13 => HardFault_Handler'Address,");
+      PL ("     -12 => MemManage_Handler'Address,");
+      PL ("     -11 => BusFault_Handler'Address,");
+      PL ("     -10 => UsageFault_Handler'Address,");
+      PL ("     -9  => System.Null_Address,");
+      PL ("     -8  => System.Null_Address,");
+      PL ("     -7  => System.Null_Address,");
+      PL ("     -6  => System.Null_Address,");
+      PL ("     -5  => SVC_Handler'Address,");
+      PL ("     -4  => DebugMon_Handler'Address,");
+      PL ("     -3  => System.Null_Address,");
+      PL ("     -2  => PendSV_Handler'Address,");
+      PS ("     -1  => SysTick_Handler'Address");
+
+      if Static then
+         PL (",");
+
+         Position := Interrupts.First;
+
+         for J in 0 .. Interrupts.Last_Element.Value loop
+            if Element (Position).Value = J then
+               PL
+                 (Vector0_Template.Format
+                    (VSS.Strings.Formatters.Integers.Image (J),
+                     VSS.Strings.Formatters.Strings.Image
+                       (Element (Position).Name),
+                     VSS.Strings.Formatters.Strings.Image
+                       (VSS.Strings.Virtual_String'
+                          (if J = Interrupts.Last_Element.Value
+                           then ")"
+                           else ","))));
+
+               loop
+                  Next (Position);
+
+                  exit when not Has_Element (Position);
+
+                  exit when Element (Position).Value > J;
+               end loop;
+
+            else
+               PL
+                 (Unspecified_Template.Format
+                    (VSS.Strings.Formatters.Integers.Image (J)));
+            end if;
+         end loop;
+
+      else
+         PL (")");
+      end if;
+
+      PL ("     with Export,");
+      PL ("          Convention     => C,");
+      PL ("          Linker_Section => "".vectors"",");
+      PL ("          External_Name  => ""__vectors0"";");
+      --  Alignment of the initial interrupt vector table is enforced by the
+      --  linker script.
+
+      NL;
+      PL ("   -----------------------------");
+      PL ("   -- Dummy_Exception_Handler --");
+      PL ("   -----------------------------");
+      NL;
+      PL ("   procedure Dummy_Exception_Handler is");
+      PL ("   begin");
+      PL ("      loop");
+      PL ("         null;");
+      PL ("      end loop;");
+      PL ("   end Dummy_Exception_Handler;");
+
+      if Static then
+         NL;
+         PL ("   -----------------------------");
+         PL ("   -- Dummy_Interrupt_Handler --");
+         PL ("   -----------------------------");
+         NL;
+         PL ("   procedure Dummy_Interrupt_Handler is");
+         PL ("   begin");
+         PL ("      loop");
+         PL ("         null;");
+         PL ("      end loop;");
+         PL ("   end Dummy_Interrupt_Handler;");
+      end if;
 
       NL;
       PL ("   procedure Reset_Handler is");
@@ -271,8 +565,8 @@ package body RTG.Startup is
    begin
       NL;
       PL ("package System_Startup");
-      PL ("  with Preelaborate, Elaborate_Body, No_Elaboration_Code_All");
-      PL (" is");
+      PL ("  with Elaborate_Body, No_Elaboration_Code_All");
+      PL ("is");
       NL;
       PL ("end System_Startup;");
    end Generate_System_Startup_Specification;
