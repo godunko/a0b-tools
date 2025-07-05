@@ -29,6 +29,8 @@ package RTG.Startup is
       Compilation_Unit   : VSS.Strings.Virtual_String;
       Generic_Subprogram : VSS.Strings.Virtual_String;
       Parameters         : Parameter_Information_Vectors.Vector;
+
+      ARM_Enable_FPU     : Boolean;
    end record;
 
    procedure Initialize (Self : in out Startup_Descriptor);

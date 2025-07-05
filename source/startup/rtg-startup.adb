@@ -190,7 +190,11 @@ package body RTG.Startup is
 
    begin
       PL ("with A0B.ARMv7M.Startup_Utilities.Copy_Data_Section;");
-      PL ("with A0B.ARMv7M.Startup_Utilities.Enable_FPU;");
+
+      if Descriptor.ARM_Enable_FPU then
+         PL ("with A0B.ARMv7M.Startup_Utilities.Enable_FPU;");
+      end if;
+
       PL ("with A0B.ARMv7M.Startup_Utilities.Fill_BSS_Section;");
       NL;
       PL (With_Unit_Template.Format (Image (Descriptor.Compilation_Unit)));
@@ -236,7 +240,11 @@ package body RTG.Startup is
       NL;
       PL ("   procedure Reset_Handler is");
       PL ("   begin");
-      PL ("      A0B.ARMv7M.Startup_Utilities.Enable_FPU;");
+
+      if Descriptor.ARM_Enable_FPU then
+         PL ("      A0B.ARMv7M.Startup_Utilities.Enable_FPU;");
+      end if;
+
       PL ("      A0B.ARMv7M.Startup_Utilities.Copy_Data_Section;");
       PL ("      A0B.ARMv7M.Startup_Utilities.Fill_BSS_Section;");
       PL ("      Configure_System_Clocks;");

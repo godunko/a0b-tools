@@ -16,6 +16,7 @@ package body RTG.Architecture is
 
    procedure Process
      (Tasking              : RTG.Tasking.Tasking_Descriptor;
+      Startup              : in out RTG.Startup.Startup_Descriptor;
       Scenarios            : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
       System_Parameters    : in out RTG.System.System_Descriptor;
       System_BB_Parameters : in out
@@ -78,6 +79,7 @@ package body RTG.Architecture is
          end if;
 
          System_BB_Parameters.ARM_Has_FPU := False;
+         Startup.ARM_Enable_FPU           := False;
 
       elsif Scenarios ("dt:&cpu0:compatible") = "arm,cortex-m4f" then
          Check_Set ("CPU_Family", "arm");
@@ -103,6 +105,7 @@ package body RTG.Architecture is
          end if;
 
          System_BB_Parameters.ARM_Has_FPU := True;
+         Startup.ARM_Enable_FPU           := True;
 
       else
          RTG.Diagnostics.Error ("unsupported ""dt:&cpu0:compatible""");
