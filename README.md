@@ -10,6 +10,10 @@ It generates startup code and linker script too.
 * Fine tuning of GNAT runtime (set of packages, stack size, etc.) by single configuration file
 * Support different tasking profiles, including GNAT's `light-tasking`/`embedded` and custom RTOSes
 
+## Documentation
+
+* [Getting Started](documentation/getting_started.md)
+
 ## Run runtime generator
 
 `a0b-runtime --bb-runtimes=<path> --svd=<path>`
