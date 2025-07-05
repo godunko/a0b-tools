@@ -9,6 +9,7 @@ maintainers-logins = ["godunko"]
 licenses = "GPL-3.0-or-later"
 
 project-files=["gnat/a0b_tools.gpr"]
+executables=["a0b-runtime"]
 auto-gpr-with=false
 
 tags = ["a0b", "tools", "runtime"]
