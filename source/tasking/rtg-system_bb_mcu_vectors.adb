@@ -23,8 +23,7 @@ package body RTG.System_BB_MCU_Vectors is
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
       Interrupts   : Interrupt_Information_Vectors.Vector;
       Startup      : Boolean;
-      Static       : Boolean;
-      GNAT_Tasking : Boolean);
+      Static       : Boolean);
 
    function Vector_Table_Alignment
      (Interrupts : Interrupt_Information_Vectors.Vector) return Positive;
@@ -38,12 +37,10 @@ package body RTG.System_BB_MCU_Vectors is
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
       Interrupts   : Interrupt_Information_Vectors.Vector;
       Startup      : Boolean;
-      Static       : Boolean;
-      GNAT_Tasking : Boolean) is
+      Static       : Boolean) is
    begin
       Generate_Specification (Runtime);
-      Generate_Implementation
-        (Runtime, Interrupts, Startup, Static, GNAT_Tasking);
+      Generate_Implementation (Runtime, Interrupts, Startup, Static);
    end Generate;
 
    -----------------------------
@@ -54,8 +51,7 @@ package body RTG.System_BB_MCU_Vectors is
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
       Interrupts   : Interrupt_Information_Vectors.Vector;
       Startup      : Boolean;
-      Static       : Boolean;
-      GNAT_Tasking : Boolean)
+      Static       : Boolean)
    is
       use RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors;
       use VSS.Strings.Templates;
@@ -169,119 +165,99 @@ package body RTG.System_BB_MCU_Vectors is
          Weak  => True,
          Alias => "Dummy_Exception_Handler");
 
-      if GNAT_Tasking then
-         Generate_Handler_Specification
-           (Name     => "SVC",
-            Is_Null  => False,
-            Kind     => Import,
-            External => "__gnat_sv_call_trap");
-         Generate_Handler_Specification
-           (Name     => "DebugMon",
-            External => "__gnat_bkpt_trap",
-            Weak     => True,
-            Alias    => "Dummy_Exception_Handler");
-         Generate_Handler_Specification
-           (Name     => "PendSV",
-            Is_Null  => False,
-            Kind     =>  Import,
-            External => "__gnat_pend_sv_trap");
-         Generate_Handler_Specification
-           (Name     => "SysTick",
-            Is_Null  => False,
-            Kind     => Import,
-            External => "__gnat_sys_tick_trap");
+      Generate_Handler_Specification
+        (Name     => "SVC",
+         Is_Null  => False,
+         Kind     => Import,
+         External => "__gnat_sv_call_trap");
+      Generate_Handler_Specification
+        (Name     => "DebugMon",
+         External => "__gnat_bkpt_trap",
+         Weak     => True,
+         Alias    => "Dummy_Exception_Handler");
+      Generate_Handler_Specification
+        (Name     => "PendSV",
+         Is_Null  => False,
+         Kind     =>  Import,
+         External => "__gnat_pend_sv_trap");
+      Generate_Handler_Specification
+        (Name     => "SysTick",
+         Is_Null  => False,
+         Kind     => Import,
+         External => "__gnat_sys_tick_trap");
 
-      else
-         Generate_Handler_Specification
-           (Name => "SVC", Weak => True, Alias => "Dummy_Exception_Handler");
-         Generate_Handler_Specification
-           (Name  => "DebugMon",
-            Weak  => True,
-            Alias => "Dummy_Exception_Handler");
-         Generate_Handler_Specification
-           (Name => "PendSV", Weak => True, Alias => "Dummy_Exception_Handler");
-         Generate_Handler_Specification
-           (Name  => "SysTick",
-            Weak  => True,
-            Alias => "Dummy_Exception_Handler");
-      end if;
+      Generate_Handler_Specification
+        (Name     => "IRQ",
+         Is_Null  => False,
+         Kind     => Import,
+         External => "__gnat_irq_trap",
+         Weak     => False);
 
-      if GNAT_Tasking then
-         Generate_Handler_Specification
-           (Name     => "IRQ",
-            Is_Null  => False,
-            Kind     => Import,
-            External => "__gnat_irq_trap",
-            Weak     => False);
-      end if;
+      NL;
+      PL
+        (Vectors_Template.Format
+           (VSS.Strings.Formatters.Integers.Image
+                (Interrupts.Last_Element.Value)));
+      PL ("    (-16 => System.Null_Address,");  --  Stack
+      PL ("     -15 => System.Null_Address,");  --  Reset handler
+      PL ("     -14 => NMI_Handler'Address,");
+      PL ("     -13 => HardFault_Handler'Address,");
+      PL ("     -12 => MemManage_Handler'Address,");
+      PL ("     -11 => BusFault_Handler'Address,");
+      PL ("     -10 => UsageFault_Handler'Address,");
+      PL ("     -9  => System.Null_Address,");
+      PL ("     -8  => System.Null_Address,");
+      PL ("     -7  => System.Null_Address,");
+      PL ("     -6  => System.Null_Address,");
+      PL ("     -5  => SVC_Handler'Address,");
+      PL ("     -4  => DebugMon_Handler'Address,");
+      PL ("     -3  => System.Null_Address,");
+      PL ("     -2  => PendSV_Handler'Address,");
+      PL ("     -1  => SysTick_Handler'Address,");
+      NL;
 
-      if GNAT_Tasking then
-         NL;
-         PL
-           (Vectors_Template.Format
-              (VSS.Strings.Formatters.Integers.Image
-                 (Interrupts.Last_Element.Value)));
-         PL ("    (-16 => System.Null_Address,");  --  Stack
-         PL ("     -15 => System.Null_Address,");  --  Reset handler
-         PL ("     -14 => NMI_Handler'Address,");
-         PL ("     -13 => HardFault_Handler'Address,");
-         PL ("     -12 => MemManage_Handler'Address,");
-         PL ("     -11 => BusFault_Handler'Address,");
-         PL ("     -10 => UsageFault_Handler'Address,");
-         PL ("     -9  => System.Null_Address,");
-         PL ("     -8  => System.Null_Address,");
-         PL ("     -7  => System.Null_Address,");
-         PL ("     -6  => System.Null_Address,");
-         PL ("     -5  => SVC_Handler'Address,");
-         PL ("     -4  => DebugMon_Handler'Address,");
-         PL ("     -3  => System.Null_Address,");
-         PL ("     -2  => PendSV_Handler'Address,");
-         PL ("     -1  => SysTick_Handler'Address,");
-         NL;
+      Position := Interrupts.First;
 
-         Position := Interrupts.First;
+      for J in 0 .. Interrupts.Last_Element.Value loop
+         declare
+            Interrupt : constant Interrupt_Information :=
+              Interrupt_Information_Vectors.Element (Position);
 
-         for J in 0 .. Interrupts.Last_Element.Value loop
-            declare
-               Interrupt : constant Interrupt_Information :=
-                 Interrupt_Information_Vectors.Element (Position);
+         begin
+            if Interrupt.Value = J then
+               PL
+                 (Vector_Template.Format
+                    (VSS.Strings.Formatters.Integers.Image (J),
+                     VSS.Strings.Formatters.Strings.Image
+                       (VSS.Strings.Virtual_String'
+                            (if J = Interrupts.Last_Element.Value
+                             then ")"
+                             else ","))));
 
-            begin
-               if Interrupt.Value = J then
-                  PL
-                    (Vector_Template.Format
-                       (VSS.Strings.Formatters.Integers.Image (J),
-                        VSS.Strings.Formatters.Strings.Image
-                          (VSS.Strings.Virtual_String'
-                             (if J = Interrupts.Last_Element.Value
-                              then ")"
-                              else ","))));
+               loop
+                  Next (Position);
 
-                  loop
-                     Next (Position);
+                  exit when not Has_Element (Position);
 
-                     exit when not Has_Element (Position);
+                  exit when Element (Position).Value > J;
+               end loop;
 
-                     exit when Element (Position).Value > J;
-                  end loop;
+            else
+               PL
+                 (Unspecified_Template.Format
+                    (VSS.Strings.Formatters.Integers.Image (J)));
+            end if;
+         end;
+      end loop;
 
-               else
-                  PL
-                    (Unspecified_Template.Format
-                       (VSS.Strings.Formatters.Integers.Image (J)));
-               end if;
-            end;
-         end loop;
-
-         PL ("     with Export,");
-         PL ("          Convention     => C,");
-         PL ("          Linker_Section => "".text"",");
-         PL ("          External_Name  => ""__vectors"",");
-         PL
-           (Alignment_Template.Format
-              (VSS.Strings.Formatters.Integers.Image
-                 (Vector_Table_Alignment (Interrupts))));
-      end if;
+      PL ("     with Export,");
+      PL ("          Convention     => C,");
+      PL ("          Linker_Section => "".text"",");
+      PL ("          External_Name  => ""__vectors"",");
+      PL
+        (Alignment_Template.Format
+           (VSS.Strings.Formatters.Integers.Image
+                (Vector_Table_Alignment (Interrupts))));
 
       NL;
       PL ("   -----------------------------");

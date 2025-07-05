@@ -25,8 +25,7 @@ package RTG.System_BB_MCU_Vectors is
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
       Interrupts   : Interrupt_Information_Vectors.Vector;
       Startup      : Boolean;
-      Static       : Boolean;
-      GNAT_Tasking : Boolean);
+      Static       : Boolean);
    --  Generates `System.BB.MCU_Interrupts` package, which contains
    --  declarations of interrupt vector table(s).
    --
