@@ -34,10 +34,9 @@ package body RTG.SVD_Reader is
    with record
       State      : State_Record;
       Stack      : State_Vectors.Vector;
-      Interrupt  : RTG.System_BB_MCU_Vectors.Interrupt_Information;
+      Interrupt  : RTG.Interrupts.Interrupt_Information;
 
-      Interrupts :
-        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
+      Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector;
    end record;
 
    --  procedure Set_Document_Locator
@@ -136,8 +135,8 @@ package body RTG.SVD_Reader is
       pragma Unreferenced (Success);
 
       function "<"
-        (Left  : RTG.System_BB_MCU_Vectors.Interrupt_Information;
-         Right : RTG.System_BB_MCU_Vectors.Interrupt_Information)
+        (Left  : RTG.Interrupts.Interrupt_Information;
+         Right : RTG.Interrupts.Interrupt_Information)
          return Boolean;
 
       ---------
@@ -145,16 +144,15 @@ package body RTG.SVD_Reader is
       ---------
 
       function "<"
-        (Left  : RTG.System_BB_MCU_Vectors.Interrupt_Information;
-         Right : RTG.System_BB_MCU_Vectors.Interrupt_Information)
+        (Left  : RTG.Interrupts.Interrupt_Information;
+         Right : RTG.Interrupts.Interrupt_Information)
          return Boolean is
       begin
          return Left.Value < Right.Value;
       end "<";
 
-      package Sorting is new
-        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Generic_Sorting
-          ("<");
+      package Sorting is
+        new RTG.Interrupts.Interrupt_Information_Vectors.Generic_Sorting ("<");
 
    begin
       Sorting.Sort (Self.Interrupts);
@@ -191,8 +189,7 @@ package body RTG.SVD_Reader is
 
    procedure Read
      (File       : GNATCOLL.VFS.Virtual_File;
-      Interrupts : out
-        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector)
+      Interrupts : out RTG.Interrupts.Interrupt_Information_Vectors.Vector)
    is
       Input  : Input_Sources.File.File_Input;
       Reader : VSS.XML.XmlAda_Readers.XmlAda_Reader;

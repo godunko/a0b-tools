@@ -4,26 +4,14 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
-with Ada.Containers.Vectors;
-
-with VSS.Strings;
-
+with RTG.Interrupts;
 with RTG.Runtime;
 
 package RTG.System_BB_MCU_Vectors is
 
-   type Interrupt_Information is record
-      Name        : VSS.Strings.Virtual_String;
-      Description : VSS.Strings.Virtual_String;
-      Value       : Natural;
-   end record;
-
-   package Interrupt_Information_Vectors is new
-     Ada.Containers.Vectors (Positive, Interrupt_Information);
-
    procedure Generate
      (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts : Interrupt_Information_Vectors.Vector);
+      Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector);
    --  Generates `System.BB.MCU_Interrupts` package, which contains
    --  declarations of interrupt vector table to be used by GNAT tasking.
 

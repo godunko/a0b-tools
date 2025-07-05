@@ -39,8 +39,7 @@ package body RTG.Startup is
 
    procedure Generate_System_Startup_Implementation
      (Runtime      : RTG.Runtime.Runtime_Descriptor;
-      Interrupts   :
-        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
+      Interrupts   : RTG.Interrupts.Interrupt_Information_Vectors.Vector;
       Descriptor   : Startup_Descriptor;
       Static       : Boolean;
       GNAT_Tasking : Boolean);
@@ -67,8 +66,7 @@ package body RTG.Startup is
 
    procedure Create
      (Runtime      : RTG.Runtime.Runtime_Descriptor;
-      Interrupts   :
-        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
+      Interrupts   : RTG.Interrupts.Interrupt_Information_Vectors.Vector;
       Descriptor   : Startup_Descriptor;
       Static       : Boolean;
       GNAT_Tasking : Boolean) is
@@ -186,13 +184,12 @@ package body RTG.Startup is
 
    procedure Generate_System_Startup_Implementation
      (Runtime      : RTG.Runtime.Runtime_Descriptor;
-      Interrupts   :
-        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector;
+      Interrupts   : RTG.Interrupts.Interrupt_Information_Vectors.Vector;
       Descriptor   : Startup_Descriptor;
       Static       : Boolean;
       GNAT_Tasking : Boolean)
    is
-      use RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors;
+      use RTG.Interrupts.Interrupt_Information_Vectors;
 
       package Output is
         new RTG.Utilities.Generic_Output
@@ -290,7 +287,7 @@ package body RTG.Startup is
         "     {3} => System.Null_Address,";
 
       Position               :
-        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Cursor;
+        RTG.Interrupts.Interrupt_Information_Vectors.Cursor;
 
    begin
       NL;
@@ -413,7 +410,7 @@ package body RTG.Startup is
          for J in 0 .. Interrupts.Last_Element.Value loop
             declare
                Interrupt : constant
-                 RTG.System_BB_MCU_Vectors.Interrupt_Information :=
+                 RTG.Interrupts.Interrupt_Information :=
                    Element (Position);
 
             begin

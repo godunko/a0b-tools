@@ -21,10 +21,11 @@ package body RTG.System_BB_MCU_Vectors is
 
    procedure Generate_Implementation
      (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts : Interrupt_Information_Vectors.Vector);
+      Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector);
 
    function Vector_Table_Alignment
-     (Interrupts : Interrupt_Information_Vectors.Vector) return Positive;
+     (Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector)
+      return Positive;
    --  Compute alignment of the interrupt vector table for ARM Cortex-M CPU
 
    --------------
@@ -33,7 +34,7 @@ package body RTG.System_BB_MCU_Vectors is
 
    procedure Generate
      (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts : Interrupt_Information_Vectors.Vector) is
+      Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector) is
    begin
       Generate_Specification (Runtime);
       Generate_Implementation (Runtime, Interrupts);
@@ -45,9 +46,9 @@ package body RTG.System_BB_MCU_Vectors is
 
    procedure Generate_Implementation
      (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts : Interrupt_Information_Vectors.Vector)
+      Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector)
    is
-      use RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors;
+      use RTG.Interrupts.Interrupt_Information_Vectors;
       use VSS.Strings.Templates;
 
       package Output is
@@ -133,7 +134,8 @@ package body RTG.System_BB_MCU_Vectors is
       Alignment_Template     : constant Virtual_String_Template :=
         "          Alignment      => {};";
 
-      Position               : Interrupt_Information_Vectors.Cursor;
+      Position               :
+        RTG.Interrupts.Interrupt_Information_Vectors.Cursor;
 
    begin
       NL;
@@ -214,8 +216,8 @@ package body RTG.System_BB_MCU_Vectors is
 
       for J in 0 .. Interrupts.Last_Element.Value loop
          declare
-            Interrupt : constant Interrupt_Information :=
-              Interrupt_Information_Vectors.Element (Position);
+            Interrupt : constant RTG.Interrupts.Interrupt_Information :=
+              RTG.Interrupts.Interrupt_Information_Vectors.Element (Position);
 
          begin
             if Interrupt.Value = J then
@@ -295,7 +297,8 @@ package body RTG.System_BB_MCU_Vectors is
    ----------------------------
 
    function Vector_Table_Alignment
-     (Interrupts : Interrupt_Information_Vectors.Vector) return Positive
+     (Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector)
+      return Positive
    is
       Minimum_Power_Of_Two : constant Positive :=
         32 -

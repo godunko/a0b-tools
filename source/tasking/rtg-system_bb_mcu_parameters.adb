@@ -20,8 +20,7 @@ package body RTG.System_BB_MCU_Parameters is
 
    procedure Generate
      (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts :
-        RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors.Vector)
+      Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector)
    is
       package Output is
         new RTG.Utilities.Generic_Output
