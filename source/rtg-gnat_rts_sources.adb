@@ -105,6 +105,9 @@ package body RTG.GNAT_RTS_Sources is
                when Start_Array =>
                   Skip_Current_Array;
 
+               when Start_Object =>
+                  Skip_Current_Object;
+
                when others =>
                   raise Program_Error with Reader.Element_Kind'Img;
             end case;
@@ -304,9 +307,7 @@ package body RTG.GNAT_RTS_Sources is
                when Start_Object =>
                   case Component is
                      when Unknown =>
-                        Reader.Skip_Current_Object;
-
-                        exit;
+                        Skip_Current_Object;
 
                      when Library =>
                         Read_Library;
