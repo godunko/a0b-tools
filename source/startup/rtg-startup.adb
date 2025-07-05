@@ -34,8 +34,7 @@ package body RTG.Startup is
       Descriptor : Startup_Descriptor);
 
    procedure Generate_System_Startup_Specification
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Descriptor : Startup_Descriptor);
+     (Runtime : RTG.Runtime.Runtime_Descriptor);
 
    procedure Generate_System_Startup_Implementation
      (Runtime      : RTG.Runtime.Runtime_Descriptor;
@@ -74,7 +73,7 @@ package body RTG.Startup is
       Generate_Build_Startup_Project (Runtime, Descriptor);
       Generate_Startup_Linker_Script (Runtime, Descriptor);
       Copy_Linker_Scripts (Runtime, Descriptor);
-      Generate_System_Startup_Specification (Runtime, Descriptor);
+      Generate_System_Startup_Specification (Runtime);
       Generate_System_Startup_Implementation
         (Runtime, Interrupts, Descriptor, Static, GNAT_Tasking);
    end Create;
@@ -550,8 +549,7 @@ package body RTG.Startup is
    -------------------------------------------
 
    procedure Generate_System_Startup_Specification
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
-      Descriptor : Startup_Descriptor)
+     (Runtime : RTG.Runtime.Runtime_Descriptor)
    is
 
       package Output is
