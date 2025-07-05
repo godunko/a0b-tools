@@ -22,8 +22,7 @@ package body RTG.System_BB_MCU_Vectors is
    procedure Generate_Implementation
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
       Interrupts   : Interrupt_Information_Vectors.Vector;
-      Startup      : Boolean;
-      Static       : Boolean);
+      Startup      : Boolean);
 
    function Vector_Table_Alignment
      (Interrupts : Interrupt_Information_Vectors.Vector) return Positive;
@@ -36,11 +35,10 @@ package body RTG.System_BB_MCU_Vectors is
    procedure Generate
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
       Interrupts   : Interrupt_Information_Vectors.Vector;
-      Startup      : Boolean;
-      Static       : Boolean) is
+      Startup      : Boolean) is
    begin
       Generate_Specification (Runtime);
-      Generate_Implementation (Runtime, Interrupts, Startup, Static);
+      Generate_Implementation (Runtime, Interrupts, Startup);
    end Generate;
 
    -----------------------------
@@ -50,8 +48,7 @@ package body RTG.System_BB_MCU_Vectors is
    procedure Generate_Implementation
      (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
       Interrupts   : Interrupt_Information_Vectors.Vector;
-      Startup      : Boolean;
-      Static       : Boolean)
+      Startup      : Boolean)
    is
       use RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors;
       use VSS.Strings.Templates;
@@ -270,20 +267,6 @@ package body RTG.System_BB_MCU_Vectors is
       PL ("         null;");
       PL ("      end loop;");
       PL ("   end Dummy_Exception_Handler;");
-
-      if Static then
-         NL;
-         PL ("   -----------------------------");
-         PL ("   -- Dummy_Interrupt_Handler --");
-         PL ("   -----------------------------");
-         NL;
-         PL ("   procedure Dummy_Interrupt_Handler is");
-         PL ("   begin");
-         PL ("      loop");
-         PL ("         null;");
-         PL ("      end loop;");
-         PL ("   end Dummy_Interrupt_Handler;");
-      end if;
 
       NL;
       PL ("end System.BB.MCU_Vectors;");
