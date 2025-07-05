@@ -77,6 +77,8 @@ package body RTG.Architecture is
               (RTG.System.GCC14.No_Task_At_Interrupt_Priority) := True;
          end if;
 
+         System_BB_Parameters.ARM_Has_FPU := True;
+
       else
          RTG.Diagnostics.Error ("unsupported ""dt:&cpu0:compatible""");
       end if;

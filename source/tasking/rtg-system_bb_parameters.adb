@@ -27,10 +27,12 @@ package body RTG.System_BB_Parameters is
           (Runtime.Tasking_Source_Directory, "s-bbpara.ads");
       use Output;
 
-      Clock_Frequency_Template    : Virtual_String_Template :=
+      Clock_Frequency_Template    : constant Virtual_String_Template :=
         "   Clock_Frequency : constant := {};";
-      NVIC_Priority_Bits_Template : Virtual_String_Template :=
+      NVIC_Priority_Bits_Template : constant Virtual_String_Template :=
         "   NVIC_Priority_Bits : constant Cortex_Priority_Bits_Width := {};";
+      Has_FPU_Template            : constant Virtual_String_Template :=
+        "   Has_FPU           : constant Boolean := {};";
 
    begin
       --  XXX It might be ARM Cortex-M specific info
@@ -45,10 +47,14 @@ package body RTG.System_BB_Parameters is
         (Clock_Frequency_Template.Format (Image (Descriptor.Clock_Frequency)));
       PL ("   Ticks_Per_Second : constant := Clock_Frequency;");
       NL;
-      PL ("   Has_FPU : constant Boolean := True;");
-      PL ("   Has_VTOR : constant Boolean := True;");
+      PL
+        (Has_FPU_Template.Format
+           (Image
+              (VSS.Strings.Virtual_String'
+                 (if Descriptor.ARM_Has_FPU then "True" else "False"))));
+      PL ("   Has_VTOR          : constant Boolean := True;");
       PL ("   Has_OS_Extensions : constant Boolean := True;");
-      PL ("   Is_ARMv6m : constant Boolean := False;");
+      PL ("   Is_ARMv6m         : constant Boolean := False;");
       NL;
       PL ("   subtype Cortex_Priority_Bits_Width is Integer range 1 .. 8;");
       PL
