@@ -20,9 +20,8 @@ package body RTG.System_BB_MCU_Vectors is
      (Runtime : RTG.Runtime.Runtime_Descriptor'Class);
 
    procedure Generate_Implementation
-     (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts   : Interrupt_Information_Vectors.Vector;
-      Startup      : Boolean);
+     (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
+      Interrupts : Interrupt_Information_Vectors.Vector);
 
    function Vector_Table_Alignment
      (Interrupts : Interrupt_Information_Vectors.Vector) return Positive;
@@ -33,12 +32,11 @@ package body RTG.System_BB_MCU_Vectors is
    --------------
 
    procedure Generate
-     (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts   : Interrupt_Information_Vectors.Vector;
-      Startup      : Boolean) is
+     (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
+      Interrupts : Interrupt_Information_Vectors.Vector) is
    begin
       Generate_Specification (Runtime);
-      Generate_Implementation (Runtime, Interrupts, Startup);
+      Generate_Implementation (Runtime, Interrupts);
    end Generate;
 
    -----------------------------
@@ -46,9 +44,8 @@ package body RTG.System_BB_MCU_Vectors is
    -----------------------------
 
    procedure Generate_Implementation
-     (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts   : Interrupt_Information_Vectors.Vector;
-      Startup      : Boolean)
+     (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
+      Interrupts : Interrupt_Information_Vectors.Vector)
    is
       use RTG.System_BB_MCU_Vectors.Interrupt_Information_Vectors;
       use VSS.Strings.Templates;

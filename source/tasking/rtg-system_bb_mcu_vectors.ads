@@ -22,12 +22,9 @@ package RTG.System_BB_MCU_Vectors is
      Ada.Containers.Vectors (Positive, Interrupt_Information);
 
    procedure Generate
-     (Runtime      : RTG.Runtime.Runtime_Descriptor'Class;
-      Interrupts   : Interrupt_Information_Vectors.Vector;
-      Startup      : Boolean);
+     (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
+      Interrupts : Interrupt_Information_Vectors.Vector);
    --  Generates `System.BB.MCU_Interrupts` package, which contains
-   --  declarations of interrupt vector table(s).
-   --
-   --  @param Startup       Generate startup vector table (ARMv7)
+   --  declarations of interrupt vector table to be used by GNAT tasking.
 
 end RTG.System_BB_MCU_Vectors;

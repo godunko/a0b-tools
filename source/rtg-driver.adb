@@ -188,10 +188,7 @@ begin
    RTG.System.Generate (Runtime, Parameters);
 
    if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
-      RTG.System_BB_MCU_Vectors.Generate
-        (Runtime      => Runtime,
-         Interrupts   => Interrupts,
-         Startup      => True);       --  Might be False for custom RTOS
+      RTG.System_BB_MCU_Vectors.Generate (Runtime, Interrupts);
       RTG.System_BB_MCU_Parameters.Generate (Runtime, Interrupts);
       RTG.System_BB_Parameters.Generate (Runtime, System_BB_MCU_Parameters);
    end if;
