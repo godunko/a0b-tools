@@ -13,6 +13,7 @@ It generates startup code and linker script too.
 ## Documentation
 
 * [Getting Started](documentation/getting_started.md)
+* [Adding Support of MCU](documentation/adding_support_of_mcu.md)
 
 ## Run runtime generator
 
