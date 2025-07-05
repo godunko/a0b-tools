@@ -15,6 +15,10 @@ It generates startup code and linker script too.
 * [Getting Started](documentation/getting_started.md)
 * [Adding Support of MCU](documentation/adding_support_of_mcu.md)
 
+## Known Limitations
+
+* Only ARM Cortex-M4F is supported
+
 ## Run runtime generator
 
 `a0b-runtime --bb-runtimes=<path> --svd=<path>`
