@@ -54,6 +54,31 @@ package body RTG.Architecture is
       if not Scenarios.Contains ("dt:&cpu0:compatible") then
          RTG.Diagnostics.Error ("""dt:&cpu0:compatible"" is not specified");
 
+      elsif Scenarios ("dt:&cpu0:compatible") = "arm,cortex-m3" then
+         Check_Set ("CPU_Family", "arm");
+         Check_Set ("Target_Word_Size", "32");
+         Check_Set ("Has_FMA", "no");
+         Check_Set ("Has_Compare_And_Swap", "yes");
+         Check_Set ("Has_CHERI", "no");
+
+         System_Parameters.Parameters (Backend_Divide_Checks)     := False;
+         System_Parameters.Parameters (Backend_Overflow_Checks)   := True;
+         System_Parameters.Parameters (Support_Atomic_Primitives) := True;
+         System_Parameters.Parameters (Support_Long_Shifts)       := True;
+         System_Parameters.Parameters (ZCX_By_Default)            := True;
+
+         System_Parameters.Parameters (Denorm)                    := True;
+         System_Parameters.Parameters (Machine_Overflows)         := False;
+         System_Parameters.Parameters (Machine_Rounds)            := True;
+         System_Parameters.Parameters (Signed_Zeros)              := True;
+
+         if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
+            System_Parameters.Restrictions
+              (RTG.System.GCC14.No_Task_At_Interrupt_Priority) := True;
+         end if;
+
+         System_BB_Parameters.ARM_Has_FPU := False;
+
       elsif Scenarios ("dt:&cpu0:compatible") = "arm,cortex-m4f" then
          Check_Set ("CPU_Family", "arm");
          Check_Set ("Target_Word_Size", "32");
