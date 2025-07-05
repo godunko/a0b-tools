@@ -1,0 +1,48 @@
+name = "blink_led_tasking_arduino_due"
+description = "Blink LED Tasking on Arduino Due"
+version = "0.1.0-dev"
+
+authors = ["Vadim Godunko"]
+maintainers = ["Vadim Godunko <vgodunko@gmail.com>"]
+maintainers-logins = ["godunko"]
+licenses = "Apache-2.0 WITH LLVM-exception"
+tags = ["embedded"]
+
+project-files = ["gnat/arduino_due.gpr"]
+
+[configuration]
+generate_ada = false
+generate_c = false
+generate_gpr = true
+
+[configuration.values]
+a0b_armv7m.fpu_extension = "none"
+
+[[actions]]
+type = "pre-build"
+command = ["a0b-runtime", "--bb-runtimes=../../../bb-runtimes-15/"]
+[[actions]]
+type = "pre-build"
+command = ["gprbuild", "-j0", "-m2", "runtime/build_runtime.gpr"]
+[[actions]]
+type = "pre-build"
+command = ["gprbuild", "-j0", "-m2", "runtime/build_tasking.gpr"]
+[[actions]]
+type = "pre-build"
+command = ["gprbuild", "-j0", "-m2", "runtime/build_startup.gpr"]
+
+[[actions]]
+type = "post-build"
+command = ["arm-eabi-objcopy", "-O", "binary", "bin/main.elf", "bin/main.bin"]
+
+[[depends-on]]
+gnat_arm_elf = "^15"
+a0b_atsam3x8e_gpio = "*"
+aob_tools = "*"
+
+[[pins]]
+a0b_tools = { path='../..' }
+
+[[pins]]
+a0b_armv7m = { url='https://github.com/godunko/a0b-armv7m.git' }
+a0b_atsam3x8e = { url='https://github.com/godunko/a0b-atsam3x8e.git' }
