@@ -15,9 +15,6 @@ generate_ada = false
 generate_c = false
 generate_gpr = true
 
-[configuration.values]
-a0b_armv7m.fpu_extension = "none"
-
 [[actions]]
 type = "pre-build"
 command = ["a0b-runtime", "--bb-runtimes=../../../bb-runtimes-15/"]
