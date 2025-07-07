@@ -1,4 +1,5 @@
 .objs
+.clang-format
 /alire/
 /bin/
 /config/
