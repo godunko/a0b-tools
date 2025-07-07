@@ -1,7 +1,7 @@
 name = "a0b_tools"
 description = "A0B Tools: Runtime Generator"
 website = "https://github.com/godunko/a0b-tools"
-version = "0.0.2-dev"
+version = "0.1.0"
 
 authors = ["Vadim Godunko"]
 maintainers = ["Vadim Godunko <vgodunko@gmail.com>"]
