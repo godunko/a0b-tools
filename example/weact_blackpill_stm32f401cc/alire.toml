@@ -35,5 +35,4 @@ a0b_tools = "*"
 a0b_tools = { path='../..' }
 
 [[pins]]
-a0b_armv7m = { url='https://github.com/godunko/a0b-armv7m.git' }
 a0b_stm32f401 = { url='https://github.com/godunko/a0b-stm32f401.git' }
