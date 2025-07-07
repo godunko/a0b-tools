@@ -17,9 +17,9 @@ with RTG.Utilities;
 
 package body RTG.Runtime is
 
-   procedure Generate_Build_Runtime_Project (Descriptor : Runtime_Descriptor);
+   procedure Generate_Build_Libgnat_Project (Descriptor : Runtime_Descriptor);
 
-   procedure Generate_Build_Tasking_Project (Descriptor : Runtime_Descriptor);
+   procedure Generate_Build_Libgnarl_Project (Descriptor : Runtime_Descriptor);
 
    procedure Generate_Ada_Source_Path
      (Descriptor : Runtime_Descriptor;
@@ -93,13 +93,13 @@ package body RTG.Runtime is
 
       Generate_Ada_Source_Path (Descriptor, not Tasking.Kernel.Is_Empty);
       Generate_Ada_Object_Path (Descriptor);
-      Generate_Build_Runtime_Project (Descriptor);
+      Generate_Build_Libgnat_Project (Descriptor);
       Generate_Runtime_XML (Descriptor);
       Copy_Runtime_Sources (Descriptor);
 
       if not Tasking.Kernel.Is_Empty then
          Descriptor.Tasking_Source_Directory.Make_Dir;
-         Generate_Build_Tasking_Project (Descriptor);
+         Generate_Build_Libgnarl_Project (Descriptor);
          Copy_Tasking_Sources (Descriptor, Tasking);
       end if;
 
@@ -151,11 +151,11 @@ package body RTG.Runtime is
       Output.Close;
    end Generate_Ada_Object_Path;
 
-   ------------------------------------
-   -- Generate_Build_Runtime_Project --
-   ------------------------------------
+   -------------------------------------
+   -- Generate_Build_Libgnarl_Project --
+   -------------------------------------
 
-   procedure Generate_Build_Runtime_Project
+   procedure Generate_Build_Libgnarl_Project
      (Descriptor : Runtime_Descriptor)
    is
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
@@ -164,53 +164,10 @@ package body RTG.Runtime is
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.Runtime_Directory.Create_From_Dir ("build_runtime.gpr")
+           (Descriptor.Runtime_Directory.Create_From_Dir ("build_libgnarl.gpr")
               .Display_Full_Name));
 
-      Output.Put_Line ("library project Build_Runtime is", Success);
-      Output.Put_Line ("   for Target use ""arm-eabi"";", Success);
-      Output.Put_Line
-        ("   for Runtime (""Ada"") use Project'Project_Dir;", Success);
-      Output.Put_Line ("   for Library_Name use ""gnat"";", Success);
-      Output.Put_Line ("   for Source_Dirs use (""gnat"");", Success);
-      Output.Put_Line ("   for Object_Dir use ""obj/gnat"";", Success);
-      Output.Put_Line ("   for Library_Dir use ""lib"";", Success);
-      Output.New_Line (Success);
-      Output.Put_Line ("   package Compiler is", Success);
-      Output.Put_Line ("      for Switches (""Ada"") use", Success);
-      Output.Put_Line ("        (""-g"",", Success);
-      Output.Put_Line ("         ""-O2"",", Success);
-      Output.Put_Line ("         ""-fno-delete-null-pointer-checks"",", Success);
-      Output.Put_Line ("         ""-gnatg"",", Success);
-      Output.Put_Line ("         ""-gnatp"",", Success);
-      Output.Put_Line ("         ""-gnatn2"",", Success);
-      Output.Put_Line ("         ""-nostdinc"",", Success);
-      Output.Put_Line ("         ""-ffunction-sections"",", Success);
-      Output.Put_Line ("         ""-fdata-sections"");", Success);
-      Output.Put_Line ("   end Compiler;", Success);
-      Output.New_Line (Success);
-      Output.Put_Line ("end Build_Runtime;", Success);
-
-      Output.Close;
-   end Generate_Build_Runtime_Project;
-
-   ------------------------------------
-   -- Generate_Build_Tasking_Project --
-   ------------------------------------
-
-   procedure Generate_Build_Tasking_Project
-     (Descriptor : Runtime_Descriptor)
-   is
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
-
-   begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.Runtime_Directory.Create_From_Dir ("build_tasking.gpr")
-              .Display_Full_Name));
-
-      Output.Put_Line ("library project Build_Tasking is", Success);
+      Output.Put_Line ("library project Build_Libgnarl is", Success);
       Output.Put_Line ("   for Target use ""arm-eabi"";", Success);
       Output.Put_Line
         ("   for Runtime (""Ada"") use Project'Project_Dir;", Success);
@@ -232,10 +189,53 @@ package body RTG.Runtime is
       Output.Put_Line ("         ""-fdata-sections"");", Success);
       Output.Put_Line ("   end Compiler;", Success);
       Output.New_Line (Success);
-      Output.Put_Line ("end Build_Tasking;", Success);
+      Output.Put_Line ("end Build_Libgnarl;", Success);
 
       Output.Close;
-   end Generate_Build_Tasking_Project;
+   end Generate_Build_Libgnarl_Project;
+
+   ------------------------------------
+   -- Generate_Build_Libgnat_Project --
+   ------------------------------------
+
+   procedure Generate_Build_Libgnat_Project
+     (Descriptor : Runtime_Descriptor)
+   is
+      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
+      Success : Boolean := True;
+
+   begin
+      Output.Create
+        (VSS.Strings.Conversions.To_Virtual_String
+           (Descriptor.Runtime_Directory.Create_From_Dir ("build_libgnat.gpr")
+              .Display_Full_Name));
+
+      Output.Put_Line ("library project Build_Libgnat is", Success);
+      Output.Put_Line ("   for Target use ""arm-eabi"";", Success);
+      Output.Put_Line
+        ("   for Runtime (""Ada"") use Project'Project_Dir;", Success);
+      Output.Put_Line ("   for Library_Name use ""gnat"";", Success);
+      Output.Put_Line ("   for Source_Dirs use (""gnat"");", Success);
+      Output.Put_Line ("   for Object_Dir use ""obj/gnat"";", Success);
+      Output.Put_Line ("   for Library_Dir use ""lib"";", Success);
+      Output.New_Line (Success);
+      Output.Put_Line ("   package Compiler is", Success);
+      Output.Put_Line ("      for Switches (""Ada"") use", Success);
+      Output.Put_Line ("        (""-g"",", Success);
+      Output.Put_Line ("         ""-O2"",", Success);
+      Output.Put_Line ("         ""-fno-delete-null-pointer-checks"",", Success);
+      Output.Put_Line ("         ""-gnatg"",", Success);
+      Output.Put_Line ("         ""-gnatp"",", Success);
+      Output.Put_Line ("         ""-gnatn2"",", Success);
+      Output.Put_Line ("         ""-nostdinc"",", Success);
+      Output.Put_Line ("         ""-ffunction-sections"",", Success);
+      Output.Put_Line ("         ""-fdata-sections"");", Success);
+      Output.Put_Line ("   end Compiler;", Success);
+      Output.New_Line (Success);
+      Output.Put_Line ("end Build_Libgnat;", Success);
+
+      Output.Close;
+   end Generate_Build_Libgnat_Project;
 
    --------------------------
    -- Generate_Runtime_XML --

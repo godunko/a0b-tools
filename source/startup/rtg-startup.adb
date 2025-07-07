@@ -21,7 +21,7 @@ package body RTG.Startup is
    use VSS.Strings.Formatters.Strings;
    use VSS.Strings.Templates;
 
-   procedure Generate_Build_Startup_Project
+   procedure Generate_Build_Libgnast_Project
      (Runtime : RTG.Runtime.Runtime_Descriptor;
       Startup : Startup_Descriptor);
 
@@ -70,7 +70,7 @@ package body RTG.Startup is
       Static       : Boolean;
       GNAT_Tasking : Boolean) is
    begin
-      Generate_Build_Startup_Project (Runtime, Descriptor);
+      Generate_Build_Libgnast_Project (Runtime, Descriptor);
       Generate_Startup_Linker_Script (Runtime, Descriptor);
       Copy_Linker_Scripts (Runtime, Descriptor);
       Generate_System_Startup_Specification (Runtime);
@@ -78,17 +78,17 @@ package body RTG.Startup is
         (Runtime, Interrupts, Descriptor, Static, GNAT_Tasking);
    end Create;
 
-   ------------------------------------
-   -- Generate_Build_Startup_Project --
-   ------------------------------------
+   -------------------------------------
+   -- Generate_Build_Libgnast_Project --
+   -------------------------------------
 
-   procedure Generate_Build_Startup_Project
+   procedure Generate_Build_Libgnast_Project
      (Runtime : RTG.Runtime.Runtime_Descriptor;
       Startup : Startup_Descriptor)
    is
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Runtime_Directory, "build_startup.gpr");
+          (Runtime.Runtime_Directory, "build_libgnast.gpr");
       use Output;
 
       With_Project_Template : constant Virtual_String_Template :=
@@ -98,7 +98,7 @@ package body RTG.Startup is
       PL ("with ""a0b_armv7m.gpr"";");
       PL (With_Project_Template.Format (Image (Startup.Project_File_Name)));
       NL;
-      PL ("library project Build_Startup is");
+      PL ("library project Build_Libgnast is");
       PL ("   for Target use ""arm-eabi"";");
       PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
       PL ("   for Library_Name use ""gnast"";");
@@ -119,8 +119,8 @@ package body RTG.Startup is
       PL ("         ""-fdata-sections"");");
       PL ("   end Compiler;");
       NL;
-      PL ("end Build_Startup;");
-   end Generate_Build_Startup_Project;
+      PL ("end Build_Libgnast;");
+   end Generate_Build_Libgnast_Project;
 
    ------------------------------------
    -- Generate_Startup_Linker_Script --
