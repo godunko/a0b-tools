@@ -33,6 +33,3 @@ a0b_tools = "*"
 
 [[pins]]
 a0b_tools = { path='../..' }
-
-[[pins]]
-a0b_stm32f401 = { url='https://github.com/godunko/a0b-stm32f401.git' }

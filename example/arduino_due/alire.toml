@@ -33,6 +33,3 @@ aob_tools = "*"
 
 [[pins]]
 a0b_tools = { path='../..' }
-
-[[pins]]
-a0b_atsam3x8e = { url='https://github.com/godunko/a0b-atsam3x8e.git' }
