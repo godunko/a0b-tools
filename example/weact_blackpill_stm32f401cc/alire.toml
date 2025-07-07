@@ -24,12 +24,6 @@ command = ["a0b-runtime", "--bb-runtimes=../../../bb-runtimes-15/"]
 [[actions]]
 type = "pre-build"
 command = ["gprbuild", "-j0", "runtime/build_runtime.gpr"]
-[[actions]]
-type = "pre-build"
-command = ["gprbuild", "-j0", "runtime/build_tasking.gpr"]
-[[actions]]
-type = "pre-build"
-command = ["gprbuild", "-j0", "runtime/build_startup.gpr"]
 
 [[actions]]
 type = "post-build"
