@@ -51,12 +51,6 @@ and dependency from `a0b_tools`:
 alr with a0b_tools
 ```
 
-Note, updated versions of some crates are not released yet, and need to be pinned to repositories:
-
-```
-alr pin a0b_stm32f401 --use https://github.com/godunko/a0b-stm32f401.git
-```
-
 Now, modify `alire.toml` file to run `a0b-tools` to generate runtime and `gprbuild` to build runtime automatically:
 
 ```
