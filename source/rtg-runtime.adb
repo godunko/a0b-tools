@@ -21,6 +21,10 @@ package body RTG.Runtime is
 
    procedure Generate_Build_Libgnarl_Project (Descriptor : Runtime_Descriptor);
 
+   procedure Generate_Build_Runtime_Project
+     (Runtime : Runtime_Descriptor;
+      Tasking : Boolean);
+
    procedure Generate_Ada_Source_Path
      (Descriptor : Runtime_Descriptor;
       Tasking    : Boolean);
@@ -94,6 +98,7 @@ package body RTG.Runtime is
       Generate_Ada_Source_Path (Descriptor, not Tasking.Kernel.Is_Empty);
       Generate_Ada_Object_Path (Descriptor);
       Generate_Build_Libgnat_Project (Descriptor);
+      Generate_Build_Runtime_Project (Descriptor, not Tasking.Kernel.Is_Empty);
       Generate_Runtime_XML (Descriptor);
       Copy_Runtime_Sources (Descriptor);
 
@@ -236,6 +241,37 @@ package body RTG.Runtime is
 
       Output.Close;
    end Generate_Build_Libgnat_Project;
+
+   ------------------------------------
+   -- Generate_Build_Runtime_Project --
+   ------------------------------------
+
+   procedure Generate_Build_Runtime_Project
+     (Runtime : Runtime_Descriptor;
+      Tasking : Boolean)
+   is
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Runtime.Runtime_Directory, "build_runtime.gpr");
+      use Output;
+
+   begin
+      NL;
+      PL ("aggregate project Build_Runtime is");
+      NL;
+      PL ("   for Target use ""arm-eabi"";");
+      PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
+      PL ("   for Project_Files use");
+      PL ("     (""build_libgnat.gpr"",");
+
+      if Tasking then
+         PL ("      ""build_libgnarl.gpr"",");
+      end if;
+
+      PL ("      ""build_libgnast.gpr"");");
+      NL;
+      PL ("end Build_Runtime;");
+   end Generate_Build_Runtime_Project;
 
    --------------------------
    -- Generate_Runtime_XML --
