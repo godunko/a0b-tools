@@ -67,20 +67,8 @@ command = ["a0b-runtime", "--bb-runtimes=../../../bb-runtimes-15/"]
 [[actions]]
 type = "pre-build"
 command = ["gprbuild", "-j0", "runtime/build_runtime.gpr"]
-[[actions]]
-type = "pre-build"
-command = ["gprbuild", "-j0", "runtime/build_tasking.gpr"]
-[[actions]]
-type = "pre-build"
-command = ["gprbuild", "-j0", "runtime/build_startup.gpr"]
 ```
 
-`a0b-armv7m` requires configuration parameter to select variant of FPU implemented by MCU, so add it to `alire.toml` too
-
-```
-[configuration.values]
-a0b_armv7m.fpu_extension = "VFPv4"
-```
 ### Update project file
 
 Project file `hello_led.gpr` need to be modified to use `arm-eabi` compiler and generated custom runtime:
