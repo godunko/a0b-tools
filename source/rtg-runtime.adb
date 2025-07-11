@@ -88,13 +88,28 @@ package body RTG.Runtime is
    -- Create --
    ------------
 
-   procedure Create
+   procedure Create_Directories
      (Descriptor : Runtime_Descriptor;
       Tasking    : RTG.Tasking.Tasking_Descriptor) is
    begin
       Descriptor.Runtime_Directory.Make_Dir;
       Descriptor.Runtime_Source_Directory.Make_Dir;
 
+      if not Tasking.Kernel.Is_Empty then
+         Descriptor.Tasking_Source_Directory.Make_Dir;
+      end if;
+
+      Descriptor.Startup_Source_Directory.Make_Dir;
+   end Create_Directories;
+
+   --------------
+   -- Generate --
+   --------------
+
+   procedure Generate
+     (Descriptor : Runtime_Descriptor;
+      Tasking    : RTG.Tasking.Tasking_Descriptor) is
+   begin
       Generate_Ada_Source_Path (Descriptor, not Tasking.Kernel.Is_Empty);
       Generate_Ada_Object_Path (Descriptor);
       Generate_Build_Libgnat_Project (Descriptor);
@@ -103,13 +118,10 @@ package body RTG.Runtime is
       Copy_Runtime_Sources (Descriptor);
 
       if not Tasking.Kernel.Is_Empty then
-         Descriptor.Tasking_Source_Directory.Make_Dir;
          Generate_Build_Libgnarl_Project (Descriptor);
          Copy_Tasking_Sources (Descriptor, Tasking);
       end if;
-
-      Descriptor.Startup_Source_Directory.Make_Dir;
-   end Create;
+   end Generate;
 
    ------------------------------
    -- Generate_Ada_Source_Path --

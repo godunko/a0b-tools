@@ -185,7 +185,7 @@ begin
      (Tasking, Startup, Scenarios, Parameters, System_BB_MCU_Parameters);
    RTG.Tasking.Process (Tasking, Scenarios, Parameters);
 
-   RTG.Runtime.Create (Runtime, Tasking);
+   RTG.Runtime.Create_Directories (Runtime, Tasking);
    RTG.System.Generate (Runtime, Parameters);
 
    if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
@@ -200,6 +200,8 @@ begin
       Scenarios,
       BB_Runtimes_Directory.Create_From_Dir
         ("gnat_rts_sources/lib/gnat/rts-sources.json"));
+
+   RTG.Runtime.Generate (Runtime, Tasking);
 
    RTG.Startup.Create
      (Runtime,
