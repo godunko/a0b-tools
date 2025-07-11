@@ -20,7 +20,7 @@ package body RTG.Startup.Reader is
    procedure Read
      (File      : GNATCOLL.VFS.Virtual_File;
       Startup   : in out RTG.Startup.Startup_Descriptor;
-      Scenarios : RTG.GNAT_RTS_Sources.Scenario_Maps.Map)
+      Scenarios : RTG.Scenario_Maps.Map)
    is
       use all type VSS.JSON.Streams.JSON_Stream_Element_Kind;
       use type VSS.Strings.Virtual_String;

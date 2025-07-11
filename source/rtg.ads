@@ -4,9 +4,10 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
+with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Vectors;
 
-with VSS.Strings;
+with VSS.Strings.Hash;
 
 with A0B.Types;
 
@@ -25,6 +26,14 @@ package RTG with Preelaborate is
       Address : A0B.Types.Unsigned_64;
       Size    : A0B.Types.Unsigned_64;
    end record;
+
+   package Scenario_Maps is
+     new Ada.Containers.Hashed_Maps
+       (Key_Type        => VSS.Strings.Virtual_String,
+        Element_Type    => VSS.Strings.Virtual_String,
+        Hash            => VSS.Strings.Hash,
+        Equivalent_Keys => VSS.Strings."=",
+        "="             => VSS.Strings."=");
 
    Internal_Error : exception;
 

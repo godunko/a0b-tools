@@ -85,7 +85,7 @@ procedure RTG.Driver is
          RTG.System.GCC14.No_Tasking                    => True],
       Profile      => RTG.System.GCC14.No);
    --  It is set of parameters for ARM Cortex-M `light` runtime
-   Scenarios  : RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
+   Scenarios  : RTG.Scenario_Maps.Map;
    Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector;
    System_BB_MCU_Parameters :
      RTG.System_BB_Parameters.System_BB_Parameters_Descriptor;

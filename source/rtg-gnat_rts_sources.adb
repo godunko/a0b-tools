@@ -37,7 +37,7 @@ package body RTG.GNAT_RTS_Sources is
    procedure Copy
      (Runtime     : RTG.Runtime.Runtime_Descriptor'Class;
       Tasking     : RTG.Tasking.Tasking_Descriptor;
-      Scenarios   : Scenario_Maps.Map;
+      Scenarios   : RTG.Scenario_Maps.Map;
       RTS_Sources : GNATCOLL.VFS.Virtual_File)
    is
       use all type VSS.JSON.Streams.JSON_Stream_Element_Kind;

@@ -28,7 +28,7 @@ package body RTG.Runtime_Reader is
       Runtime   : in out RTG.Runtime.Runtime_Descriptor;
       Tasking   : in out RTG.Tasking.Tasking_Descriptor;
       Startup   : in out RTG.Startup.Startup_Descriptor;
-      Scenarios : out RTG.GNAT_RTS_Sources.Scenario_Maps.Map)
+      Scenarios : out RTG.Scenario_Maps.Map)
    is
       use all type VSS.JSON.Streams.JSON_Stream_Element_Kind;
       use type VSS.Strings.Virtual_String;

@@ -20,7 +20,7 @@ package body RTG.Tasking is
 
    procedure Process
      (Tasking           : RTG.Tasking.Tasking_Descriptor;
-      Scenarios         : in out RTG.GNAT_RTS_Sources.Scenario_Maps.Map;
+      Scenarios         : in out RTG.Scenario_Maps.Map;
       System_Parameters : in out RTG.System.System_Descriptor)
    is
       use all type RTG.System.GCC14.Restriction;
