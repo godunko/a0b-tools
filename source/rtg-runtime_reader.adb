@@ -268,6 +268,8 @@ package body RTG.Runtime_Reader is
             case Reader.Read_Next is
                when Key_Name =>
                   Information.File := Reader.Key_Name;
+                  Information.Crate.Clear;
+                  Information.Path.Clear;
 
                when Start_Object =>
                   Read_File_Information;
