@@ -423,6 +423,8 @@ package body RTG.Runtime_Reader is
       end Read_Values;
 
    begin
+      Runtime.Descriptor_Directory := File.Dir;
+
       Input.Open
         (VSS.Strings.Conversions.To_Virtual_String (File.Display_Full_Name));
       Reader.Set_Stream (Input'Unchecked_Access);

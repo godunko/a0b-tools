@@ -48,12 +48,17 @@ package body RTG.Runtime is
 
    begin
       for File of Descriptor.Runtime_Files loop
-         if File.Crate /= "bb_runtimes" then
+         if File.Crate.Is_Empty then
+            null;
+
+         elsif File.Crate /= "bb_runtimes" then
             RTG.Diagnostics.Error ("only ""bb_runtimes"" crate is supported");
          end if;
 
          RTG.Utilities.Copy_File
-           (Descriptor.GNAT_RTS_Sources_Directory.Dir,
+           ((if File.Crate.Is_Empty
+             then Descriptor.Descriptor_Directory
+             else Descriptor.GNAT_RTS_Sources_Directory.Dir),
             File.Path,
             Descriptor.Runtime_Source_Directory,
             File.File);

@@ -13,6 +13,7 @@ limited with RTG.Tasking;
 package RTG.Runtime is
 
    type Runtime_Descriptor is tagged limited record
+      Descriptor_Directory       : GNATCOLL.VFS.Virtual_File;
       Runtime_Directory          : GNATCOLL.VFS.Virtual_File;
       GNAT_RTS_Sources_Directory : GNATCOLL.VFS.Virtual_File;
 

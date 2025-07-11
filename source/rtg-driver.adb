@@ -173,7 +173,8 @@ begin
    --  Load files: runtime configuration, SVD file, startup binding.
 
    RTG.Runtime_Reader.Read
-     (GNATCOLL.VFS.Create ("runtime.json"),
+     (GNATCOLL.VFS.Create_From_Base
+        ("runtime.json", GNATCOLL.VFS.Get_Current_Dir.Full_Name.all),
       Runtime,
       Tasking,
       Startup,
