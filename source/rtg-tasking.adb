@@ -57,7 +57,6 @@ package body RTG.Tasking is
          System_Parameters.Profile := RTG.System.GCC14.No;
          System_Parameters.Apply_No_Exception_Propagation_Restriction;
          System_Parameters.Apply_No_Exception_Registration_Restriction;
-         System_Parameters.Apply_No_Finalization_Restriction;
          System_Parameters.Apply_No_Implicit_Dynamic_Code_Restriction;
          System_Parameters.Apply_No_Tasking_Restriction;
 
@@ -75,7 +74,6 @@ package body RTG.Tasking is
          System_Parameters.Profile := RTG.System.GCC14.Jorvik;
          System_Parameters.Apply_No_Exception_Propagation_Restriction;
          System_Parameters.Apply_No_Exception_Registration_Restriction;
-         System_Parameters.Apply_No_Finalization_Restriction;
          System_Parameters.Apply_No_Implicit_Dynamic_Code_Restriction;
 
          System_Parameters.Apply_Max_Asynchronous_Select_Nesting_Restriction

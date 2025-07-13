@@ -8,6 +8,7 @@ with GNATCOLL.VFS;
 
 with RTG.Runtime;
 with RTG.Startup;
+with RTG.System;
 with RTG.Tasking;
 
 package RTG.Runtime_Reader is
@@ -17,6 +18,7 @@ package RTG.Runtime_Reader is
       Runtime   : in out RTG.Runtime.Runtime_Descriptor;
       Tasking   : in out RTG.Tasking.Tasking_Descriptor;
       Startup   : in out RTG.Startup.Startup_Descriptor;
+      System    : in out RTG.System.System_Descriptor;
       Scenarios : out RTG.Scenario_Maps.Map);
 
 end RTG.Runtime_Reader;

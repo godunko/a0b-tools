@@ -28,6 +28,7 @@ package body RTG.Runtime_Reader is
       Runtime   : in out RTG.Runtime.Runtime_Descriptor;
       Tasking   : in out RTG.Tasking.Tasking_Descriptor;
       Startup   : in out RTG.Startup.Startup_Descriptor;
+      System    : in out RTG.System.System_Descriptor;
       Scenarios : out RTG.Scenario_Maps.Map)
    is
       use all type VSS.JSON.Streams.JSON_Stream_Element_Kind;
@@ -50,6 +51,16 @@ package body RTG.Runtime_Reader is
 
       procedure Read_Files_Section
         (Files : in out RTG.File_Descriptor_Vectors.Vector)
+           with Pre  => Reader.Element_Kind = Start_Object,
+                Post => Reader.Element_Kind = End_Object;
+
+      procedure Read_System_Section
+        (System : in out RTG.System.System_Descriptor)
+           with Pre  => Reader.Element_Kind = Start_Object,
+                Post => Reader.Element_Kind = End_Object;
+
+      procedure Read_System_Restrictions_Section
+        (System : in out RTG.System.System_Descriptor)
            with Pre  => Reader.Element_Kind = Start_Object,
                 Post => Reader.Element_Kind = End_Object;
 
@@ -289,7 +300,16 @@ package body RTG.Runtime_Reader is
       ------------------
 
       procedure Read_Runtime is
-         Key : VSS.Strings.Virtual_String;
+
+         type Components is
+           (None,
+            Common_Required_Switches,
+            Linker_Required_Switches,
+            Component_System,
+            Files);
+
+         Component : Components := None;
+         Key       : VSS.Strings.Virtual_String;
 
       begin
          loop
@@ -297,39 +317,53 @@ package body RTG.Runtime_Reader is
                when Key_Name =>
                   Key := Reader.Key_Name;
 
-                  if Key /= "common_required_switches"
-                    and Key /= "files"
-                    and Key /= "linker_required_switches"
-                  then
+                  if Key = "common_required_switches" then
+                     Component := Common_Required_Switches;
+
+                  elsif Key = "files" then
+                     Component := Files;
+
+                  elsif Key = "linker_required_switches" then
+                     Component := Linker_Required_Switches;
+
+                  elsif Key = "system" then
+                     Component := Component_System;
+
+                  else
                      RTG.Diagnostics.Warning
                        ("`{}` is unknown runtime configuration parameter",
                         Key);
                   end if;
 
                when Start_Array =>
-                  if Key = "common_required_switches" then
-                     Read_Values (Runtime.Common_Required_Switches);
+                  case Component is
+                     when Common_Required_Switches =>
+                        Read_Values (Runtime.Common_Required_Switches);
 
-                  elsif Key = "linker_required_switches" then
-                     Read_Values (Runtime.Linker_Required_Switches);
+                     when Linker_Required_Switches =>
+                        Read_Values (Runtime.Linker_Required_Switches);
 
-                  else
-                     RTG.Diagnostics.Warning
-                       ("`{}` runtime configuration parameter is not an array",
-                        Key);
-                     Reader.Skip_Current_Array;
-                  end if;
+                     when others =>
+                        RTG.Diagnostics.Warning
+                          ("`{}` runtime configuration parameter is not an array",
+                           Key);
+                        Reader.Skip_Current_Array;
+                  end case;
 
                when Start_Object =>
-                  if Key = "files" then
-                     Read_Files_Section (Runtime.Runtime_Files);
+                  case Component is
+                     when Files =>
+                        Read_Files_Section (Runtime.Runtime_Files);
 
-                  else
-                     RTG.Diagnostics.Warning
-                       ("`{}` runtime configuration parameter is not object",
+                     when Component_System =>
+                        Read_System_Section (System);
+
+                     when others =>
+                        RTG.Diagnostics.Warning
+                          ("`{}` runtime configuration parameter is not object",
                         Key);
-                     Reader.Skip_Current_Object;
-                  end if;
+                        Reader.Skip_Current_Object;
+                  end case;
 
                when End_Object =>
                   exit;
@@ -339,6 +373,102 @@ package body RTG.Runtime_Reader is
             end case;
          end loop;
       end Read_Runtime;
+
+      --------------------------------------
+      -- Read_System_Restrictions_Section --
+      --------------------------------------
+
+      procedure Read_System_Restrictions_Section
+        (System : in out RTG.System.System_Descriptor)
+      is
+         type Components is (None, No_Finalization);
+
+         Component : Components := None;
+         Key       : VSS.Strings.Virtual_String;
+
+      begin
+         loop
+            case Reader.Read_Next is
+               when Key_Name =>
+                  Key := Reader.Key_Name;
+
+                  if Key = "No_Finalization" then
+                     Component := No_Finalization;
+
+                  else
+                     RTG.Diagnostics.Warning
+                       ("`{}` is unknown system restrictions parameter",
+                        Key);
+                  end if;
+
+               when Boolean_Value =>
+                  case Component is
+                     when No_Finalization =>
+                        System.Set_No_Finalization (Reader.Boolean_Value);
+
+                     when others =>
+                        RTG.Diagnostics.Warning
+                          ("`{}` runtime system restrictions is not boolean",
+                        Key);
+                        Reader.Skip_Current_Object;
+                  end case;
+
+               when End_Object =>
+                  exit;
+
+               when others =>
+                  raise Program_Error with Reader.Element_Kind'Img;
+            end case;
+         end loop;
+      end Read_System_Restrictions_Section;
+
+      -------------------------
+      -- Read_System_Section --
+      -------------------------
+
+      procedure Read_System_Section
+        (System : in out RTG.System.System_Descriptor)
+      is
+         type Components is (None, Restrictions);
+
+         Component : Components := None;
+         Key       : VSS.Strings.Virtual_String;
+
+      begin
+         loop
+            case Reader.Read_Next is
+               when Key_Name =>
+                  Key := Reader.Key_Name;
+
+                  if Key = "restrictions" then
+                     Component := Restrictions;
+
+                  else
+                     RTG.Diagnostics.Warning
+                       ("`{}` is unknown system configuration parameter",
+                        Key);
+                  end if;
+
+               when Start_Object =>
+                  case Component is
+                     when Restrictions =>
+                        Read_System_Restrictions_Section (System);
+
+                     when others =>
+                        RTG.Diagnostics.Warning
+                          ("`{}` system configuration parameter is not object",
+                        Key);
+                        Reader.Skip_Current_Object;
+                  end case;
+
+               when End_Object =>
+                  exit;
+
+               when others =>
+                  raise Program_Error with Reader.Element_Kind'Img;
+            end case;
+         end loop;
+      end Read_System_Section;
 
       ------------------
       -- Read_Tasking --

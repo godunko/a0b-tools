@@ -172,6 +172,7 @@ begin
       Runtime,
       Tasking,
       Startup,
+      Parameters,
       Scenarios);
    RTG.SVD_Reader.Read (SVD_File, Interrupts);
    RTG.Startup.Reader.Read (Startup_Binding_File, Startup, Scenarios);
