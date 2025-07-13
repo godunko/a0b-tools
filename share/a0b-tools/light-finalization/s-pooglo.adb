@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Storage_Pools; use System.Storage_Pools;
 with System.Memory;
 
 package body System.Pool_Global is

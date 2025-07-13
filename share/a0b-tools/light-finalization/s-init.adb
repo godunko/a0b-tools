@@ -31,9 +31,6 @@
 
 --  This is a bare board implementation of this package
 
-with System.BB.CPU_Primitives;
-with System.Tasking;
-
 package body System.Init is
 
    ------------------------
@@ -66,15 +63,6 @@ package body System.Init is
       null;
    end Initialize;
 
-   ---------------------
-   -- Install_Handler --
-   ---------------------
-
-   procedure Install_Handler is
-   begin
-      BB.CPU_Primitives.Install_Error_Handlers;
-   end Install_Handler;
-
    ------------------------
    -- Runtime_Initialize --
    ------------------------
@@ -83,14 +71,7 @@ package body System.Init is
       pragma Unreferenced (Install_Handler);
 
    begin
-      --  Ensure that the tasking run time is initialized when using this run
-      --  time. This initialization is required by the support for exceptions
-      --  (which uses thread local storage). The initialization routine has the
-      --  required machinery to prevent multiple calls to Initialize.
-
-      System.Tasking.Initialize;
-
-      Init.Install_Handler;
+      null;
    end Runtime_Initialize;
 
    ----------------------
@@ -101,4 +82,5 @@ package body System.Init is
    begin
       null;
    end Runtime_Finalize;
+
 end System.Init;
