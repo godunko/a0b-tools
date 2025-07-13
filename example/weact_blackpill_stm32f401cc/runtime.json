@@ -18,6 +18,13 @@
   {
     "common_required_switches": ["-mfloat-abi=hard", "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16"],
     "linker_required_switches": ["-nostartfiles", "-nolibc"],
+    "system":
+    {
+      "restrictions":
+      {
+        "No_Finalization": true
+      }
+    },
     "files":
     {
       "s-macres.adb": { "crate": "bb_runtimes", "path": "src/s-macres__cortexm3.adb" },
