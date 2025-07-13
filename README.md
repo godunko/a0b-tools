@@ -81,6 +81,13 @@ Typical content of the file:
   {
     "common_required_switches": ["-mfloat-abi=hard", "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16"],
     "linker_required_switches": ["-nostartfiles", "-nolibc"],
+    "system":
+    {
+      "restrictions":
+      {
+        "No_Finalization": true
+      }
+    },
     "files":
     {
       "s-macres.adb": { "crate": "bb_runtimes", "path": "src/s-macres__cortexm3.adb" },
@@ -161,6 +168,9 @@ Typical content of the file:
   Architecture specific switches should be listed here.
 * `linker_required_switches`: list of required switches to be used by linker.
   Usually switches to ignore default startup files and standard C library.
+* `system`: global system configuration
+  * `restrictions`: Ada restrictions to be applied for runtime and application.
+    * `No_Finalization`: set to don't allow to use controlled types.
 * `files`: additional files to be copied into runtime source directory.
 
 #### Tasking Configuration Parameters
