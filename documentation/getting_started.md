@@ -100,7 +100,13 @@ Next, runtime description file `runtime.json` need to be created in the root dir
   {
     "common_required_switches": ["-mfloat-abi=hard", "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16"],
     "linker_required_switches": ["-nostartfiles", "-nolibc"],
-    "files":
+    "system":
+    {
+      "restrictions":
+      {
+        "No_Finalization": true
+      }
+    },    "files":
     {
       "s-macres.adb": { "crate": "bb_runtimes", "path": "src/s-macres__cortexm3.adb" },
       "s-sgshca.adb": { "crate": "bb_runtimes", "path": "src/s-sgshca__cortexm.adb" }
