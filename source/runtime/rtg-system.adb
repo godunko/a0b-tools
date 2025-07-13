@@ -42,12 +42,80 @@ package body RTG.System is
         GCC14.Use_Ada_Main_Program_Name => "Use_Ada_Main_Program_Name",
         GCC14.ZCX_By_Default            => "ZCX_By_Default           "];
 
+   procedure Set
+     (Value : in out GCC14.Restriction_Value;
+      To    : Boolean);
+
+   function Is_Applied
+     (Descriptor  : System_Descriptor;
+      Restriction : GCC14.Restriction) return Boolean;
+
+   ------------------------------------------------
+   -- Apply_No_Exception_Propagation_Restriction --
+   ------------------------------------------------
+
+   procedure Apply_No_Exception_Propagation_Restriction
+     (Descriptor : in out System_Descriptor'Class) is
+   begin
+      Descriptor.Set_No_Exception_Propagation (True);
+   end Apply_No_Exception_Propagation_Restriction;
+
+   -------------------------------------------------
+   -- Apply_No_Exception_Registration_Restriction --
+   -------------------------------------------------
+
+   procedure Apply_No_Exception_Registration_Restriction
+     (Descriptor : in out System_Descriptor'Class) is
+   begin
+      Descriptor.Set_No_Exception_Registration (True);
+   end Apply_No_Exception_Registration_Restriction;
+
+   ---------------------------------------
+   -- Apply_No_Finalization_Restriction --
+   ---------------------------------------
+
+   procedure Apply_No_Finalization_Restriction
+     (Descriptor : in out System_Descriptor'Class) is
+   begin
+      Descriptor.Set_No_Finalization (True);
+   end Apply_No_Finalization_Restriction;
+
+   ------------------------------------------------
+   -- Apply_No_Implicit_Dynamic_Code_Restriction --
+   ------------------------------------------------
+
+   procedure Apply_No_Implicit_Dynamic_Code_Restriction
+     (Descriptor : in out System_Descriptor'Class) is
+   begin
+      Descriptor.Set_No_Implicit_Dynamic_Code (True);
+   end Apply_No_Implicit_Dynamic_Code_Restriction;
+
+   ------------------------------------------------------
+   -- Apply_No_Task_At_Interrupt_Priority_Restrictions --
+   ------------------------------------------------------
+
+   procedure Apply_No_Task_At_Interrupt_Priority_Restriction
+     (Descriptor : in out System_Descriptor'Class) is
+   begin
+      Descriptor.Set_No_Task_At_Interrupt_Priority (True);
+   end Apply_No_Task_At_Interrupt_Priority_Restriction;
+
+   ----------------------------------
+   -- Apply_No_Tasking_Restriction --
+   ----------------------------------
+
+   procedure Apply_No_Tasking_Restriction
+     (Descriptor : in out System_Descriptor'Class) is
+   begin
+      Descriptor.Set_No_Tasking (True);
+   end Apply_No_Tasking_Restriction;
+
    --------------
    -- Generate --
    --------------
 
    procedure Generate
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+     (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
       Parameters : System_Descriptor)
    is
       package Output is
@@ -56,27 +124,27 @@ package body RTG.System is
       use Output;
 
    begin
-      if Parameters.Restrictions (GCC14.No_Exception_Propagation) then
+      if Is_Applied (Parameters, GCC14.No_Exception_Propagation) then
          PL ("pragma Restrictions (No_Exception_Propagation);");
       end if;
 
-      if Parameters.Restrictions (GCC14.No_Exception_Registration) then
+      if Is_Applied (Parameters, GCC14.No_Exception_Registration) then
          PL ("pragma Restrictions (No_Exception_Registration);");
       end if;
 
-      if Parameters.Restrictions (GCC14.No_Finalization) then
+      if Is_Applied (Parameters, GCC14.No_Finalization) then
          PL ("pragma Restrictions (No_Finalization);");
       end if;
 
-      if Parameters.Restrictions (GCC14.No_Implicit_Dynamic_Code) then
+      if Is_Applied (Parameters, GCC14.No_Implicit_Dynamic_Code) then
          PL ("pragma Restrictions (No_Implicit_Dynamic_Code);");
       end if;
 
-      if Parameters.Restrictions (GCC14.No_Task_At_Interrupt_Priority) then
+      if Is_Applied (Parameters, GCC14.No_Task_At_Interrupt_Priority) then
          PL ("pragma Restrictions (No_Task_At_Interrupt_Priority);");
       end if;
 
-      if Parameters.Restrictions (GCC14.No_Tasking) then
+      if Is_Applied (Parameters, GCC14.No_Tasking) then
          PL ("pragma Restrictions (No_Tasking);");
       end if;
 
@@ -143,5 +211,113 @@ package body RTG.System is
       NL;
       PL ("end System;");
    end Generate;
+
+   ----------------
+   -- Is_Applied --
+   ----------------
+
+   function Is_Applied
+     (Descriptor  : System_Descriptor;
+      Restriction : GCC14.Restriction) return Boolean is
+   begin
+      case Descriptor.Restrictions (Restriction).Kind is
+         when GCC14.None =>
+            return False;
+
+         when GCC14.Boolean =>
+            return Descriptor.Restrictions (Restriction).Applied;
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end Is_Applied;
+
+   ---------
+   -- Set --
+   ---------
+
+   procedure Set
+     (Value : in out GCC14.Restriction_Value;
+      To    : Boolean) is
+   begin
+      case Value.Kind is
+         when GCC14.None =>
+            Value := (Kind => GCC14.Boolean, Applied => To);
+
+         when GCC14.Boolean =>
+            if Value.Applied /= To then
+               raise Program_Error;
+            end if;
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end Set;
+
+   ----------------------------------
+   -- Set_No_Exception_Propagation --
+   ----------------------------------
+
+   procedure Set_No_Exception_Propagation
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True) is
+   begin
+      Set (Descriptor.Restrictions (GCC14.No_Exception_Propagation), To);
+   end Set_No_Exception_Propagation;
+
+   -----------------------------------
+   -- Set_No_Exception_Registration --
+   -----------------------------------
+
+   procedure Set_No_Exception_Registration
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True) is
+   begin
+      Set (Descriptor.Restrictions (GCC14.No_Exception_Registration), To);
+   end Set_No_Exception_Registration;
+
+   -------------------------
+   -- Set_No_Finalization --
+   -------------------------
+
+   procedure Set_No_Finalization
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True) is
+   begin
+      Set (Descriptor.Restrictions (GCC14.No_Finalization), To);
+   end Set_No_Finalization;
+
+   ----------------------------------
+   -- Set_No_Implicit_Dynamic_Code --
+   ----------------------------------
+
+   procedure Set_No_Implicit_Dynamic_Code
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True) is
+   begin
+      Set (Descriptor.Restrictions (GCC14.No_Implicit_Dynamic_Code), To);
+   end Set_No_Implicit_Dynamic_Code;
+
+   ---------------------------------------
+   -- Set_No_Task_At_Interrupt_Priority --
+   ---------------------------------------
+
+   procedure Set_No_Task_At_Interrupt_Priority
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True) is
+   begin
+      Set (Descriptor.Restrictions (GCC14.No_Task_At_Interrupt_Priority), To);
+   end Set_No_Task_At_Interrupt_Priority;
+
+   --------------------
+   -- Set_No_Tasking --
+   --------------------
+
+   procedure Set_No_Tasking
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True) is
+   begin
+      Set (Descriptor.Restrictions (GCC14.No_Tasking), To);
+   end Set_No_Tasking;
 
 end RTG.System;

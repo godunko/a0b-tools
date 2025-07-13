@@ -23,7 +23,6 @@ package body RTG.Tasking is
       Scenarios         : in out RTG.Scenario_Maps.Map;
       System_Parameters : in out RTG.System.System_Descriptor)
    is
-      use all type RTG.System.GCC14.Restriction;
       use all type RTG.System.GCC14.System_Implementation_Parameter;
 
       procedure Check_Set
@@ -56,11 +55,11 @@ package body RTG.Tasking is
       if Tasking.Kernel.Is_Empty then
          Check_Set ("RTS_Profile", "light");
          System_Parameters.Profile := RTG.System.GCC14.No;
-         System_Parameters.Restrictions (No_Exception_Propagation)  := True;
-         System_Parameters.Restrictions (No_Exception_Registration) := True;
-         System_Parameters.Restrictions (No_Finalization)           := True;
-         System_Parameters.Restrictions (No_Implicit_Dynamic_Code)  := True;
-         System_Parameters.Restrictions (No_Tasking)                := True;
+         System_Parameters.Apply_No_Exception_Propagation_Restriction;
+         System_Parameters.Apply_No_Exception_Registration_Restriction;
+         System_Parameters.Apply_No_Finalization_Restriction;
+         System_Parameters.Apply_No_Implicit_Dynamic_Code_Restriction;
+         System_Parameters.Apply_No_Tasking_Restriction;
 
          System_Parameters.Parameters (Preallocated_Stacks)       := False;
          System_Parameters.Parameters (Suppress_Standard_Library) := True;
@@ -68,11 +67,10 @@ package body RTG.Tasking is
       elsif Tasking.Kernel = "light" then
          Check_Set ("RTS_Profile", "light-tasking");
          System_Parameters.Profile := RTG.System.GCC14.Jorvik;
-         System_Parameters.Restrictions (No_Exception_Propagation)  := True;
-         System_Parameters.Restrictions (No_Exception_Registration) := True;
-         System_Parameters.Restrictions (No_Finalization)           := True;
-         System_Parameters.Restrictions (No_Implicit_Dynamic_Code)  := True;
-         System_Parameters.Restrictions (No_Tasking)                := False;
+         System_Parameters.Apply_No_Exception_Propagation_Restriction;
+         System_Parameters.Apply_No_Exception_Registration_Restriction;
+         System_Parameters.Apply_No_Finalization_Restriction;
+         System_Parameters.Apply_No_Implicit_Dynamic_Code_Restriction;
 
          System_Parameters.Parameters (Preallocated_Stacks)       := True;
          System_Parameters.Parameters (Suppress_Standard_Library) := True;
@@ -80,11 +78,6 @@ package body RTG.Tasking is
       elsif Tasking.Kernel = "embedded" then
          Check_Set ("RTS_Profile", "embedded");
          System_Parameters.Profile := RTG.System.GCC14.Jorvik;
-         System_Parameters.Restrictions (No_Exception_Propagation)  := False;
-         System_Parameters.Restrictions (No_Exception_Registration) := True;
-         System_Parameters.Restrictions (No_Finalization)           := False;
-         System_Parameters.Restrictions (No_Implicit_Dynamic_Code)  := False;
-         System_Parameters.Restrictions (No_Tasking)                := False;
 
          System_Parameters.Parameters (Preallocated_Stacks)       := True;
          System_Parameters.Parameters (Suppress_Standard_Library) := False;

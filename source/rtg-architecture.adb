@@ -74,8 +74,8 @@ package body RTG.Architecture is
          System_Parameters.Parameters (Signed_Zeros)              := True;
 
          if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
-            System_Parameters.Restrictions
-              (RTG.System.GCC14.No_Task_At_Interrupt_Priority) := True;
+            RTG.System.Apply_No_Task_At_Interrupt_Priority_Restriction
+              (System_Parameters);
          end if;
 
          System_BB_Parameters.ARM_Has_FPU := False;
@@ -100,8 +100,8 @@ package body RTG.Architecture is
          System_Parameters.Parameters (Signed_Zeros)              := True;
 
          if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
-            System_Parameters.Restrictions
-              (RTG.System.GCC14.No_Task_At_Interrupt_Priority) := True;
+            RTG.System.Apply_No_Task_At_Interrupt_Priority_Restriction
+              (System_Parameters);
          end if;
 
          System_BB_Parameters.ARM_Has_FPU := True;

@@ -39,6 +39,18 @@ package RTG.System is
       type System_Implementation_Parameters is
         array (System_Implementation_Parameter) of Boolean;
 
+      type Restriction_Value_Kind is (None, Boolean);
+
+      type Restriction_Value (Kind : Restriction_Value_Kind := None) is record
+         case Kind is
+            when None =>
+               null;
+
+            when Boolean =>
+               Applied : Standard.Boolean;
+         end case;
+      end record;
+
       type Restriction is
         (No_Exception_Propagation,
          No_Exception_Registration,
@@ -47,20 +59,62 @@ package RTG.System is
          No_Task_At_Interrupt_Priority,
          No_Tasking);
 
-      type Restrictions is array (Restriction) of Boolean;
+      type Restrictions is array (Restriction) of Restriction_Value;
 
       type Profiles is (No, Ravenscar, Jorvik);
 
    end GCC14;
 
-   type System_Descriptor is record
+   type System_Descriptor is tagged record
       Parameters   : GCC14.System_Implementation_Parameters;
       Restrictions : GCC14.Restrictions;
       Profile      : GCC14.Profiles;
    end record;
 
    procedure Generate
-     (Runtime    : RTG.Runtime.Runtime_Descriptor;
+     (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
       Parameters : System_Descriptor);
+
+   procedure Apply_No_Exception_Propagation_Restriction
+     (Descriptor : in out System_Descriptor'Class);
+
+   procedure Apply_No_Exception_Registration_Restriction
+     (Descriptor : in out System_Descriptor'Class);
+
+   procedure Apply_No_Finalization_Restriction
+     (Descriptor : in out System_Descriptor'Class);
+
+   procedure Apply_No_Implicit_Dynamic_Code_Restriction
+     (Descriptor : in out System_Descriptor'Class);
+
+   procedure Apply_No_Task_At_Interrupt_Priority_Restriction
+     (Descriptor : in out System_Descriptor'Class);
+
+   procedure Apply_No_Tasking_Restriction
+     (Descriptor : in out System_Descriptor'Class);
+
+   procedure Set_No_Exception_Propagation
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True);
+
+   procedure Set_No_Exception_Registration
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True);
+
+   procedure Set_No_Finalization
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True);
+
+   procedure Set_No_Implicit_Dynamic_Code
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True);
+
+   procedure Set_No_Task_At_Interrupt_Priority
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True);
+
+   procedure Set_No_Tasking
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True);
 
 end RTG.System;
