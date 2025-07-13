@@ -39,7 +39,7 @@ package RTG.System is
       type System_Implementation_Parameters is
         array (System_Implementation_Parameter) of Boolean;
 
-      type Restriction_Value_Kind is (None, Boolean);
+      type Restriction_Value_Kind is (None, Boolean, Number);
 
       type Restriction_Value (Kind : Restriction_Value_Kind := None) is record
          case Kind is
@@ -48,16 +48,21 @@ package RTG.System is
 
             when Boolean =>
                Applied : Standard.Boolean;
+
+            when Number =>
+               Value   : VSS.Strings.Virtual_String;
          end case;
       end record;
 
       type Restriction is
-        (No_Exception_Propagation,
+        (No_Abort_Statements,
+         No_Exception_Propagation,
          No_Exception_Registration,
          No_Finalization,
          No_Implicit_Dynamic_Code,
          No_Task_At_Interrupt_Priority,
-         No_Tasking);
+         No_Tasking,
+         Max_Asynchronous_Select_Nesting);
 
       type Restrictions is array (Restriction) of Restriction_Value;
 
@@ -74,6 +79,9 @@ package RTG.System is
    procedure Generate
      (Runtime    : RTG.Runtime.Runtime_Descriptor'Class;
       Parameters : System_Descriptor);
+
+   procedure Apply_No_Abort_Statements_Restriction
+     (Descriptor : in out System_Descriptor'Class);
 
    procedure Apply_No_Exception_Propagation_Restriction
      (Descriptor : in out System_Descriptor'Class);
@@ -92,6 +100,14 @@ package RTG.System is
 
    procedure Apply_No_Tasking_Restriction
      (Descriptor : in out System_Descriptor'Class);
+
+   procedure Apply_Max_Asynchronous_Select_Nesting_Restriction
+     (Descriptor : in out System_Descriptor'Class;
+      To         : VSS.Strings.Virtual_String);
+
+   procedure Set_No_Abort_Statements
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True);
 
    procedure Set_No_Exception_Propagation
      (Descriptor : in out System_Descriptor'Class;
@@ -116,5 +132,9 @@ package RTG.System is
    procedure Set_No_Tasking
      (Descriptor : in out System_Descriptor'Class;
       To         : Boolean := True);
+
+   procedure Set_Max_Asynchronous_Select_Nesting
+     (Descriptor : in out System_Descriptor'Class;
+      To         : VSS.Strings.Virtual_String);
 
 end RTG.System;

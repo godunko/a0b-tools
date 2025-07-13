@@ -14,6 +14,9 @@ with RTG.Utilities;
 
 package body RTG.System is
 
+   use VSS.Strings.Formatters.Strings;
+   use VSS.Strings.Templates;
+
    System_Implementation_Parameter_Images :
    constant array (GCC14.System_Implementation_Parameter)
      of VSS.Strings.Virtual_String :=
@@ -46,9 +49,34 @@ package body RTG.System is
      (Value : in out GCC14.Restriction_Value;
       To    : Boolean);
 
+   procedure Set
+     (Value : in out GCC14.Restriction_Value;
+      To    : VSS.Strings.Virtual_String);
+
    function Is_Applied
      (Descriptor  : System_Descriptor;
       Restriction : GCC14.Restriction) return Boolean;
+
+   -------------------------------------------------------
+   -- Apply_Max_Asynchronous_Select_Nesting_Restriction --
+   -------------------------------------------------------
+
+   procedure Apply_Max_Asynchronous_Select_Nesting_Restriction
+     (Descriptor : in out System_Descriptor'Class;
+      To         : VSS.Strings.Virtual_String) is
+   begin
+      Descriptor.Set_Max_Asynchronous_Select_Nesting (To);
+   end Apply_Max_Asynchronous_Select_Nesting_Restriction;
+
+   -------------------------------------------
+   -- Apply_No_Abort_Statements_Restriction --
+   -------------------------------------------
+
+   procedure Apply_No_Abort_Statements_Restriction
+     (Descriptor : in out System_Descriptor'Class) is
+   begin
+      Descriptor.Set_No_Abort_Statements (True);
+   end Apply_No_Abort_Statements_Restriction;
 
    ------------------------------------------------
    -- Apply_No_Exception_Propagation_Restriction --
@@ -123,6 +151,9 @@ package body RTG.System is
           (Runtime.Runtime_Source_Directory, "system.ads");
       use Output;
 
+      Max_Asynchronous_Select_Nesting_Template : Virtual_String_Template :=
+        "pragma Restrictions (Max_Asynchronous_Select_Nesting => {});";
+
    begin
       if Is_Applied (Parameters, GCC14.No_Exception_Propagation) then
          PL ("pragma Restrictions (No_Exception_Propagation);");
@@ -146,6 +177,18 @@ package body RTG.System is
 
       if Is_Applied (Parameters, GCC14.No_Tasking) then
          PL ("pragma Restrictions (No_Tasking);");
+      end if;
+
+      if Is_Applied (Parameters, GCC14.No_Abort_Statements) then
+         PL ("pragma Restrictions (No_Abort_Statements);");
+      end if;
+
+      if Is_Applied (Parameters, GCC14.Max_Asynchronous_Select_Nesting) then
+         PL
+           (Max_Asynchronous_Select_Nesting_Template.Format
+              (Image
+                 (Parameters.Restrictions
+                    (GCC14.Max_Asynchronous_Select_Nesting).Value)));
       end if;
 
       case Parameters.Profile is
@@ -227,8 +270,8 @@ package body RTG.System is
          when GCC14.Boolean =>
             return Descriptor.Restrictions (Restriction).Applied;
 
-         when others =>
-            raise Program_Error;
+         when GCC14.Number =>
+            return True;
       end case;
    end Is_Applied;
 
@@ -253,6 +296,53 @@ package body RTG.System is
             raise Program_Error;
       end case;
    end Set;
+
+   ---------
+   -- Set --
+   ---------
+
+   procedure Set
+     (Value : in out GCC14.Restriction_Value;
+      To    : VSS.Strings.Virtual_String)
+   is
+      use type VSS.Strings.Virtual_String;
+
+   begin
+      case Value.Kind is
+         when GCC14.None =>
+            Value := (Kind => GCC14.Number, Value => To);
+
+         when GCC14.Number =>
+            if Value.Value /= To then
+               raise Program_Error;
+            end if;
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end Set;
+
+   -----------------------------------------
+   -- Set_Max_Asynchronous_Select_Nesting --
+   -----------------------------------------
+
+   procedure Set_Max_Asynchronous_Select_Nesting
+     (Descriptor : in out System_Descriptor'Class;
+      To         : VSS.Strings.Virtual_String) is
+   begin
+      Set (Descriptor.Restrictions (GCC14.Max_Asynchronous_Select_Nesting), To);
+   end Set_Max_Asynchronous_Select_Nesting;
+
+   -----------------------------
+   -- Set_No_Abort_Statements --
+   -----------------------------
+
+   procedure Set_No_Abort_Statements
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True) is
+   begin
+      Set (Descriptor.Restrictions (GCC14.No_Abort_Statements), To);
+   end Set_No_Abort_Statements;
 
    ----------------------------------
    -- Set_No_Exception_Propagation --

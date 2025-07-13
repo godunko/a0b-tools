@@ -61,6 +61,12 @@ package body RTG.Tasking is
          System_Parameters.Apply_No_Implicit_Dynamic_Code_Restriction;
          System_Parameters.Apply_No_Tasking_Restriction;
 
+         System_Parameters.Apply_Max_Asynchronous_Select_Nesting_Restriction
+           ("0");
+         System_Parameters.Apply_No_Abort_Statements_Restriction;
+         --  XXX GCC15: These are necessary to suppress use of
+         --  `System.Standard_Library.Abort_Undefer_Direct` subprogram.
+
          System_Parameters.Parameters (Preallocated_Stacks)       := False;
          System_Parameters.Parameters (Suppress_Standard_Library) := True;
 
@@ -71,6 +77,12 @@ package body RTG.Tasking is
          System_Parameters.Apply_No_Exception_Registration_Restriction;
          System_Parameters.Apply_No_Finalization_Restriction;
          System_Parameters.Apply_No_Implicit_Dynamic_Code_Restriction;
+
+         System_Parameters.Apply_Max_Asynchronous_Select_Nesting_Restriction
+           ("0");
+         System_Parameters.Apply_No_Abort_Statements_Restriction;
+         --  XXX GCC15: These are necessary to suppress use of
+         --  `System.Standard_Library.Abort_Undefer_Direct` subprogram.
 
          System_Parameters.Parameters (Preallocated_Stacks)       := True;
          System_Parameters.Parameters (Suppress_Standard_Library) := True;
