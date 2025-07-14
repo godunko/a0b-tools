@@ -1,6 +1,7 @@
 # A0B Tools: Runtime Generator
 
-This crate provides utility to construct custom GNAT runtime for bare board application. 
+This crate provides utility to construct custom GNAT runtime for bare board application.
+Generated runtime can be used with [Ada_Drivers_Library](https://github.com/AdaCore/Ada_Drivers_Library) or any others crates.
 
 It supports construction of three well known runtime profiles: `light`, `light-tasking` and `embedded` with necessary customization for particular project.
 For example, `light` runtime profile can be extended to support controlled types. 
