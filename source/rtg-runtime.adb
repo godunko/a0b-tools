@@ -6,16 +6,21 @@
 
 pragma Style_Checks ("M90");
 
+with VSS.Application;
 with VSS.Strings.Conversions;
 with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
 with VSS.Text_Streams.File_Output;
+with VSS.Transformers.Casing;
 
 with RTG.Diagnostics;
 with RTG.Tasking;
 with RTG.Utilities;
 
 package body RTG.Runtime is
+
+   use VSS.Strings.Formatters.Strings;
+   use VSS.Strings.Templates;
 
    procedure Generate_Build_Libgnat_Project (Descriptor : Runtime_Descriptor);
 
@@ -46,19 +51,35 @@ package body RTG.Runtime is
    procedure Copy_Runtime_Sources (Descriptor : Runtime_Descriptor) is
       use type VSS.Strings.Virtual_String;
 
+      Directory     : GNATCOLL.VFS.Virtual_File;
+      Name_Template : Virtual_String_Template := "{}_ALIRE_PREFIX";
+      Name          : VSS.Strings.Virtual_String;
+
    begin
       for File of Descriptor.Runtime_Files loop
          if File.Crate.Is_Empty then
-            null;
+            Directory := Descriptor.Descriptor_Directory;
 
-         elsif File.Crate /= "bb_runtimes" then
-            RTG.Diagnostics.Error ("only ""bb_runtimes"" crate is supported");
+         elsif File.Crate = "bb_runtimes" then
+            Directory := Descriptor.GNAT_RTS_Sources_Directory.Dir;
+
+         else
+            Name :=
+              VSS.Transformers.Casing.To_Simple_Uppercase.Transform
+                (Name_Template.Format (Image (File.Crate)));
+
+            if not VSS.Application.System_Environment.Contains (Name) then
+               RTG.Diagnostics.Error ("crate `{}` not found", File.Crate);
+            end if;
+
+            Directory :=
+              GNATCOLL.VFS.Create_From_UTF8
+                (VSS.Strings.Conversions.To_UTF_8_String
+                   (VSS.Application.System_Environment.Value (Name)));
          end if;
 
          RTG.Utilities.Copy_File
-           ((if File.Crate.Is_Empty
-             then Descriptor.Descriptor_Directory
-             else Descriptor.GNAT_RTS_Sources_Directory.Dir),
+           (Directory,
             File.Path,
             Descriptor.Runtime_Source_Directory,
             File.File);
@@ -295,8 +316,6 @@ package body RTG.Runtime is
    --------------------------
 
    procedure Generate_Runtime_XML (Descriptor : Runtime_Descriptor) is
-      use VSS.Strings.Formatters.Strings;
-      use VSS.Strings.Templates;
 
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
