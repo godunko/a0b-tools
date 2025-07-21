@@ -14,6 +14,10 @@ It generates startup code and linker script too.
 * Fine tuning of GNAT runtime (set of packages, stack size, etc.) by single configuration file
 * Support different tasking profiles, including GNAT's `light-tasking`/`embedded` and custom RTOSes
 
+## Unique features
+
+* Support of controller types for `light` runtime
+
 ## Documentation
 
 * [Getting Started](documentation/getting_started.md)
