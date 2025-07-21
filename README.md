@@ -16,7 +16,7 @@ It generates startup code and linker script too.
 
 ## Unique features
 
-* Support of controller types for `light` runtime
+* Support of controlled types (`Ada.Finalization.Controlled`/`Ada.Finalization.Limited_Controlled`, aspect `Finalization`) for `light` runtime
 
 ## Documentation
 
