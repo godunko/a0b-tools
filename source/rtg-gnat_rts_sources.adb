@@ -22,6 +22,8 @@ with RTG.Utilities;
 
 package body RTG.GNAT_RTS_Sources is
 
+   Verbose : constant Boolean := False;
+
    type Condition is record
       Name  : VSS.Strings.Virtual_String;
       Value : VSS.Strings.Virtual_String;
@@ -176,9 +178,11 @@ package body RTG.GNAT_RTS_Sources is
                               end if;
 
                            else
-                              RTG.Diagnostics.Warning
-                                ("GNAT RTS sources scenaio ""{}"" is not defined",
-                                 Condition.Name);
+                              if Verbose then
+                                 RTG.Diagnostics.Warning
+                                   ("GNAT RTS sources scenaio ""{}"" is not defined",
+                                    Condition.Name);
+                              end if;
 
                               Skip_Current_Array;
 
@@ -206,7 +210,11 @@ package body RTG.GNAT_RTS_Sources is
                                   RTS_Sources.Dir_Name);
 
                         begin
-                           Ada.Text_IO.Put_Line (Source_Directory.Display_Full_Name);
+                           if Verbose then
+                              Ada.Text_IO.Put_Line
+                                (Source_Directory.Display_Full_Name);
+                           end if;
+
                            RTG.Utilities.Copy_Files
                              (Source_Directory, Target_Directory);
                         end;
