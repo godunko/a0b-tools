@@ -56,7 +56,8 @@ package body RTG.Startup is
       Success : Boolean;
 
    begin
-      Source.Copy (Runtime.Startup_Source_Directory .Full_Name.all, Success);
+      Source.Copy
+        (Runtime.Aux_Startup_Source_Directory .Full_Name.all, Success);
    end Copy_Linker_Scripts;
 
    ------------
@@ -76,6 +77,9 @@ package body RTG.Startup is
       Generate_System_Startup_Specification (Runtime);
       Generate_System_Startup_Implementation
         (Runtime, Interrupts, Descriptor, Static, GNAT_Tasking);
+      RTG.Utilities.Synchronize
+        (Runtime.Aux_Startup_Source_Directory,
+         Runtime.Startup_Source_Directory);
    end Create;
 
    -------------------------------------
@@ -136,7 +140,7 @@ package body RTG.Startup is
 
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Startup_Source_Directory, "startup.ld");
+          (Runtime.Aux_Startup_Source_Directory, "startup.ld");
       use Output;
 
       Flash_Template : constant Virtual_String_Template :=
@@ -192,7 +196,7 @@ package body RTG.Startup is
 
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Startup_Source_Directory, "s-startu.adb");
+          (Runtime.Aux_Startup_Source_Directory, "s-startu.adb");
       use Output;
 
       type External_Kind is (Import, Export);
@@ -552,7 +556,7 @@ package body RTG.Startup is
 
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Startup_Source_Directory, "s-startu.ads");
+          (Runtime.Aux_Startup_Source_Directory, "s-startu.ads");
       use Output;
 
    begin

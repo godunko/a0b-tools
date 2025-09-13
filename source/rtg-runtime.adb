@@ -44,6 +44,36 @@ package body RTG.Runtime is
      (Runtime : RTG.Runtime.Runtime_Descriptor;
       Tasking : RTG.Tasking.Tasking_Descriptor);
 
+   ----------------------------------
+   -- Aux_Runtime_Source_Directory --
+   ----------------------------------
+
+   function Aux_Runtime_Source_Directory
+     (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File is
+   begin
+      return Self.Runtime_Directory.Create_From_Dir ("gnat-aux");
+   end Aux_Runtime_Source_Directory;
+
+   ----------------------------------
+   -- Aux_Startup_Source_Directory --
+   ----------------------------------
+
+   function Aux_Startup_Source_Directory
+     (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File is
+   begin
+      return Self.Runtime_Directory.Create_From_Dir ("gnast-aux");
+   end Aux_Startup_Source_Directory;
+
+   ----------------------------------
+   -- Aux_Tasking_Source_Directory --
+   ----------------------------------
+
+   function Aux_Tasking_Source_Directory
+     (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File is
+   begin
+      return Self.Runtime_Directory.Create_From_Dir ("gnarl-aux");
+   end Aux_Tasking_Source_Directory;
+
    --------------------------
    -- Copy_Runtime_Sources --
    --------------------------
@@ -81,7 +111,7 @@ package body RTG.Runtime is
          RTG.Utilities.Copy_File
            (Directory,
             File.Path,
-            Descriptor.Runtime_Source_Directory,
+            Descriptor.Aux_Runtime_Source_Directory,
             File.File);
       end loop;
    end Copy_Runtime_Sources;
@@ -105,7 +135,7 @@ package body RTG.Runtime is
          RTG.Utilities.Copy_File
            (Runtime.GNAT_RTS_Sources_Directory.Dir,
             File.Path,
-            Runtime.Tasking_Source_Directory,
+            Runtime.Aux_Tasking_Source_Directory,
             File.File);
       end loop;
    end Copy_Tasking_Sources;
@@ -120,12 +150,15 @@ package body RTG.Runtime is
    begin
       Descriptor.Runtime_Directory.Make_Dir;
       Descriptor.Runtime_Source_Directory.Make_Dir;
+      Descriptor.Aux_Runtime_Source_Directory.Make_Dir;
 
       if not Tasking.Kernel.Is_Empty then
          Descriptor.Tasking_Source_Directory.Make_Dir;
+         Descriptor.Aux_Tasking_Source_Directory.Make_Dir;
       end if;
 
       Descriptor.Startup_Source_Directory.Make_Dir;
+      Descriptor.Aux_Startup_Source_Directory.Make_Dir;
    end Create_Directories;
 
    --------------
@@ -142,10 +175,16 @@ package body RTG.Runtime is
       Generate_Build_Runtime_Project (Descriptor, not Tasking.Kernel.Is_Empty);
       Generate_Runtime_XML (Descriptor);
       Copy_Runtime_Sources (Descriptor);
+      RTG.Utilities.Synchronize
+        (Aux_Runtime_Source_Directory (Descriptor),
+         Runtime_Source_Directory (Descriptor));
 
       if not Tasking.Kernel.Is_Empty then
          Generate_Build_Libgnarl_Project (Descriptor);
          Copy_Tasking_Sources (Descriptor, Tasking);
+         RTG.Utilities.Synchronize
+           (Aux_Tasking_Source_Directory (Descriptor),
+            Tasking_Source_Directory (Descriptor));
       end if;
    end Generate;
 

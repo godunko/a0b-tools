@@ -35,6 +35,15 @@ package RTG.Runtime is
    function Startup_Source_Directory
      (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
 
+   function Aux_Runtime_Source_Directory
+     (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
+
+   function Aux_Tasking_Source_Directory
+     (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
+
+   function Aux_Startup_Source_Directory
+     (Self : Runtime_Descriptor) return GNATCOLL.VFS.Virtual_File;
+
    procedure Create_Directories
      (Descriptor : Runtime_Descriptor;
       Tasking    : RTG.Tasking.Tasking_Descriptor);

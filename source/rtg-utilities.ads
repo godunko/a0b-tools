@@ -18,6 +18,10 @@ package RTG.Utilities is
       Target_Directory : GNATCOLL.VFS.Virtual_File;
       Target_Name      : VSS.Strings.Virtual_String);
 
+   procedure Synchronize
+     (Source_Directory : GNATCOLL.VFS.Virtual_File;
+      Target_Directory : GNATCOLL.VFS.Virtual_File);
+
    generic
       Directory : GNATCOLL.VFS.Virtual_File;
       File_Name : VSS.Strings.Virtual_String;

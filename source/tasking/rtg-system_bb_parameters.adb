@@ -24,7 +24,7 @@ package body RTG.System_BB_Parameters is
    is
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Tasking_Source_Directory, "s-bbpara.ads");
+          (Runtime.Aux_Tasking_Source_Directory, "s-bbpara.ads");
       use Output;
 
       Clock_Frequency_Template    : constant Virtual_String_Template :=

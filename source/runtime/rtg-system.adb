@@ -148,7 +148,7 @@ package body RTG.System is
    is
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Runtime_Source_Directory, "system.ads");
+          (Runtime.Aux_Runtime_Source_Directory, "system.ads");
       use Output;
 
       Max_Asynchronous_Select_Nesting_Template : Virtual_String_Template :=

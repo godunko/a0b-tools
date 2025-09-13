@@ -53,7 +53,7 @@ package body RTG.System_BB_MCU_Vectors is
 
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Runtime_Source_Directory, "s-bbmcve.adb");
+          (Runtime.Aux_Runtime_Source_Directory, "s-bbmcve.adb");
       use Output;
 
       type External_Kind is (Import, Export);
@@ -280,7 +280,7 @@ package body RTG.System_BB_MCU_Vectors is
    is
       package Output is
         new RTG.Utilities.Generic_Output
-          (Runtime.Runtime_Source_Directory, "s-bbmcve.ads");
+          (Runtime.Aux_Runtime_Source_Directory, "s-bbmcve.ads");
       use Output;
 
    begin

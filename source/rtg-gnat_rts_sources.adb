@@ -287,7 +287,8 @@ package body RTG.GNAT_RTS_Sources is
                   if Key = "gnarl" then
                      if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
                         Component        := Library;
-                        Target_Directory := Runtime.Tasking_Source_Directory;
+                        Target_Directory :=
+                          Runtime.Aux_Tasking_Source_Directory;
 
                      else
                         Component := Unknown;
@@ -295,7 +296,7 @@ package body RTG.GNAT_RTS_Sources is
 
                   elsif Key = "gnat" then
                      Component        := Library;
-                     Target_Directory := Runtime.Runtime_Source_Directory;
+                     Target_Directory := Runtime.Aux_Runtime_Source_Directory;
 
                   elsif Key = "version" then
                      Component := Version;

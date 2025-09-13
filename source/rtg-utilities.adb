@@ -4,6 +4,8 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
+with GNAT.Strings;
+
 with VSS.Strings.Conversions;
 with VSS.Text_Streams.File_Output;
 
@@ -144,5 +146,83 @@ package body RTG.Utilities is
               (File.Display_Full_Name));
       end;
    end Generic_Output;
+
+   -----------------
+   -- Synchronize --
+   -----------------
+
+   procedure Synchronize
+     (Source_Directory : GNATCOLL.VFS.Virtual_File;
+      Target_Directory : GNATCOLL.VFS.Virtual_File) is
+   begin
+      if not Source_Directory.Is_Directory then
+         RTG.Diagnostics.Error (Source_Directory, "is not a directory");
+      end if;
+
+      if not Target_Directory.Is_Directory then
+         RTG.Diagnostics.Error (Target_Directory, "is not a directory");
+      end if;
+
+      declare
+         Iterator : Virtual_Dir := Source_Directory.Open_Dir;
+         Source   : Virtual_File;
+         Target   : Virtual_File;
+         Success  : Boolean;
+         Skip     : Boolean;
+
+      begin
+         loop
+            Read (Iterator, Source);
+
+            exit when Source = No_File;
+
+            if Source.Is_Regular_File then
+               Target := Target_Directory.Create_From_Dir (Source.Base_Name);
+               Skip   := False;
+
+               if Target.Is_Regular_File then
+                  declare
+                     Old_Content : GNAT.Strings.String_Access :=
+                       Target.Read_File;
+                     New_Content : GNAT.Strings.String_Access :=
+                       Source.Read_File;
+
+                  begin
+                     if Old_Content.all = New_Content.all then
+                        Skip := True;
+
+                     else
+                        RTG.Diagnostics.Warning (Target, "is updated");
+                     end if;
+
+                     GNAT.Strings.Free (Old_Content);
+                     GNAT.Strings.Free (New_Content);
+                  end;
+               end if;
+
+               if not Skip then
+                  Source.Copy (Target.Full_Name.all, Success);
+
+                  if not Success then
+                     RTG.Diagnostics.Error (Target, "unable to copy file");
+                  end if;
+               end if;
+
+               Source.Delete (Success);
+
+               if not Success then
+                  RTG.Diagnostics.Error (Source, "unable to delete file");
+               end if;
+            end if;
+         end loop;
+
+         Source_Directory.Remove_Dir (False, Success);
+
+         if not Success then
+            RTG.Diagnostics.Error
+              (Source_Directory, "unable to delete auxiliary directory");
+         end if;
+      end;
+   end Synchronize;
 
 end RTG.Utilities;
