@@ -17,6 +17,7 @@ It generates startup code and linker script too.
 ## Unique features
 
 * Support of controlled types (`Ada.Finalization.Controlled`/`Ada.Finalization.Limited_Controlled`, aspect `Finalization`) for `light` runtime
+* [Support of random generators in `light`/`light-tasking` runtimes](documentation/random_generators.md)
 
 ## Documentation
 
