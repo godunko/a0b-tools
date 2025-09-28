@@ -50,6 +50,7 @@ package RTG.Runtime is
 
    procedure Generate
      (Descriptor : Runtime_Descriptor;
-      Tasking    : RTG.Tasking.Tasking_Descriptor);
+      Tasking    : RTG.Tasking.Tasking_Descriptor;
+      No_Startup : Boolean);
 
 end RTG.Runtime;

@@ -43,10 +43,15 @@ procedure RTG.Driver is
       Short_Name  => <>,
       Long_Name   => "svd",
       Value_Name  => "path");
+   No_Startup_Option  : constant VSS.Command_Line.Binary_Option :=
+     (Description => "Don't generate startup library",
+      Short_Name  => <>,
+      Long_Name   => "no-startup");
 
    BB_Runtimes_Directory : GNATCOLL.VFS.Virtual_File;
    SVD_File              : GNATCOLL.VFS.Virtual_File;
    Startup_Binding_File  : GNATCOLL.VFS.Virtual_File;
+   No_Startup            : Boolean := False;
 
    Runtime    : RTG.Runtime.Runtime_Descriptor;
    Tasking    : RTG.Tasking.Tasking_Descriptor;
@@ -89,6 +94,7 @@ procedure RTG.Driver is
 begin
    VSS.Command_Line.Add_Option (BB_Runtimes_Option);
    VSS.Command_Line.Add_Option (SVD_Option);
+   VSS.Command_Line.Add_Option (No_Startup_Option);
 
    VSS.Command_Line.Process;
 
@@ -135,9 +141,16 @@ begin
       VSS.Command_Line.Report_Error ("SVD file not found");
    end if;
 
+   if VSS.Command_Line.Is_Specified (No_Startup_Option) then
+      No_Startup := True;
+   end if;
+
    --  Startup binding information
 
-   if VSS.Application.System_Environment.Contains
+   if No_Startup then
+      null;
+
+   elsif VSS.Application.System_Environment.Contains
      ("A0B_TOOLS_BINDING_STARTUP")
    then
       Startup_Binding_File :=
@@ -162,7 +175,10 @@ begin
    end if;
 
    RTG.Runtime.Initialize (Runtime, BB_Runtimes_Directory);
-   RTG.Startup.Initialize (Startup);
+
+   if not No_Startup then
+      RTG.Startup.Initialize (Startup);
+   end if;
 
    --  Load files: runtime configuration, SVD file, startup binding.
 
@@ -197,14 +213,16 @@ begin
       BB_Runtimes_Directory.Create_From_Dir
         ("gnat_rts_sources/lib/gnat/rts-sources.json"));
 
-   RTG.Runtime.Generate (Runtime, Tasking);
+   RTG.Runtime.Generate (Runtime, Tasking, No_Startup);
 
-   RTG.Startup.Create
-     (Runtime,
-      Interrupts,
-      Startup,
-      not RTG.Tasking.Use_GNAT_Tasking (Tasking),
-      RTG.Tasking.Use_GNAT_Tasking (Tasking));
+   if not No_Startup then
+      RTG.Startup.Create
+        (Runtime,
+         Interrupts,
+         Startup,
+         not RTG.Tasking.Use_GNAT_Tasking (Tasking),
+         RTG.Tasking.Use_GNAT_Tasking (Tasking));
+   end if;
 
 exception
    when RTG.Internal_Error =>

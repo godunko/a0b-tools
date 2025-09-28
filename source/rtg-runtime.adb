@@ -27,8 +27,9 @@ package body RTG.Runtime is
    procedure Generate_Build_Libgnarl_Project (Descriptor : Runtime_Descriptor);
 
    procedure Generate_Build_Runtime_Project
-     (Runtime : Runtime_Descriptor;
-      Tasking : Boolean);
+     (Runtime    : Runtime_Descriptor;
+      Tasking    : Boolean;
+      No_Startup : Boolean);
 
    procedure Generate_Ada_Source_Path
      (Descriptor : Runtime_Descriptor;
@@ -36,7 +37,9 @@ package body RTG.Runtime is
 
    procedure Generate_Ada_Object_Path (Descriptor : Runtime_Descriptor);
 
-   procedure Generate_Runtime_XML (Descriptor : Runtime_Descriptor);
+   procedure Generate_Runtime_XML
+     (Runtime    : Runtime_Descriptor;
+      No_Startup : Boolean);
 
    procedure Copy_Runtime_Sources (Descriptor : Runtime_Descriptor);
 
@@ -167,13 +170,15 @@ package body RTG.Runtime is
 
    procedure Generate
      (Descriptor : Runtime_Descriptor;
-      Tasking    : RTG.Tasking.Tasking_Descriptor) is
+      Tasking    : RTG.Tasking.Tasking_Descriptor;
+      No_Startup : Boolean) is
    begin
       Generate_Ada_Source_Path (Descriptor, not Tasking.Kernel.Is_Empty);
       Generate_Ada_Object_Path (Descriptor);
       Generate_Build_Libgnat_Project (Descriptor);
-      Generate_Build_Runtime_Project (Descriptor, not Tasking.Kernel.Is_Empty);
-      Generate_Runtime_XML (Descriptor);
+      Generate_Build_Runtime_Project
+        (Descriptor, not Tasking.Kernel.Is_Empty, No_Startup);
+      Generate_Runtime_XML (Descriptor, No_Startup);
       Copy_Runtime_Sources (Descriptor);
       RTG.Utilities.Synchronize
         (Aux_Runtime_Source_Directory (Descriptor),
@@ -324,8 +329,9 @@ package body RTG.Runtime is
    ------------------------------------
 
    procedure Generate_Build_Runtime_Project
-     (Runtime : Runtime_Descriptor;
-      Tasking : Boolean)
+     (Runtime    : Runtime_Descriptor;
+      Tasking    : Boolean;
+      No_Startup : Boolean)
    is
       package Output is
         new RTG.Utilities.Generic_Output
@@ -339,13 +345,19 @@ package body RTG.Runtime is
       PL ("   for Target use ""arm-eabi"";");
       PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
       PL ("   for Project_Files use");
-      PL ("     (""build_libgnat.gpr"",");
+      PS ("     (""build_libgnat.gpr""");
 
       if Tasking then
-         PL ("      ""build_libgnarl.gpr"",");
+         PL (",");
+         PS ("      ""build_libgnarl.gpr""");
       end if;
 
-      PL ("      ""build_libgnast.gpr"");");
+      if not No_Startup then
+         PL (",");
+         PS ("      ""build_libgnast.gpr""");
+      end if;
+
+      PL (");");
       NL;
       PL ("end Build_Runtime;");
    end Generate_Build_Runtime_Project;
@@ -354,7 +366,11 @@ package body RTG.Runtime is
    -- Generate_Runtime_XML --
    --------------------------
 
-   procedure Generate_Runtime_XML (Descriptor : Runtime_Descriptor) is
+   procedure Generate_Runtime_XML
+     (Runtime    : Runtime_Descriptor;
+      No_Startup : Boolean)
+   is
+      use type VSS.Strings.Virtual_String;
 
       Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
       Success : Boolean := True;
@@ -398,7 +414,7 @@ package body RTG.Runtime is
    begin
       Output.Create
         (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.Runtime_Directory.Create_From_Dir
+           (Runtime.Runtime_Directory.Create_From_Dir
                 ("runtime.xml").Display_Full_Name));
 
       PL ("<?xml version=""1.0""?>");
@@ -410,10 +426,10 @@ package body RTG.Runtime is
 
       PL ("      Common_Required_Switches :=");
 
-      for J in Descriptor.Common_Required_Switches.First_Index
-                 .. Descriptor.Common_Required_Switches.Last_Index
+      for J in Runtime.Common_Required_Switches.First_Index
+                 .. Runtime.Common_Required_Switches.Last_Index
       loop
-         if J = Descriptor.Common_Required_Switches.First_Index then
+         if J = Runtime.Common_Required_Switches.First_Index then
             P ("        (");
 
          else
@@ -423,7 +439,7 @@ package body RTG.Runtime is
 
          P
            (Switch_Templates.Format
-              (Image (Descriptor.Common_Required_Switches (J))));
+              (Image (Runtime.Common_Required_Switches (J))));
       end loop;
 
       PL (");");
@@ -435,15 +451,21 @@ package body RTG.Runtime is
       NL;
       PL ("   package Linker is");
       PL ("      for Leading_Switches (""Ada"") use");
-      PL ("         Linker'Leading_Switches (""Ada"")");
-      PL ("         & (""${RUNTIME_DIR(ada)}/lib/libgnast.a"");");
+      P  ("         Linker'Leading_Switches (""Ada"")");
+
+      if not No_Startup then
+         NL;
+         P ("         & (""${RUNTIME_DIR(ada)}/lib/libgnast.a"")");
+      end if;
+
+      PL (";");
       PL ("      for Required_Switches use");
       PL ("         Linker'Required_Switches");
 
-      for J in Descriptor.Linker_Required_Switches.First_Index
-                 .. Descriptor.Linker_Required_Switches.Last_Index
+      for J in Runtime.Linker_Required_Switches.First_Index
+                 .. Runtime.Linker_Required_Switches.Last_Index
       loop
-         if J = Descriptor.Linker_Required_Switches.First_Index then
+         if J = Runtime.Linker_Required_Switches.First_Index then
             P ("         & (");
 
          else
@@ -453,15 +475,18 @@ package body RTG.Runtime is
 
          P
            (Switch_Templates.Format
-              (Image (Descriptor.Linker_Required_Switches (J))));
+              (Image (Runtime.Linker_Required_Switches (J))));
 
-         if J = Descriptor.Linker_Required_Switches.Last_Index then
+         if J = Runtime.Linker_Required_Switches.Last_Index then
             PL (")");
          end if;
       end loop;
 
-      PL ("         & (""-L"", ""${RUNTIME_DIR(ada)}/gnast"",");
-      PL ("            ""-T"", ""startup.ld"")");
+      if not No_Startup then
+         PL ("         & (""-L"", ""${RUNTIME_DIR(ada)}/gnast"",");
+         PL ("            ""-T"", ""startup.ld"")");
+      end if;
+
       PL ("         & Compiler.Common_Required_Switches;");
       PL ("   end Linker;");
       PL ("      ]]>");
