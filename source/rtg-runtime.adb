@@ -22,9 +22,9 @@ package body RTG.Runtime is
    use VSS.Strings.Formatters.Strings;
    use VSS.Strings.Templates;
 
-   procedure Generate_Build_Libgnat_Project (Descriptor : Runtime_Descriptor);
+   procedure Generate_Build_Libgnat_Project (Runtime : Runtime_Descriptor);
 
-   procedure Generate_Build_Libgnarl_Project (Descriptor : Runtime_Descriptor);
+   procedure Generate_Build_Libgnarl_Project (Runtime : Runtime_Descriptor);
 
    procedure Generate_Build_Runtime_Project
      (Runtime    : Runtime_Descriptor;
@@ -243,42 +243,36 @@ package body RTG.Runtime is
    -------------------------------------
 
    procedure Generate_Build_Libgnarl_Project
-     (Descriptor : Runtime_Descriptor)
+     (Runtime : Runtime_Descriptor)
    is
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Runtime.Runtime_Directory, "build_libgnarl.gpr");
+      use Output;
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.Runtime_Directory.Create_From_Dir ("build_libgnarl.gpr")
-              .Display_Full_Name));
-
-      Output.Put_Line ("library project Build_Libgnarl is", Success);
-      Output.Put_Line ("   for Target use ""arm-eabi"";", Success);
-      Output.Put_Line
-        ("   for Runtime (""Ada"") use Project'Project_Dir;", Success);
-      Output.Put_Line ("   for Library_Name use ""gnarl"";", Success);
-      Output.Put_Line ("   for Source_Dirs use (""gnarl"");", Success);
-      Output.Put_Line ("   for Object_Dir use ""obj/gnarl"";", Success);
-      Output.Put_Line ("   for Library_Dir use ""lib"";", Success);
-      Output.New_Line (Success);
-      Output.Put_Line ("   package Compiler is", Success);
-      Output.Put_Line ("      for Switches (""Ada"") use", Success);
-      Output.Put_Line ("        (""-g"",", Success);
-      Output.Put_Line ("         ""-O2"",", Success);
-      Output.Put_Line ("         ""-fno-delete-null-pointer-checks"",", Success);
-      Output.Put_Line ("         ""-gnatg"",", Success);
-      Output.Put_Line ("         ""-gnatp"",", Success);
-      Output.Put_Line ("         ""-gnatn2"",", Success);
-      Output.Put_Line ("         ""-nostdinc"",", Success);
-      Output.Put_Line ("         ""-ffunction-sections"",", Success);
-      Output.Put_Line ("         ""-fdata-sections"");", Success);
-      Output.Put_Line ("   end Compiler;", Success);
-      Output.New_Line (Success);
-      Output.Put_Line ("end Build_Libgnarl;", Success);
-
-      Output.Close;
+      PL ("library project Build_Libgnarl is");
+      PL ("   for Target use ""arm-eabi"";");
+      PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
+      PL ("   for Library_Name use ""gnarl"";");
+      PL ("   for Source_Dirs use (""gnarl"");");
+      PL ("   for Object_Dir use ""obj/gnarl"";");
+      PL ("   for Library_Dir use ""lib"";");
+      NL;
+      PL ("   package Compiler is");
+      PL ("      for Switches (""Ada"") use");
+      PL ("        (""-g"",");
+      PL ("         ""-O2"",");
+      PL ("         ""-fno-delete-null-pointer-checks"",");
+      PL ("         ""-gnatg"",");
+      PL ("         ""-gnatp"",");
+      PL ("         ""-gnatn2"",");
+      PL ("         ""-nostdinc"",");
+      PL ("         ""-ffunction-sections"",");
+      PL ("         ""-fdata-sections"");");
+      PL ("   end Compiler;");
+      NL;
+      PL ("end Build_Libgnarl;");
    end Generate_Build_Libgnarl_Project;
 
    ------------------------------------
@@ -286,42 +280,36 @@ package body RTG.Runtime is
    ------------------------------------
 
    procedure Generate_Build_Libgnat_Project
-     (Descriptor : Runtime_Descriptor)
+     (Runtime : Runtime_Descriptor)
    is
-      Output  : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
-      Success : Boolean := True;
+      package Output is
+        new RTG.Utilities.Generic_Output
+          (Runtime.Runtime_Directory, "build_libgnat.gpr");
+      use Output;
 
    begin
-      Output.Create
-        (VSS.Strings.Conversions.To_Virtual_String
-           (Descriptor.Runtime_Directory.Create_From_Dir ("build_libgnat.gpr")
-              .Display_Full_Name));
-
-      Output.Put_Line ("library project Build_Libgnat is", Success);
-      Output.Put_Line ("   for Target use ""arm-eabi"";", Success);
-      Output.Put_Line
-        ("   for Runtime (""Ada"") use Project'Project_Dir;", Success);
-      Output.Put_Line ("   for Library_Name use ""gnat"";", Success);
-      Output.Put_Line ("   for Source_Dirs use (""gnat"");", Success);
-      Output.Put_Line ("   for Object_Dir use ""obj/gnat"";", Success);
-      Output.Put_Line ("   for Library_Dir use ""lib"";", Success);
-      Output.New_Line (Success);
-      Output.Put_Line ("   package Compiler is", Success);
-      Output.Put_Line ("      for Switches (""Ada"") use", Success);
-      Output.Put_Line ("        (""-g"",", Success);
-      Output.Put_Line ("         ""-O2"",", Success);
-      Output.Put_Line ("         ""-fno-delete-null-pointer-checks"",", Success);
-      Output.Put_Line ("         ""-gnatg"",", Success);
-      Output.Put_Line ("         ""-gnatp"",", Success);
-      Output.Put_Line ("         ""-gnatn2"",", Success);
-      Output.Put_Line ("         ""-nostdinc"",", Success);
-      Output.Put_Line ("         ""-ffunction-sections"",", Success);
-      Output.Put_Line ("         ""-fdata-sections"");", Success);
-      Output.Put_Line ("   end Compiler;", Success);
-      Output.New_Line (Success);
-      Output.Put_Line ("end Build_Libgnat;", Success);
-
-      Output.Close;
+      PL ("library project Build_Libgnat is");
+      PL ("   for Target use ""arm-eabi"";");
+      PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
+      PL ("   for Library_Name use ""gnat"";");
+      PL ("   for Source_Dirs use (""gnat"");");
+      PL ("   for Object_Dir use ""obj/gnat"";");
+      PL ("   for Library_Dir use ""lib"";");
+      NL;
+      PL ("   package Compiler is");
+      PL ("      for Switches (""Ada"") use");
+      PL ("        (""-g"",");
+      PL ("         ""-O2"",");
+      PL ("         ""-fno-delete-null-pointer-checks"",");
+      PL ("         ""-gnatg"",");
+      PL ("         ""-gnatp"",");
+      PL ("         ""-gnatn2"",");
+      PL ("         ""-nostdinc"",");
+      PL ("         ""-ffunction-sections"",");
+      PL ("         ""-fdata-sections"");");
+      PL ("   end Compiler;");
+      NL;
+      PL ("end Build_Libgnat;");
    end Generate_Build_Libgnat_Project;
 
    ------------------------------------
