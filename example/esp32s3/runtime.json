@@ -18,7 +18,7 @@
       "a-textio.adb": { "crate": "bb_runtimes", "path": "gnat_rts_sources/include/rts-sources/system_io/a-textio.adb" },
       "s-atopri.ads": { "crate": "bb_runtimes", "path": "gnat_rts_sources/include/rts-sources/atomics/32/s-atopri.ads" },
       "s-macres.adb": { "path": "source/runtime/s-macres.adb" },
-      "s-textio.adb": { "crate": "bb_runtimes", "path": "src/s-textio__null.adb" },
+      "s-textio.adb": { "path": "source/runtime/s-textio.adb" }
     }
   },
 
@@ -30,8 +30,9 @@
     "Certifiable_Packages": "yes",
     "Has_libc": "no",
     "Memory_Profile": "small",
+    "Text_IO": "serial",
 
     "Add_Value_Spec": "yes",
-    "Add_Value_LL_Spec": "yes",
+    "Add_Value_LL_Spec": "yes"
   }
 }
