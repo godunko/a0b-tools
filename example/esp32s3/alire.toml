@@ -14,7 +14,6 @@ generate_c = false
 generate_gpr = true
 
 [environment]
-XTENSA_GNU_CONFIG.set = "/home/godunko/Hexapod/hexapod/subprojects/a0b-tools/test-xtensa/xtensa-dynconfig/xtensa_esp32s3.so"
 #A0B_TOOLS_SVD.set = "esp32s3.svd"
 
 [[actions]]
@@ -32,6 +31,10 @@ command = ["xtensa-esp32-elf-objcopy", "-O", "binary", "bin/main.elf", "bin/main
 a0b_base = "*"
 a0b_tools = "*"
 gnat_xtensa_esp32_elf = "^15"
+xtensa_dynconfig = "*"
 
 [[pins]]
 a0b_tools = { path='../..' }
+
+[[pins]]
+xtensa_dynconfig = { path='../../../xtensa-dynconfig' }
