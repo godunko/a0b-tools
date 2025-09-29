@@ -17,6 +17,7 @@ package RTG.Runtime is
       Runtime_Directory          : GNATCOLL.VFS.Virtual_File;
       GNAT_RTS_Sources_Directory : GNATCOLL.VFS.Virtual_File;
 
+      GPR_Target                 : VSS.Strings.Virtual_String;
       Common_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
       Linker_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
       Runtime_Files              : RTG.File_Descriptor_Vectors.Vector;

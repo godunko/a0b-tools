@@ -4,6 +4,7 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
+with RTG.Runtime;
 with RTG.Startup;
 with RTG.System;
 with RTG.System_BB_Parameters;
@@ -12,7 +13,8 @@ with RTG.Tasking;
 package RTG.Architecture is
 
    procedure Process
-     (Tasking              : RTG.Tasking.Tasking_Descriptor;
+     (Runtime              : in out RTG.Runtime.Runtime_Descriptor;
+      Tasking              : RTG.Tasking.Tasking_Descriptor;
       Startup              : in out RTG.Startup.Startup_Descriptor;
       Scenarios            : in out RTG.Scenario_Maps.Map;
       System_Parameters    : in out RTG.System.System_Descriptor;

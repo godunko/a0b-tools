@@ -97,13 +97,16 @@ package body RTG.Startup is
 
       With_Project_Template : constant Virtual_String_Template :=
         "with ""{}"";";
+      Target_Template       : constant Virtual_String_Template :=
+        "   for Target use ""{}"";";
 
    begin
       PL ("with ""a0b_armv7m.gpr"";");
       PL (With_Project_Template.Format (Image (Startup.Project_File_Name)));
       NL;
       PL ("library project Build_Libgnast is");
-      PL ("   for Target use ""arm-eabi"";");
+      NL;
+      PL (Target_Template.Format (Image (Runtime.GPR_Target)));
       PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
       PL ("   for Library_Name use ""gnast"";");
       PL ("   for Source_Dirs use (""gnast"");");

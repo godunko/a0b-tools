@@ -194,7 +194,12 @@ begin
    RTG.Startup.Reader.Read (Startup_Binding_File, Startup, Scenarios);
 
    RTG.Architecture.Process
-     (Tasking, Startup, Scenarios, Parameters, System_BB_MCU_Parameters);
+     (Runtime,
+      Tasking,
+      Startup,
+      Scenarios,
+      Parameters,
+      System_BB_MCU_Parameters);
    RTG.Tasking.Process (Tasking, Scenarios, Parameters);
 
    RTG.Runtime.Create_Directories (Runtime, Tasking);

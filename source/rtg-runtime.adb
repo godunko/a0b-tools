@@ -250,9 +250,13 @@ package body RTG.Runtime is
           (Runtime.Runtime_Directory, "build_libgnarl.gpr");
       use Output;
 
+      Target_Template : constant Virtual_String_Template :=
+        "   for Target use ""{}"";";
+
    begin
       PL ("library project Build_Libgnarl is");
-      PL ("   for Target use ""arm-eabi"";");
+      NL;
+      PL (Target_Template.Format (Image (Runtime.GPR_Target)));
       PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
       PL ("   for Library_Name use ""gnarl"";");
       PL ("   for Source_Dirs use (""gnarl"");");
@@ -287,9 +291,13 @@ package body RTG.Runtime is
           (Runtime.Runtime_Directory, "build_libgnat.gpr");
       use Output;
 
+      Target_Template : constant Virtual_String_Template :=
+        "   for Target use ""{}"";";
+
    begin
       PL ("library project Build_Libgnat is");
-      PL ("   for Target use ""arm-eabi"";");
+      NL;
+      PL (Target_Template.Format (Image (Runtime.GPR_Target)));
       PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
       PL ("   for Library_Name use ""gnat"";");
       PL ("   for Source_Dirs use (""gnat"");");
@@ -326,11 +334,14 @@ package body RTG.Runtime is
           (Runtime.Runtime_Directory, "build_runtime.gpr");
       use Output;
 
+      Target_Template : constant Virtual_String_Template :=
+        "   for Target use ""{}"";";
+
    begin
       NL;
       PL ("aggregate project Build_Runtime is");
       NL;
-      PL ("   for Target use ""arm-eabi"";");
+      PL (Target_Template.Format (Image (Runtime.GPR_Target)));
       PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
       PL ("   for Project_Files use");
       PS ("     (""build_libgnat.gpr""");

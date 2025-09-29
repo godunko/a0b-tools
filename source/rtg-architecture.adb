@@ -15,7 +15,8 @@ package body RTG.Architecture is
    -------------
 
    procedure Process
-     (Tasking              : RTG.Tasking.Tasking_Descriptor;
+     (Runtime              : in out RTG.Runtime.Runtime_Descriptor;
+      Tasking              : RTG.Tasking.Tasking_Descriptor;
       Startup              : in out RTG.Startup.Startup_Descriptor;
       Scenarios            : in out RTG.Scenario_Maps.Map;
       System_Parameters    : in out RTG.System.System_Descriptor;
@@ -56,6 +57,8 @@ package body RTG.Architecture is
          RTG.Diagnostics.Error ("""dt:&cpu0:compatible"" is not specified");
 
       elsif Scenarios ("dt:&cpu0:compatible") = "arm,cortex-m3" then
+         Runtime.GPR_Target := "arm-eabi";
+
          Check_Set ("CPU_Family", "arm");
          Check_Set ("Target_Word_Size", "32");
          Check_Set ("Has_FMA", "no");
@@ -82,6 +85,8 @@ package body RTG.Architecture is
          Startup.ARM_Enable_FPU           := False;
 
       elsif Scenarios ("dt:&cpu0:compatible") = "arm,cortex-m4f" then
+         Runtime.GPR_Target := "arm-eabi";
+
          Check_Set ("CPU_Family", "arm");
          Check_Set ("Target_Word_Size", "32");
          Check_Set ("Has_FMA", "no");
