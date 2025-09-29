@@ -32,8 +32,4 @@
 You can find generated runtime in `runtime` directory.
 Feel free to modify `runtime.json` to add more runtime features!
 
-Application is build as static library, and exports two symbols:
- - `light_esp32_demoinit`
- - `_ada_main`
-
-First symbol do elaboration of the application, and second run application's main subprogram.
+Application is build as static library, and exports `app_main` symbol, which is expected to be called by IDF tools as main program of the application.
