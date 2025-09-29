@@ -9,14 +9,14 @@ library project Light_ESP32S3_Demo is
    for Exec_Dir use "bin";
    for Library_Name use "light_esp32_demo";
    for Library_Dir use ".libs";
-   for Library_Interface use ("Main");
+   for Library_Interface use ("Application");
+
+   package Binder is
+      for Switches ("Ada") use ("-Lada");
+   end Binder;
 
    package Compiler is
       for Switches ("Ada") use ("-g", "-O2");
    end Compiler;
-
-   package Builder is
-      for Executable ("main.adb") use "main.elf";
-   end Builder;
 
 end Light_ESP32S3_Demo;

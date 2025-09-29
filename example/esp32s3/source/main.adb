@@ -11,7 +11,7 @@ procedure Main is
    function F return String is ("def");
 
    Count : A0B.Types.Unsigned_32 := 0;
-   S     : String := "abc" & F;
+   S     : String := "abc" & F & A0B.Types.Unsigned_32'Image (Count);
 
 begin
    for J in 1 .. 1_000 loop
