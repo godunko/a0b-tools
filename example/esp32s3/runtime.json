@@ -1,0 +1,37 @@
+{
+  "dt:&cpu0:compatible": "espressif,xtensa-lx7",
+  "dt:&cpu0:clock-frequency": "240_000_000",
+
+  "runtime":
+  {
+    "common_required_switches": ["-mlongcalls"],
+    "linker_required_switches": ["-nostartfiles", "-nolibc"],
+    "system":
+    {
+      "restrictions":
+      {
+        "No_Finalization": true
+      }
+    },
+    "files":
+    {
+      "a-textio.adb": { "crate": "bb_runtimes", "path": "gnat_rts_sources/include/rts-sources/system_io/a-textio.adb" },
+      "s-atopri.ads": { "crate": "bb_runtimes", "path": "gnat_rts_sources/include/rts-sources/atomics/32/s-atopri.ads" },
+      "s-macres.adb": { "crate": "bb_runtimes", "path": "src/s-macres__none.adb" },
+      "s-textio.adb": { "crate": "bb_runtimes", "path": "src/s-textio__null.adb" },
+    }
+  },
+
+  "scenarios":
+  {
+    "Target_Word_Size": "32",
+    "Has_Compare_And_Swap": "yes",
+    "Has_CHERI": "no",
+    "Certifiable_Packages": "yes",
+    "Has_libc": "no",
+    "Memory_Profile": "small",
+
+    "Add_Value_Spec": "yes",
+    "Add_Value_LL_Spec": "yes",
+  }
+}

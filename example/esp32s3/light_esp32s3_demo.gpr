@@ -1,0 +1,20 @@
+with "config/light_esp32s3_demo_config.gpr";
+
+project Light_ESP32S3_Demo is
+
+   for Target use "xtensa-esp32-elf";
+   for Runtime ("Ada") use "runtime";
+   for Source_Dirs use ("source");
+   for Object_Dir use ".objs";
+   for Exec_Dir use "bin";
+   for Main use ("main.adb");
+
+   package Compiler is
+      for Switches ("Ada") use ("-g", "-O2");
+   end Compiler;
+
+   package Builder is
+      for Executable ("main.adb") use "main.elf";
+   end Builder;
+
+end Light_ESP32S3_Demo;
