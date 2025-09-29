@@ -23,10 +23,6 @@ command = ["../../bin/a0b-runtime", "--bb-runtimes=../../../bb-runtimes-15/", "-
 type = "pre-build"
 command = ["gprbuild", "-j0", "-m", "runtime/build_runtime.gpr"]
 
-[[actions]]
-type = "post-build"
-command = ["xtensa-esp32-elf-objcopy", "-O", "binary", "bin/main.elf", "bin/main.bin"]
-
 [[depends-on]]
 a0b_base = "*"
 a0b_tools = "*"
