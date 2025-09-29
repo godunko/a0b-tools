@@ -4,7 +4,7 @@
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
 
-pragma Style_Checks ("M90");
+pragma Style_Checks ("M100");
 
 with VSS.Application;
 with VSS.Strings.Conversions;
@@ -488,6 +488,18 @@ package body RTG.Runtime is
 
       PL ("         & Compiler.Common_Required_Switches;");
       PL ("   end Linker;");
+
+      if Runtime.GPR_Target = "xtensa-esp32-elf" then
+         NL;
+         PL ("   for Archive_Builder use (""xtensa-esp32-elf-ar"", ""cr"");");
+         PL ("   for Archive_Builder  use (""${TARGET}-ar"", ""cr"");");
+         PL ("   for Archive_Builder_Append_Option use (""q"");");
+         PL ("   for Archive_Indexer  use (""${TARGET}-ranlib"");");
+         PL ("   for Archive_Suffix   use "".a"";");
+         PL ("   for Library_Support  use ""static_only"";");
+         PL ("   for Library_Builder  use ""${GPRCONFIG_PREFIX}libexec/gprbuild/gprlib"";");
+      end if;
+
       PL ("      ]]>");
       PL ("    </config>");
       PL ("  </configuration>");
