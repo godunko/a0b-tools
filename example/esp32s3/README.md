@@ -22,7 +22,7 @@
     git clone git@github.com:alire-project/bb-runtimes.git bb-runtimes-15 --branch gnat-fsf-15
 ```
 
-3. Enter example directory and "build" demo
+3. Enter example directory and build demo
 
 ```
     cd a0b-tools/example/esp32s3
@@ -31,3 +31,9 @@
 
 You can find generated runtime in `runtime` directory.
 Feel free to modify `runtime.json` to add more runtime features!
+
+Application is build as static library, and exports two symbols:
+ - `light_esp32_demoinit`
+ - `_ada_main`
+
+First symbol do elaboration of the application, and second run application's main subprogram.
