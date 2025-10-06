@@ -26,7 +26,9 @@ PATH.append = "${CRATE_ROOT}/bin"
 a0b_base = "*"
 gnat = "*"
 gnatcoll = "*"
-vss = "*"
+vss_text = "*"
+vss_extra = "*"
 
 [[pins]]
-vss = { url='https://github.com/AdaCore/VSS.git' }
+vss_text = { url='https://github.com/AdaCore/vss-text.git' }
+vss_extra = { url='https://github.com/AdaCore/vss-extra.git' }
