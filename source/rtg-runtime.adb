@@ -129,14 +129,35 @@ package body RTG.Runtime is
    is
       use type VSS.Strings.Virtual_String;
 
+      Directory     : GNATCOLL.VFS.Virtual_File;
+      Name_Template : Virtual_String_Template := "{}_ALIRE_PREFIX";
+      Name          : VSS.Strings.Virtual_String;
+
    begin
       for File of Tasking.Files loop
-         if File.Crate /= "bb_runtimes" then
-            RTG.Diagnostics.Error ("only ""bb_runtimes"" crate is supported");
+         if File.Crate.Is_Empty then
+            Directory := Runtime.Descriptor_Directory;
+
+         elsif File.Crate = "bb_runtimes" then
+            Directory := Runtime.GNAT_RTS_Sources_Directory.Dir;
+
+         else
+            Name :=
+              VSS.Transformers.Casing.To_Simple_Uppercase.Transform
+                (Name_Template.Format (Image (File.Crate)));
+
+            if not VSS.Application.System_Environment.Contains (Name) then
+               RTG.Diagnostics.Error ("crate `{}` not found", File.Crate);
+            end if;
+
+            Directory :=
+              GNATCOLL.VFS.Create_From_UTF8
+                (VSS.Strings.Conversions.To_UTF_8_String
+                   (VSS.Application.System_Environment.Value (Name)));
          end if;
 
          RTG.Utilities.Copy_File
-           (Runtime.GNAT_RTS_Sources_Directory.Dir,
+           (Directory,
             File.Path,
             Runtime.Aux_Tasking_Source_Directory,
             File.File);
