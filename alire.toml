@@ -25,7 +25,7 @@ PATH.append = "${CRATE_ROOT}/bin"
 [[depends-on]]
 a0b_base = "*"
 gnat = ">=15"
-gnatcoll = "*"
+gnatcoll = "^25"
 vss_text = "*"
 vss_extra = "*"
 
