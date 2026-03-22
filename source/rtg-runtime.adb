@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, Vadim Godunko <vgodunko@gmail.com>
+--  Copyright (C) 2025-2026, Vadim Godunko <vgodunko@gmail.com>
 --
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
@@ -512,13 +512,14 @@ package body RTG.Runtime is
 
       if Runtime.GPR_Target = "xtensa-esp32-elf" then
          NL;
-         PL ("   for Archive_Builder use (""xtensa-esp32-elf-ar"", ""cr"");");
-         PL ("   for Archive_Builder  use (""${TARGET}-ar"", ""cr"");");
+         PL ("   for Archive_Builder use (""${TARGET}-ar"", ""cr"");");
          PL ("   for Archive_Builder_Append_Option use (""q"");");
-         PL ("   for Archive_Indexer  use (""${TARGET}-ranlib"");");
-         PL ("   for Archive_Suffix   use "".a"";");
-         PL ("   for Library_Support  use ""static_only"";");
-         PL ("   for Library_Builder  use ""${GPRCONFIG_PREFIX}libexec/gprbuild/gprlib"";");
+         PL ("   for Archive_Indexer use (""${TARGET}-ranlib"");");
+         PL ("   for Archive_Suffix use "".a"";");
+         PL ("   for Library_Support use ""static_only"";");
+         PL ("   for Library_Builder use ""${GPRCONFIG_PREFIX}libexec/gprbuild/gprlib"";");
+         PL ("   for Library_Encapsulated_Supported use ""true"";");
+         PL ("   for Library_Partial_Linker use (""${TARGET}-gcc"", ""-nostdlib"", ""-Wl,-r"", ""-o"");");
       end if;
 
       PL ("      ]]>");
