@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, Vadim Godunko <vgodunko@gmail.com>
+--  Copyright (C) 2025-2026, Vadim Godunko <vgodunko@gmail.com>
 --
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
@@ -94,7 +94,6 @@ package body RTG.Tasking is
 
       elsif Tasking.Kernel = "custom" then
          System_Parameters.Profile := RTG.System.GCC14.Jorvik;
-         System_Parameters.Apply_No_Exception_Propagation_Restriction;
          System_Parameters.Apply_No_Exception_Registration_Restriction;
          System_Parameters.Apply_No_Implicit_Dynamic_Code_Restriction;
          --  System_Parameters.Apply_No_Tasking_Restriction;

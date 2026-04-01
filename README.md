@@ -181,6 +181,7 @@ Typical content of the file:
   * `parameters`: runtime configuration parameters
     * `Suppress_Standard_Library`
   * `restrictions`: Ada restrictions to be applied for runtime and application.
+    * `No_Exception_Propagation`
     * `No_Finalization`: set to don't allow to use controlled types.
 * `files`: additional files to be copied into runtime source directory.
 

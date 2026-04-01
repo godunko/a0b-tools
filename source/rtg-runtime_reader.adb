@@ -435,7 +435,7 @@ package body RTG.Runtime_Reader is
       procedure Read_System_Restrictions_Section
         (System : in out RTG.System.System_Descriptor)
       is
-         type Components is (None, No_Finalization);
+         type Components is (None, No_Exception_Propagation, No_Finalization);
 
          Component : Components := None;
          Key       : VSS.Strings.Virtual_String;
@@ -446,7 +446,10 @@ package body RTG.Runtime_Reader is
                when Key_Name =>
                   Key := Reader.Key_Name;
 
-                  if Key = "No_Finalization" then
+                  if Key = "No_Exception_Propagation" then
+                     Component := No_Exception_Propagation;
+
+                  elsif Key = "No_Finalization" then
                      Component := No_Finalization;
 
                   else
@@ -457,6 +460,10 @@ package body RTG.Runtime_Reader is
 
                when Boolean_Value =>
                   case Component is
+                     when No_Exception_Propagation =>
+                        System.Set_No_Exception_Propagation
+                          (Reader.Boolean_Value);
+
                      when No_Finalization =>
                         System.Set_No_Finalization (Reader.Boolean_Value);
 
