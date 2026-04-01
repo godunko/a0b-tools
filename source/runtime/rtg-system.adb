@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, Vadim Godunko <vgodunko@gmail.com>
+--  Copyright (C) 2025-2026, Vadim Godunko <vgodunko@gmail.com>
 --
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
@@ -409,5 +409,16 @@ package body RTG.System is
    begin
       Set (Descriptor.Restrictions (GCC14.No_Tasking), To);
    end Set_No_Tasking;
+
+   -----------------------------------
+   -- Set_Suppress_Standard_Library --
+   -----------------------------------
+
+   procedure Set_Suppress_Standard_Library
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True) is
+   begin
+      Descriptor.Parameters (GCC14.Suppress_Standard_Library) := To;
+   end Set_Suppress_Standard_Library;
 
 end RTG.System;

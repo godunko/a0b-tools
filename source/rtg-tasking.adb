@@ -106,7 +106,6 @@ package body RTG.Tasking is
          --  `System.Standard_Library.Abort_Undefer_Direct` subprogram.
 
          System_Parameters.Parameters (Preallocated_Stacks)       := False;
-         System_Parameters.Parameters (Suppress_Standard_Library) := True;
 
       else
          RTG.Diagnostics.Error ("unknown tasking");

@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, Vadim Godunko <vgodunko@gmail.com>
+--  Copyright (C) 2025-2026, Vadim Godunko <vgodunko@gmail.com>
 --
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
@@ -136,5 +136,9 @@ package RTG.System is
    procedure Set_Max_Asynchronous_Select_Nesting
      (Descriptor : in out System_Descriptor'Class;
       To         : VSS.Strings.Virtual_String);
+
+   procedure Set_Suppress_Standard_Library
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True);
 
 end RTG.System;

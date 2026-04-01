@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, Vadim Godunko <vgodunko@gmail.com>
+--  Copyright (C) 2025-2026, Vadim Godunko <vgodunko@gmail.com>
 --
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
@@ -55,6 +55,11 @@ package body RTG.Runtime_Reader is
                 Post => Reader.Element_Kind = End_Object;
 
       procedure Read_System_Section
+        (System : in out RTG.System.System_Descriptor)
+           with Pre  => Reader.Element_Kind = Start_Object,
+                Post => Reader.Element_Kind = End_Object;
+
+      procedure Read_System_Parameters_Section
         (System : in out RTG.System.System_Descriptor)
            with Pre  => Reader.Element_Kind = Start_Object,
                 Post => Reader.Element_Kind = End_Object;
@@ -374,6 +379,55 @@ package body RTG.Runtime_Reader is
          end loop;
       end Read_Runtime;
 
+      ------------------------------------
+      -- Read_System_Parameters_Section --
+      ------------------------------------
+
+      procedure Read_System_Parameters_Section
+        (System : in out RTG.System.System_Descriptor)
+      is
+         type Components is (None, Suppress_Standard_Library);
+
+         Component : Components := None;
+         Key       : VSS.Strings.Virtual_String;
+
+      begin
+         loop
+            case Reader.Read_Next is
+               when Key_Name =>
+                  Key := Reader.Key_Name;
+
+                  if Key = "Suppress_Standard_Library" then
+                     Component := Suppress_Standard_Library;
+
+                  else
+                     RTG.Diagnostics.Warning
+                       ("`{}` is unknown system parameters parameter",
+                        Key);
+                  end if;
+
+               when Boolean_Value =>
+                  case Component is
+                     when Suppress_Standard_Library =>
+                        System.Set_Suppress_Standard_Library
+                          (Reader.Boolean_Value);
+
+                     when others =>
+                        RTG.Diagnostics.Warning
+                          ("`{}` runtime system parameter is not boolean",
+                        Key);
+                        Reader.Skip_Current_Object;
+                  end case;
+
+               when End_Object =>
+                  exit;
+
+               when others =>
+                  raise Program_Error with Reader.Element_Kind'Img;
+            end case;
+         end loop;
+      end Read_System_Parameters_Section;
+
       --------------------------------------
       -- Read_System_Restrictions_Section --
       --------------------------------------
@@ -429,7 +483,7 @@ package body RTG.Runtime_Reader is
       procedure Read_System_Section
         (System : in out RTG.System.System_Descriptor)
       is
-         type Components is (None, Restrictions);
+         type Components is (None, Restrictions, Parameters);
 
          Component : Components := None;
          Key       : VSS.Strings.Virtual_String;
@@ -440,7 +494,10 @@ package body RTG.Runtime_Reader is
                when Key_Name =>
                   Key := Reader.Key_Name;
 
-                  if Key = "restrictions" then
+                  if Key = "parameters" then
+                     Component := Parameters;
+
+                  elsif Key = "restrictions" then
                      Component := Restrictions;
 
                   else
@@ -451,6 +508,9 @@ package body RTG.Runtime_Reader is
 
                when Start_Object =>
                   case Component is
+                     when Parameters =>
+                        Read_System_Parameters_Section (System);
+
                      when Restrictions =>
                         Read_System_Restrictions_Section (System);
 

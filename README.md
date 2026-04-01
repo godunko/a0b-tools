@@ -178,6 +178,8 @@ Typical content of the file:
 * `linker_required_switches`: list of required switches to be used by linker.
   Usually switches to ignore default startup files and standard C library.
 * `system`: global system configuration
+  * `parameters`: runtime configuration parameters
+    * `Suppress_Standard_Library`
   * `restrictions`: Ada restrictions to be applied for runtime and application.
     * `No_Finalization`: set to don't allow to use controlled types.
 * `files`: additional files to be copied into runtime source directory.
