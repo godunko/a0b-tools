@@ -309,6 +309,7 @@ package body RTG.Runtime_Reader is
          type Components is
            (None,
             Common_Required_Switches,
+            Languages,
             Linker_Required_Switches,
             Component_System,
             Files);
@@ -328,6 +329,9 @@ package body RTG.Runtime_Reader is
                   elsif Key = "files" then
                      Component := Files;
 
+                  elsif Key = "languages" then
+                     Component := Languages;
+
                   elsif Key = "linker_required_switches" then
                      Component := Linker_Required_Switches;
 
@@ -344,6 +348,9 @@ package body RTG.Runtime_Reader is
                   case Component is
                      when Common_Required_Switches =>
                         Read_Values (Runtime.Common_Required_Switches);
+
+                     when Languages =>
+                        Read_Values (Runtime.Languages);
 
                      when Linker_Required_Switches =>
                         Read_Values (Runtime.Linker_Required_Switches);

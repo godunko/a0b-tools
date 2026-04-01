@@ -173,6 +173,7 @@ Typical content of the file:
 
 #### Runtime Configuration Parameters
 
+* `languages`: list of languages used for runtime code.
 * `common_required_switches`: list of required switches for compiler and linker to build runtime and application.
   Architecture specific switches should be listed here.
 * `linker_required_switches`: list of required switches to be used by linker.

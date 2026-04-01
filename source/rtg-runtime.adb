@@ -314,12 +314,30 @@ package body RTG.Runtime is
 
       Target_Template : constant Virtual_String_Template :=
         "   for Target use ""{}"";";
+      Name_Template   : constant Virtual_String_Template :=
+        """{}""";
 
    begin
       PL ("library project Build_Libgnat is");
       NL;
       PL (Target_Template.Format (Image (Runtime.GPR_Target)));
       PL ("   for Runtime (""Ada"") use Project'Project_Dir;");
+
+      if not Runtime.Languages.Is_Empty then
+         PS ("   for Languages use (");
+
+         for J in Runtime.Languages.First_Index .. Runtime.Languages.Last_Index
+         loop
+            if J /= Runtime.Languages.First_Index then
+               PS (", ");
+            end if;
+
+            PS (Name_Template.Format (Image (Runtime.Languages (J))));
+         end loop;
+
+         PL (");");
+      end if;
+
       PL ("   for Library_Name use ""gnat"";");
       PL ("   for Source_Dirs use (""gnat"");");
       PL ("   for Object_Dir use ""obj/gnat"";");
@@ -336,6 +354,13 @@ package body RTG.Runtime is
       PL ("         ""-nostdinc"",");
       PL ("         ""-ffunction-sections"",");
       PL ("         ""-fdata-sections"");");
+
+      if Runtime.Languages.Contains ("c") or Runtime.Languages.Contains ("C")
+      then
+         PL
+           ("      for Switches (""C"") use (""-DIN_RTS"", ""-Dinhibit_libc"");");
+      end if;
+
       PL ("   end Compiler;");
       NL;
       PL ("end Build_Libgnat;");

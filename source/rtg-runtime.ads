@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, Vadim Godunko <vgodunko@gmail.com>
+--  Copyright (C) 2025-2026, Vadim Godunko <vgodunko@gmail.com>
 --
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
@@ -18,6 +18,8 @@ package RTG.Runtime is
       GNAT_RTS_Sources_Directory : GNATCOLL.VFS.Virtual_File;
 
       GPR_Target                 : VSS.Strings.Virtual_String;
+      Languages                  : VSS.String_Vectors.Virtual_String_Vector;
+      --  List of languages to be used by runtime source code.
       Common_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
       Linker_Required_Switches   : VSS.String_Vectors.Virtual_String_Vector;
       Runtime_Files              : RTG.File_Descriptor_Vectors.Vector;
