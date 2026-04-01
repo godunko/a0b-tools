@@ -469,19 +469,18 @@ package body RTG.Runtime is
       PL ("<gprconfig>");
       PL ("  <configuration>");
       PL ("    <config><![CDATA[");
-      PL ("   package Compiler is");
 
-      PL ("      Common_Required_Switches :=");
+      PL ("   Common_Required_Switches :=");
 
       for J in Runtime.Common_Required_Switches.First_Index
                  .. Runtime.Common_Required_Switches.Last_Index
       loop
          if J = Runtime.Common_Required_Switches.First_Index then
-            P ("        (");
+            P ("     (");
 
          else
             PL (",");
-            P ("         ");
+            P ("      ");
          end if;
 
          P
@@ -490,10 +489,17 @@ package body RTG.Runtime is
       end loop;
 
       PL (");");
+      NL;
 
+      PL ("   package Compiler is");
+      PL ("      Ada_Required_Switches := (""-gnatef"");");
+      --  Full source path in brief error messages and JSON output...
+      --  ... to improve VS Code experience
+      NL;
       PL ("      for Leading_Required_Switches (""Ada"") use");
       PL ("        Compiler'Leading_Required_Switches (""Ada"")");
-      PL ("        & Common_Required_Switches;");
+      PL ("        & Common_Required_Switches");
+      PL ("        & Ada_Required_Switches;");
       PL ("      for Leading_Required_Switches (""C"") use");
       PL ("        Compiler'Leading_Required_Switches (""C"")");
       PL ("        & Common_Required_Switches;");
@@ -537,7 +543,7 @@ package body RTG.Runtime is
          PL ("            ""-T"", ""startup.ld"")");
       end if;
 
-      PL ("         & Compiler.Common_Required_Switches;");
+      PL ("         & Common_Required_Switches;");
       PL ("   end Linker;");
 
       if Runtime.GPR_Target = "xtensa-esp32-elf" then
