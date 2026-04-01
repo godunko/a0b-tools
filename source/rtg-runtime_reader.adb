@@ -435,7 +435,11 @@ package body RTG.Runtime_Reader is
       procedure Read_System_Restrictions_Section
         (System : in out RTG.System.System_Descriptor)
       is
-         type Components is (None, No_Exception_Propagation, No_Finalization);
+         type Components is
+           (None,
+            No_Exception_Propagation,
+            No_Finalization,
+            No_Implicit_Dynamic_Code);
 
          Component : Components := None;
          Key       : VSS.Strings.Virtual_String;
@@ -452,6 +456,9 @@ package body RTG.Runtime_Reader is
                   elsif Key = "No_Finalization" then
                      Component := No_Finalization;
 
+                  elsif Key = "No_Implicit_Dynamic_Code" then
+                     Component := No_Implicit_Dynamic_Code;
+
                   else
                      RTG.Diagnostics.Warning
                        ("`{}` is unknown system restrictions parameter",
@@ -466,6 +473,10 @@ package body RTG.Runtime_Reader is
 
                      when No_Finalization =>
                         System.Set_No_Finalization (Reader.Boolean_Value);
+
+                     when No_Implicit_Dynamic_Code =>
+                        System.Set_No_Implicit_Dynamic_Code
+                          (Reader.Boolean_Value);
 
                      when others =>
                         RTG.Diagnostics.Warning
