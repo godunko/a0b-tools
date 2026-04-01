@@ -492,6 +492,9 @@ package body RTG.Runtime is
       PL ("      for Leading_Required_Switches (""Ada"") use");
       PL ("        Compiler'Leading_Required_Switches (""Ada"")");
       PL ("        & Common_Required_Switches;");
+      PL ("      for Leading_Required_Switches (""C"") use");
+      PL ("        Compiler'Leading_Required_Switches (""C"")");
+      PL ("        & Common_Required_Switches;");
       PL ("   end Compiler;");
       NL;
       PL ("   package Linker is");
