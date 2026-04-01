@@ -214,6 +214,8 @@ package body RTG.System is
       PL ("   Word_Size    : constant := 32;");
       PL ("   Memory_Size  : constant := 2 ** 32;");
       NL;
+      PL ("   function ""<"" (Left, Right : Address) return Boolean");
+      PL ("     with Import, Convention => Intrinsic;");
       PL ("   function ""<="" (Left, Right : Address) return Boolean");
       PL ("     with Import, Convention => Intrinsic;");
       NL;
