@@ -49,6 +49,7 @@ procedure RTG.Driver is
       Long_Name   => "no-startup");
 
    BB_Runtimes_Directory : GNATCOLL.VFS.Virtual_File;
+   Runtime_File          : GNATCOLL.VFS.Virtual_File;
    SVD_File              : GNATCOLL.VFS.Virtual_File;
    Startup_Binding_File  : GNATCOLL.VFS.Virtual_File;
    No_Startup            : Boolean := False;
@@ -114,6 +115,32 @@ begin
    else
       VSS.Command_Line.Report_Error
         ("BB Runtimes directory is not specified");
+   end if;
+
+   --  Runtime description file
+
+   if VSS.Application.System_Environment.Contains
+        ("A0B_TOOLS_RUNTIME_DESCRIPTION")
+   then
+      Runtime_File :=
+        GNATCOLL.VFS.Create_From_Base
+          (GNATCOLL.VFS.Filesystem_String
+             (VSS.Strings.Conversions.To_UTF_8_String
+                (VSS.Application.System_Environment.Value
+                   ("A0B_TOOLS_RUNTIME_DESCRIPTION"))),
+           GNATCOLL.VFS.Get_Current_Dir.Full_Name.all);
+
+   else
+      --  Fallback to default: `runtime.json` file in the current working
+      --  directory.
+
+      Runtime_File :=
+        GNATCOLL.VFS.Create_From_Base
+          ("runtime.json", GNATCOLL.VFS.Get_Current_Dir.Full_Name.all);
+   end if;
+
+   if not Runtime_File.Is_Regular_File then
+      VSS.Command_Line.Report_Error ("Runtime description file not found");
    end if;
 
    --  SVD file
@@ -184,8 +211,7 @@ begin
    --  Load files: runtime configuration, SVD file, startup binding.
 
    RTG.Runtime_Reader.Read
-     (GNATCOLL.VFS.Create_From_Base
-        ("runtime.json", GNATCOLL.VFS.Get_Current_Dir.Full_Name.all),
+     (Runtime_File,
       Runtime,
       Tasking,
       Startup,
