@@ -92,6 +92,7 @@ procedure RTG.Driver is
    Startup    : RTG.Startup.Startup_Descriptor;
 
 begin
+   VSS.Command_Line.Add_Help_Option;
    VSS.Command_Line.Add_Option (BB_Runtimes_Option);
    VSS.Command_Line.Add_Option (SVD_Option);
    VSS.Command_Line.Add_Option (No_Startup_Option);
