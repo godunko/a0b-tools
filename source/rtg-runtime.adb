@@ -218,9 +218,7 @@ package body RTG.Runtime is
       Generate_Ada_Object_Path (Descriptor);
       Generate_Build_Libgnat_Project (Descriptor);
       Generate_Build_Runtime_Project
-        (Descriptor,
-         RTG.Tasking.Use_GNAT_Tasking (Tasking),
-         No_Startup);
+        (Descriptor, not Tasking.Kernel.Is_Empty, No_Startup);
       Generate_Runtime_XML (Descriptor, No_Startup);
       Copy_Runtime_Sources (Descriptor);
       RTG.Utilities.Synchronize
