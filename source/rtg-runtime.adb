@@ -378,7 +378,7 @@ package body RTG.Runtime is
       if Runtime.Languages.Contains ("c") or Runtime.Languages.Contains ("C")
       then
          PL
-           ("      for Switches (""C"") use (""-DIN_RTS"", ""-Dinhibit_libc"");");
+           ("      for Switches (""C"") use (""-g"", ""-O2"", ""-DIN_RTS"", ""-Dinhibit_libc"");");
       end if;
 
       PL ("   end Compiler;");
