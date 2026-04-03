@@ -87,35 +87,55 @@ package body RTG.Runtime is
       Directory     : GNATCOLL.VFS.Virtual_File;
       Name_Template : Virtual_String_Template := "{}_ALIRE_PREFIX";
       Name          : VSS.Strings.Virtual_String;
+      Success       : Boolean;
 
    begin
       for File of Descriptor.Runtime_Files loop
-         if File.Crate.Is_Empty then
-            Directory := Descriptor.Descriptor_Directory;
+         if File.Crate.Is_Empty and File.Path.Is_Empty then
+            declare
+               File_To_Remove : constant GNATCOLL.VFS.Virtual_File :=
+                 Descriptor.Aux_Runtime_Source_Directory.Create_From_Dir
+                   (GNATCOLL.VFS.Filesystem_String
+                      (VSS.Strings.Conversions.To_UTF_8_String (File.File)));
 
-         elsif File.Crate = "bb_runtimes" then
-            Directory := Descriptor.GNAT_RTS_Sources_Directory.Dir;
+            begin
+               RTG.Diagnostics.Warning ("remove `{}`", File.File);
+
+               File_To_Remove.Delete (Success);
+
+               if not Success then
+                  RTG.Diagnostics.Error (File_To_Remove, "can't remove file");
+               end if;
+            end;
 
          else
-            Name :=
-              VSS.Transformers.Casing.To_Simple_Uppercase.Transform
-                (Name_Template.Format (Image (File.Crate)));
+            if File.Crate.Is_Empty then
+               Directory := Descriptor.Descriptor_Directory;
 
-            if not VSS.Application.System_Environment.Contains (Name) then
-               RTG.Diagnostics.Error ("crate `{}` not found", File.Crate);
+            elsif File.Crate = "bb_runtimes" then
+               Directory := Descriptor.GNAT_RTS_Sources_Directory.Dir;
+
+            else
+               Name :=
+                 VSS.Transformers.Casing.To_Simple_Uppercase.Transform
+                   (Name_Template.Format (Image (File.Crate)));
+
+               if not VSS.Application.System_Environment.Contains (Name) then
+                  RTG.Diagnostics.Error ("crate `{}` not found", File.Crate);
+               end if;
+
+               Directory :=
+                 GNATCOLL.VFS.Create_From_UTF8
+                   (VSS.Strings.Conversions.To_UTF_8_String
+                      (VSS.Application.System_Environment.Value (Name)));
             end if;
 
-            Directory :=
-              GNATCOLL.VFS.Create_From_UTF8
-                (VSS.Strings.Conversions.To_UTF_8_String
-                   (VSS.Application.System_Environment.Value (Name)));
+            RTG.Utilities.Copy_File
+              (Directory,
+               File.Path,
+               Descriptor.Aux_Runtime_Source_Directory,
+               File.File);
          end if;
-
-         RTG.Utilities.Copy_File
-           (Directory,
-            File.Path,
-            Descriptor.Aux_Runtime_Source_Directory,
-            File.File);
       end loop;
    end Copy_Runtime_Sources;
 
