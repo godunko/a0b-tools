@@ -28,7 +28,3 @@ gnat = ">=15"
 gnatcoll = "^25"
 vss_text = "*"
 vss_extra = "*"
-
-[[pins]]
-vss_text = { url='https://github.com/AdaCore/vss-text.git' }
-vss_extra = { url='https://github.com/AdaCore/vss-extra.git' }
