@@ -207,6 +207,8 @@ package body RTG.System is
       NL;
       PL ("   Max_Binary_Modulus    : constant := 2 ** Standard'Max_Integer_Size;");
       NL;
+      PL ("   Max_Digits            : constant := Long_Float'Digits;");
+      NL;
       PL ("   type Address is private with Preelaborable_Initialization;");
       PL ("   Null_Address : constant Address;");
       NL;
