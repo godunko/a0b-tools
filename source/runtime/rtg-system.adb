@@ -209,6 +209,8 @@ package body RTG.System is
       NL;
       PL ("   Max_Digits            : constant := Long_Float'Digits;");
       NL;
+      PL ("   Max_Mantissa          : constant := Standard'Max_Integer_Size - 1;");
+      NL;
       PL ("   type Address is private with Preelaborable_Initialization;");
       PL ("   Null_Address : constant Address;");
       NL;
