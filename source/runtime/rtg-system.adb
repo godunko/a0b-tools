@@ -206,6 +206,7 @@ package body RTG.System is
       PL ("package System with Pure, No_Elaboration_Code_All is");
       NL;
       PL ("   Max_Binary_Modulus    : constant := 2 ** Standard'Max_Integer_Size;");
+      PL ("   Max_Nonbinary_Modulus : constant := 2 ** Integer'Size - 1;");
       NL;
       PL ("   Max_Digits            : constant := Long_Float'Digits;");
       NL;
