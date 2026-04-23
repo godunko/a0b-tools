@@ -393,7 +393,10 @@ package body RTG.Runtime_Reader is
       procedure Read_System_Parameters_Section
         (System : in out RTG.System.System_Descriptor)
       is
-         type Components is (None, Suppress_Standard_Library);
+         type Components is
+           (None,
+            Preallocated_Stacks,
+            Suppress_Standard_Library);
 
          Component : Components := None;
          Key       : VSS.Strings.Virtual_String;
@@ -404,7 +407,10 @@ package body RTG.Runtime_Reader is
                when Key_Name =>
                   Key := Reader.Key_Name;
 
-                  if Key = "Suppress_Standard_Library" then
+                  if Key = "Preallocated_Stacks" then
+                     Component := Preallocated_Stacks;
+
+                  elsif Key = "Suppress_Standard_Library" then
                      Component := Suppress_Standard_Library;
 
                   else
@@ -415,6 +421,10 @@ package body RTG.Runtime_Reader is
 
                when Boolean_Value =>
                   case Component is
+                     when Preallocated_Stacks =>
+                        System.Set_Preallocated_Stacks
+                          (Reader.Boolean_Value);
+
                      when Suppress_Standard_Library =>
                         System.Set_Suppress_Standard_Library
                           (Reader.Boolean_Value);

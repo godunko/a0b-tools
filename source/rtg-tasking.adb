@@ -102,8 +102,6 @@ package body RTG.Tasking is
          --  XXX GCC15: These are necessary to suppress use of
          --  `System.Standard_Library.Abort_Undefer_Direct` subprogram.
 
-         System_Parameters.Parameters (Preallocated_Stacks)       := False;
-
       else
          RTG.Diagnostics.Error ("unknown tasking");
       end if;

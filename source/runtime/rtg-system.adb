@@ -420,6 +420,17 @@ package body RTG.System is
       Set (Descriptor.Restrictions (GCC14.No_Tasking), To);
    end Set_No_Tasking;
 
+   -----------------------------
+   -- Set_Preallocated_Stacks --
+   -----------------------------
+
+   procedure Set_Preallocated_Stacks
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True) is
+   begin
+      Descriptor.Parameters (GCC14.Preallocated_Stacks) := To;
+   end Set_Preallocated_Stacks;
+
    -----------------------------------
    -- Set_Suppress_Standard_Library --
    -----------------------------------

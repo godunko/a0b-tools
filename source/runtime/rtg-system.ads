@@ -137,6 +137,10 @@ package RTG.System is
      (Descriptor : in out System_Descriptor'Class;
       To         : VSS.Strings.Virtual_String);
 
+   procedure Set_Preallocated_Stacks
+     (Descriptor : in out System_Descriptor'Class;
+      To         : Boolean := True);
+
    procedure Set_Suppress_Standard_Library
      (Descriptor : in out System_Descriptor'Class;
       To         : Boolean := True);
