@@ -113,7 +113,7 @@ package body RTG.Architecture is
          Startup.ARM_Enable_FPU           := True;
 
       elsif Scenarios ("dt:&cpu0:compatible") = "espressif,riscv" then
-         Runtime.GPR_Target := "xtensa-esp32-elf";
+         Runtime.GPR_Target := "riscv64-elf";
 
          Check_Set ("CPU_Family", "riscv32");
          Check_Set ("Target_Word_Size", "32");
