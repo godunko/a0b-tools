@@ -112,6 +112,31 @@ package body RTG.Architecture is
          System_BB_Parameters.ARM_Has_FPU := True;
          Startup.ARM_Enable_FPU           := True;
 
+      elsif Scenarios ("dt:&cpu0:compatible") = "espressif,riscv" then
+         Runtime.GPR_Target := "xtensa-esp32-elf";
+
+         Check_Set ("CPU_Family", "riscv32");
+         Check_Set ("Target_Word_Size", "32");
+         Check_Set ("Has_FMA", "no");
+         Check_Set ("Has_Compare_And_Swap", "yes");
+         Check_Set ("Has_CHERI", "no");
+
+         System_Parameters.Parameters (Backend_Divide_Checks)     := False;
+         System_Parameters.Parameters (Backend_Overflow_Checks)   := True;
+         System_Parameters.Parameters (Support_Atomic_Primitives) := True;
+         System_Parameters.Parameters (Support_Long_Shifts)       := True;
+         System_Parameters.Parameters (ZCX_By_Default)            := True;
+
+         System_Parameters.Parameters (Denorm)                    := True;
+         System_Parameters.Parameters (Machine_Overflows)         := False;
+         System_Parameters.Parameters (Machine_Rounds)            := True;
+         System_Parameters.Parameters (Signed_Zeros)              := True;
+
+         if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
+            RTG.System.Apply_No_Task_At_Interrupt_Priority_Restriction
+              (System_Parameters);
+         end if;
+
       elsif Scenarios ("dt:&cpu0:compatible") = "espressif,xtensa-lx7" then
          Runtime.GPR_Target := "xtensa-esp32-elf";
 
