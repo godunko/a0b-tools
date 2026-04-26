@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, Vadim Godunko <vgodunko@gmail.com>
+--  Copyright (C) 2025-2026, Vadim Godunko <vgodunko@gmail.com>
 --
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
@@ -33,17 +33,22 @@ procedure RTG.Driver is
 
    use type GNATCOLL.VFS.Virtual_File;
 
-   BB_Runtimes_Option : constant VSS.Command_Line.Value_Option :=
+   BB_Runtimes_Option         : constant VSS.Command_Line.Value_Option :=
      (Description => "Path to BB Runtimes sources",
       Short_Name  => <>,
       Long_Name   => "bb-runtimes",
       Value_Name  => "path");
-   SVD_Option         : constant VSS.Command_Line.Value_Option :=
+   Runtime_Description_Option : constant VSS.Command_Line.Value_Option :=
+     (Description => "Path to runtime description file",
+      Short_Name  => <>,
+      Long_Name   => "runtime-description",
+      Value_Name  => "file");
+   SVD_Option                 : constant VSS.Command_Line.Value_Option :=
      (Description => "Path to SVD file",
       Short_Name  => <>,
       Long_Name   => "svd",
-      Value_Name  => "path");
-   No_Startup_Option  : constant VSS.Command_Line.Binary_Option :=
+      Value_Name  => "file");
+   No_Startup_Option          : constant VSS.Command_Line.Binary_Option :=
      (Description => "Don't generate startup library",
       Short_Name  => <>,
       Long_Name   => "no-startup");
@@ -95,6 +100,7 @@ procedure RTG.Driver is
 begin
    VSS.Command_Line.Add_Help_Option;
    VSS.Command_Line.Add_Option (BB_Runtimes_Option);
+   VSS.Command_Line.Add_Option (Runtime_Description_Option);
    VSS.Command_Line.Add_Option (SVD_Option);
    VSS.Command_Line.Add_Option (No_Startup_Option);
 
@@ -119,7 +125,14 @@ begin
 
    --  Runtime description file
 
-   if VSS.Application.System_Environment.Contains
+   if VSS.Command_Line.Is_Specified (Runtime_Description_Option) then
+      Runtime_File :=
+        GNATCOLL.VFS.Create
+          (GNATCOLL.VFS.Filesystem_String
+             (VSS.Strings.Conversions.To_UTF_8_String
+                (VSS.Command_Line.Value (Runtime_Description_Option))));
+
+   elsif VSS.Application.System_Environment.Contains
         ("A0B_TOOLS_RUNTIME_DESCRIPTION")
    then
       Runtime_File :=
