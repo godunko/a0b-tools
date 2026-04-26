@@ -489,14 +489,12 @@ package body RTG.Runtime is
       PL ("    <config><![CDATA[");
 
       PL ("   Common_Required_Switches :=");
+      P  ("     (");
 
       for J in Runtime.Common_Required_Switches.First_Index
                  .. Runtime.Common_Required_Switches.Last_Index
       loop
-         if J = Runtime.Common_Required_Switches.First_Index then
-            P ("     (");
-
-         else
+         if J /= Runtime.Common_Required_Switches.First_Index then
             PL (",");
             P ("      ");
          end if;
