@@ -68,12 +68,20 @@ package RTG.System is
 
       type Profiles is (No, Ravenscar, Jorvik);
 
+      type Priorities is record
+         Interrupt_Priority_Values : Integer := 1;
+         Priority_Values           : Integer := 30;
+         --  Default values follow ARM's Implementation Requirements
+         --  D.1 [25] and D.1 [26].
+      end record;
+
    end GCC14;
 
    type System_Descriptor is tagged record
       Parameters   : GCC14.System_Implementation_Parameters;
       Restrictions : GCC14.Restrictions;
       Profile      : GCC14.Profiles;
+      Priorities   : GCC14.Priorities;
    end record;
 
    procedure Generate

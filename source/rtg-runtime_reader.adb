@@ -518,7 +518,12 @@ package body RTG.Runtime_Reader is
       procedure Read_System_Section
         (System : in out RTG.System.System_Descriptor)
       is
-         type Components is (None, Restrictions, Parameters);
+         type Components is
+           (None,
+            Restrictions,
+            Parameters,
+            Interrupt_Priority_Values,
+            Priority_Values);
 
          Component : Components := None;
          Key       : VSS.Strings.Virtual_String;
@@ -529,8 +534,14 @@ package body RTG.Runtime_Reader is
                when Key_Name =>
                   Key := Reader.Key_Name;
 
-                  if Key = "parameters" then
+                  if Key = "interrupt_priority_values" then
+                     Component := Interrupt_Priority_Values;
+
+                  elsif Key = "parameters" then
                      Component := Parameters;
+
+                  elsif Key = "priority_values" then
+                     Component := Priority_Values;
 
                   elsif Key = "restrictions" then
                      Component := Restrictions;
@@ -540,6 +551,22 @@ package body RTG.Runtime_Reader is
                        ("`{}` is unknown system configuration parameter",
                         Key);
                   end if;
+
+               when Number_Value =>
+                  case Component is
+                     when Interrupt_Priority_Values =>
+                        System.Priorities.Interrupt_Priority_Values :=
+                          Integer (Reader.Number_Value.Integer_Value);
+
+                     when Priority_Values =>
+                        System.Priorities.Priority_Values :=
+                          Integer (Reader.Number_Value.Integer_Value);
+
+                     when others =>
+                        RTG.Diagnostics.Warning
+                          ("`{}` system configuration parameter is not number value",
+                        Key);
+                  end case;
 
                when Start_Object =>
                   case Component is

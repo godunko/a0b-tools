@@ -88,7 +88,8 @@ procedure RTG.Driver is
          RTG.System.GCC14.Use_Ada_Main_Program_Name => False,
          RTG.System.GCC14.ZCX_By_Default            => True],
       Restrictions => [others => <>],
-      Profile      => RTG.System.GCC14.No);
+      Profile      => RTG.System.GCC14.No,
+      Priorities   => (others => <>));
    --  It is set of parameters for ARM Cortex-M `light` runtime
    Scenarios  : RTG.Scenario_Maps.Map;
    Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector;

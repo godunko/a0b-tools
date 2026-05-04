@@ -7,6 +7,7 @@
 pragma Style_Checks ("M90");
 pragma Ada_2022;
 
+with VSS.Strings.Formatters.Integers;
 with VSS.Strings.Formatters.Strings;
 with VSS.Strings.Templates;
 
@@ -151,8 +152,18 @@ package body RTG.System is
           (Runtime.Aux_Runtime_Source_Directory, "system.ads");
       use Output;
 
-      Max_Asynchronous_Select_Nesting_Template : Virtual_String_Template :=
-        "pragma Restrictions (Max_Asynchronous_Select_Nesting => {});";
+      Max_Asynchronous_Select_Nesting_Template : constant
+        Virtual_String_Template :=
+          "pragma Restrictions (Max_Asynchronous_Select_Nesting => {});";
+
+      Any_Priority_Template       : constant Virtual_String_Template :=
+        "   subtype Any_Priority       is Integer range      {} .. {};";
+      Priority_Template           : constant Virtual_String_Template :=
+        "   subtype Priority           is Any_Priority range {} .. {};";
+      Interrupt_Priority_Template : constant Virtual_String_Template :=
+        "   subtype Interrupt_Priority is Any_Priority range {} .. {};";
+      Default_Priority_Template   : constant Virtual_String_Template :=
+        "   Default_Priority : constant Priority := {};";
 
    begin
       if Is_Applied (Parameters, GCC14.No_Exception_Propagation) then
@@ -231,12 +242,49 @@ package body RTG.System is
       PL ("   Default_Bit_Order : constant Bit_Order :=");
       PL ("     Bit_Order'Val (Standard'Default_Bit_Order);");
       PL ("   pragma Warnings (Off, Default_Bit_Order);");
-      NL;
-      PL ("   subtype Any_Priority       is Integer range         0 .. 255;");
-      PL ("   subtype Priority           is Any_Priority range    0 .. 240;");
-      PL ("   subtype Interrupt_Priority is Any_Priority range  241 .. 255;");
-      NL;
-      PL ("   Default_Priority : constant Priority := 120;");
+
+      --  Priorities
+
+      declare
+         Any_Priority_First       : constant Integer := 0;
+         Any_Priority_Last        : constant Integer :=
+           Any_Priority_First
+             + Parameters.Priorities.Interrupt_Priority_Values
+             + Parameters.Priorities.Priority_Values
+             - 1;
+         Priority_First           : constant Integer := Any_Priority_First;
+         Priority_Last            : constant Integer :=
+           Priority_First + Parameters.Priorities.Priority_Values - 1;
+         Interrupt_Priority_First : constant Integer := Priority_Last + 1;
+         Interrupt_Priority_Last  : constant Integer :=
+           Interrupt_Priority_First
+             + Parameters.Priorities.Interrupt_Priority_Values
+             - 1;
+         Default_Priority         : constant Integer :=
+           (Priority_First + Priority_Last) / 2;
+
+      begin
+         NL;
+         PL
+           (Any_Priority_Template.Format
+              (VSS.Strings.Formatters.Integers.Image (Any_Priority_First),
+               VSS.Strings.Formatters.Integers.Image (Any_Priority_Last)));
+         PL
+           (Priority_Template.Format
+              (VSS.Strings.Formatters.Integers.Image (Priority_First),
+               VSS.Strings.Formatters.Integers.Image (Priority_Last)));
+         PL
+           (Interrupt_Priority_Template.Format
+              (VSS.Strings.Formatters.Integers.Image
+                 (Interrupt_Priority_First),
+               VSS.Strings.Formatters.Integers.Image
+                 (Interrupt_Priority_Last)));
+         NL;
+         PL
+           (Default_Priority_Template.Format
+              (VSS.Strings.Formatters.Integers.Image (Default_Priority)));
+      end;
+
       NL;
       PL ("private");
       NL;
