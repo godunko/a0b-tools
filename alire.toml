@@ -1,7 +1,7 @@
 name = "a0b_tools"
 description = "A0B Tools: Runtime Generator"
 website = "https://github.com/godunko/a0b-tools"
-version = "0.3.0-dev"
+version = "0.2.0"
 long-description = """
 The primary tool in this crate is the `a0b-runtime` generator.
 While GNAT provides several standard runtimes (such as `light`, `light-tasking`, and `embedded`), these can be difficult to customize for specific project requirements.
