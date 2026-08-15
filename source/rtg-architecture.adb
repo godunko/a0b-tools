@@ -137,7 +137,10 @@ package body RTG.Architecture is
               (System_Parameters);
          end if;
 
-      elsif Scenarios ("dt:&cpu0:compatible") = "espressif,xtensa-lx7" then
+      elsif Scenarios ("dt:&cpu0:compatible") = "espressif,xtensa-lx7"
+            or else
+            Scenarios ("dt:&cpu0:compatible") = "espressif,xtensa-lx6"
+      then
          Runtime.GPR_Target := "xtensa-esp32-elf";
 
          Check_Set ("CPU_Family", "xtensa");
