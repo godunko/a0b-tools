@@ -31,6 +31,7 @@ package body RTG.Runtime_Reader is
       System    : in out RTG.System.System_Descriptor;
       Scenarios : out RTG.Scenario_Maps.Map)
    is
+      use type GNATCOLL.VFS.Virtual_File;
       use all type VSS.JSON.Streams.JSON_Stream_Element_Kind;
       use type VSS.Strings.Virtual_String;
 
@@ -77,6 +78,9 @@ package body RTG.Runtime_Reader is
       procedure Parse_Memory_Descriptor
         (Values     : VSS.String_Vectors.Virtual_String_Vector;
          Descriptor : in out RTG.Memory_Descriptor);
+
+      procedure Process_Include (Path : VSS.Strings.Virtual_String);
+      --  Process `include` directive.
 
       -----------------------------
       -- Parse_Memory_Descriptor --
@@ -154,6 +158,21 @@ package body RTG.Runtime_Reader is
          end if;
       end Parse_Memory_Descriptor;
 
+      ---------------------
+      -- Process_Include --
+      ---------------------
+
+      procedure Process_Include (Path : VSS.Strings.Virtual_String) is
+         Include_File : constant GNATCOLL.VFS.Virtual_File :=
+           GNATCOLL.VFS.Create_From_Base
+             (GNATCOLL.VFS.Filesystem_String
+                (VSS.Strings.Conversions.To_UTF_8_String (Path)),
+              File.Dir_Name);
+
+      begin
+         Read (Include_File, Runtime, Tasking, Startup, System, Scenarios);
+      end Process_Include;
+
       ------------------------
       -- Read_Configuration --
       ------------------------
@@ -169,7 +188,16 @@ package body RTG.Runtime_Reader is
                   Key := Reader.Key_Name;
 
                when String_Value =>
-                  Scenarios.Insert (Key, Reader.String_Value);
+                  if Key = "include" then
+                     Process_Include (Reader.String_Value);
+
+                  else
+                     --  While it is mostly a backward compatibilty case,
+                     --  `scenarios` section is not detected, and processed
+                     --  here.
+
+                     Scenarios.Insert (Key, Reader.String_Value);
+                  end if;
 
                when Start_Array =>
                   if Key = "dt:/chosen/a0b,flash:reg" then
@@ -675,7 +703,12 @@ package body RTG.Runtime_Reader is
       end Read_Values;
 
    begin
-      Runtime.Descriptor_Directory := File.Dir;
+      if Runtime.Descriptor_Directory = GNATCOLL.VFS.No_File then
+         --  Sets `Descriptor_Directory` from the first processed runtime
+         --  descriptor file.
+
+         Runtime.Descriptor_Directory := File.Dir;
+      end if;
 
       Input.Open
         (VSS.Strings.Conversions.To_Virtual_String (File.Display_Full_Name));
