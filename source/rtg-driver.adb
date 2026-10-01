@@ -27,6 +27,7 @@ with RTG.System;
 with RTG.System_BB_MCU_Parameters;
 with RTG.System_BB_Parameters;
 with RTG.System_BB_MCU_Vectors;
+with RTG.System_Parameters;
 with RTG.Tasking;
 
 procedure RTG.Driver is
@@ -91,6 +92,19 @@ procedure RTG.Driver is
       Profile      => RTG.System.GCC14.No,
       Priorities   => (others => <>));
    --  It is set of parameters for ARM Cortex-M `light` runtime
+   System_Parameters : RTG.System_Parameters.System_Parameters_Descriptor :=
+     (Variant                          => RTG.System_Parameters.Non_Tasking,
+      Stack_Grows_Down                 => True,
+      Runtime_Default_Sec_Stack_Size   => 512,
+      Default_Stack_Size               => 4 * 1_024,
+      Minimum_Stack_Size               => 512,
+      Garbage_Collected                => False,
+      No_Abort                         => True,
+      Max_Attribute_Count              => 0,
+      Max_Task_Image_Length            => 16,
+      Default_Exception_Msg_Max_Length => 200,
+      Default_Env_Stack_Size           => 4 * 1_024,
+      Sec_Stack_Dynamic                => False);
    Scenarios  : RTG.Scenario_Maps.Map;
    Interrupts : RTG.Interrupts.Interrupt_Information_Vectors.Vector;
    System_BB_MCU_Parameters :
@@ -240,11 +254,13 @@ begin
       Startup,
       Scenarios,
       Parameters,
+      System_Parameters,
       System_BB_MCU_Parameters);
    RTG.Tasking.Process (Tasking, Scenarios, Parameters);
 
    RTG.Runtime.Create_Directories (Runtime, Tasking);
    RTG.System.Generate (Runtime, Parameters);
+   RTG.System_Parameters.Generate (Runtime, System_Parameters);
 
    if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
       RTG.System_BB_MCU_Vectors.Generate (Runtime, Interrupts);

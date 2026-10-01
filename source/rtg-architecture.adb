@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, Vadim Godunko <vgodunko@gmail.com>
+--  Copyright (C) 2025-2026, Vadim Godunko <vgodunko@gmail.com>
 --
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
@@ -15,12 +15,14 @@ package body RTG.Architecture is
    -------------
 
    procedure Process
-     (Runtime              : in out RTG.Runtime.Runtime_Descriptor;
-      Tasking              : RTG.Tasking.Tasking_Descriptor;
-      Startup              : in out RTG.Startup.Startup_Descriptor;
-      Scenarios            : in out RTG.Scenario_Maps.Map;
-      System_Parameters    : in out RTG.System.System_Descriptor;
-      System_BB_Parameters : in out
+     (Runtime                      : in out RTG.Runtime.Runtime_Descriptor;
+      Tasking                      : RTG.Tasking.Tasking_Descriptor;
+      Startup                      : in out RTG.Startup.Startup_Descriptor;
+      Scenarios                    : in out RTG.Scenario_Maps.Map;
+      System_Parameters            : in out RTG.System.System_Descriptor;
+      System_Parameters_Parameters : in out
+        RTG.System_Parameters.System_Parameters_Descriptor;
+      System_BB_Parameters         : in out
         RTG.System_BB_Parameters.System_BB_Parameters_Descriptor)
    is
       use type VSS.Strings.Virtual_String;
@@ -137,6 +139,22 @@ package body RTG.Architecture is
               (System_Parameters);
          end if;
 
+         --  XXX Hardcoded values for ESP-IDF !!!
+         System_Parameters_Parameters :=
+           (Variant                          =>
+              RTG.System_Parameters.Full_Tasking,
+            Stack_Grows_Down                 => True,
+            Runtime_Default_Sec_Stack_Size   => 4 * 1_024,
+            Default_Stack_Size               => 20 * 1_024,
+            Minimum_Stack_Size               => 8 * 1_024,
+            Garbage_Collected                => False,
+            No_Abort                         => True,
+            Max_Attribute_Count              => 4,
+            Max_Task_Image_Length            => 32,
+            Default_Exception_Msg_Max_Length => 200,
+            Default_Env_Stack_Size           => 3_584,
+            Sec_Stack_Dynamic                => False);
+
       elsif Scenarios ("dt:&cpu0:compatible") = "espressif,xtensa-lx7"
             or else
             Scenarios ("dt:&cpu0:compatible") = "espressif,xtensa-lx6"
@@ -164,6 +182,22 @@ package body RTG.Architecture is
             RTG.System.Apply_No_Task_At_Interrupt_Priority_Restriction
               (System_Parameters);
          end if;
+
+         --  XXX Hardcoded values for ESP-IDF !!!
+         System_Parameters_Parameters :=
+           (Variant                          =>
+              RTG.System_Parameters.Full_Tasking,
+            Stack_Grows_Down                 => True,
+            Runtime_Default_Sec_Stack_Size   => 4 * 1_024,
+            Default_Stack_Size               => 20 * 1_024,
+            Minimum_Stack_Size               => 8 * 1_024,
+            Garbage_Collected                => False,
+            No_Abort                         => True,
+            Max_Attribute_Count              => 4,
+            Max_Task_Image_Length            => 32,
+            Default_Exception_Msg_Max_Length => 200,
+            Default_Env_Stack_Size           => 3_584,
+            Sec_Stack_Dynamic                => False);
 
       else
          RTG.Diagnostics.Error ("unsupported ""dt:&cpu0:compatible""");
