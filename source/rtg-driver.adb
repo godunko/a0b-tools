@@ -262,7 +262,7 @@ begin
    RTG.System.Generate (Runtime, Parameters);
    RTG.System_Parameters.Generate (Runtime, System_Parameters);
 
-   if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
+   if RTG.Tasking.Use_GNAT_Ravenscar_Tasking (Tasking) then
       RTG.System_BB_MCU_Vectors.Generate (Runtime, Interrupts);
       RTG.System_BB_MCU_Parameters.Generate (Runtime, Interrupts);
       RTG.System_BB_Parameters.Generate (Runtime, System_BB_MCU_Parameters);
@@ -282,8 +282,8 @@ begin
         (Runtime,
          Interrupts,
          Startup,
-         not RTG.Tasking.Use_GNAT_Tasking (Tasking),
-         RTG.Tasking.Use_GNAT_Tasking (Tasking));
+         not RTG.Tasking.Use_GNAT_Ravenscar_Tasking (Tasking),
+         RTG.Tasking.Use_GNAT_Ravenscar_Tasking (Tasking));
    end if;
 
 exception

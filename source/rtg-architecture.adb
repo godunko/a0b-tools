@@ -78,7 +78,7 @@ package body RTG.Architecture is
          System_Parameters.Parameters (Machine_Rounds)            := True;
          System_Parameters.Parameters (Signed_Zeros)              := True;
 
-         if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
+         if RTG.Tasking.Use_GNAT_Ravenscar_Tasking (Tasking) then
             RTG.System.Apply_No_Task_At_Interrupt_Priority_Restriction
               (System_Parameters);
          end if;
@@ -106,7 +106,7 @@ package body RTG.Architecture is
          System_Parameters.Parameters (Machine_Rounds)            := True;
          System_Parameters.Parameters (Signed_Zeros)              := True;
 
-         if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
+         if RTG.Tasking.Use_GNAT_Ravenscar_Tasking (Tasking) then
             RTG.System.Apply_No_Task_At_Interrupt_Priority_Restriction
               (System_Parameters);
          end if;
@@ -134,7 +134,7 @@ package body RTG.Architecture is
          System_Parameters.Parameters (Machine_Rounds)            := True;
          System_Parameters.Parameters (Signed_Zeros)              := True;
 
-         if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
+         if RTG.Tasking.Use_GNAT_Ravenscar_Tasking (Tasking) then
             RTG.System.Apply_No_Task_At_Interrupt_Priority_Restriction
               (System_Parameters);
          end if;
@@ -178,7 +178,7 @@ package body RTG.Architecture is
          System_Parameters.Parameters (Machine_Rounds)            := True;
          System_Parameters.Parameters (Signed_Zeros)              := True;
 
-         if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
+         if RTG.Tasking.Use_GNAT_Ravenscar_Tasking (Tasking) then
             RTG.System.Apply_No_Task_At_Interrupt_Priority_Restriction
               (System_Parameters);
          end if;

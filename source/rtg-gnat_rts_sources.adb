@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, Vadim Godunko <vgodunko@gmail.com>
+--  Copyright (C) 2025-2026, Vadim Godunko <vgodunko@gmail.com>
 --
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
@@ -293,7 +293,7 @@ package body RTG.GNAT_RTS_Sources is
                   Key := Reader.Key_Name;
 
                   if Key = "gnarl" then
-                     if RTG.Tasking.Use_GNAT_Tasking (Tasking) then
+                     if RTG.Tasking.Use_GNAT_Ravenscar_Tasking (Tasking) then
                         Component        := Library;
                         Target_Directory :=
                           Runtime.Aux_Tasking_Source_Directory;

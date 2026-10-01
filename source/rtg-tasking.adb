@@ -107,14 +107,14 @@ package body RTG.Tasking is
       end if;
    end Process;
 
-   ----------------------
-   -- Use_GNAT_Tasking --
-   ----------------------
+   --------------------------------
+   -- Use_GNAT_Ravenscar_Tasking --
+   --------------------------------
 
-   function Use_GNAT_Tasking
+   function Use_GNAT_Ravenscar_Tasking
      (Tasking : RTG.Tasking.Tasking_Descriptor) return Boolean is
    begin
       return Tasking.Kernel = "light" or Tasking.Kernel = "embedded";
-   end Use_GNAT_Tasking;
+   end Use_GNAT_Ravenscar_Tasking;
 
 end RTG.Tasking;

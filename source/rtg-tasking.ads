@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, Vadim Godunko <vgodunko@gmail.com>
+--  Copyright (C) 2025-2026, Vadim Godunko <vgodunko@gmail.com>
 --
 --  SPDX-License-Identifier: GPL-3.0-or-later
 --
@@ -20,7 +20,9 @@ package RTG.Tasking is
       Scenarios         : in out RTG.Scenario_Maps.Map;
       System_Parameters : in out RTG.System.System_Descriptor);
 
-   function Use_GNAT_Tasking
+   function Use_GNAT_Ravenscar_Tasking
      (Tasking : RTG.Tasking.Tasking_Descriptor) return Boolean;
+   --  Runtime uses Ravenscar tasking: restricted tasking implementation
+   --  provided by `bb-runtimes`.
 
 end RTG.Tasking;
