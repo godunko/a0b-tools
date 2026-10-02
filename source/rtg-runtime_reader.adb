@@ -38,49 +38,269 @@ package body RTG.Runtime_Reader is
       Input  : aliased VSS.Text_Streams.File_Input.File_Input_Text_Stream;
       Reader : VSS.JSON.Pull_Readers.JSON5.JSON5_Pull_Reader;
 
-      procedure Read_Configuration
-        with Pre  => Reader.Element_Kind = Start_Object,
-             Post => Reader.Element_Kind = End_Object;
+      --  Value readers enter on the first token of a value and leave on
+      --  the token immediately following it, including for empty containers.
 
-      procedure Read_Runtime
-        with Pre  => Reader.Element_Kind = Start_Object,
-             Post => Reader.Element_Kind = End_Object;
+      procedure Next;
 
-      procedure Read_Tasking
-        with Pre  => Reader.Element_Kind = Start_Object,
-             Post => Reader.Element_Kind = End_Object;
+      procedure Expect
+        (Kind    : VSS.JSON.Streams.JSON_Stream_Element_Kind;
+         Context : VSS.Strings.Virtual_String);
+
+      function Read_Key return VSS.Strings.Virtual_String;
+
+      procedure Skip_Value;
+
+      procedure Skip_Unknown (Key : VSS.Strings.Virtual_String);
+
+      function Read_String
+        (Context : VSS.Strings.Virtual_String)
+         return VSS.Strings.Virtual_String;
+
+      function Read_Boolean
+        (Context : VSS.Strings.Virtual_String) return Boolean;
+
+      function Read_Integer
+        (Context : VSS.Strings.Virtual_String) return Integer;
+
+      procedure Read_Configuration;
+
+      procedure Read_Runtime;
+
+      procedure Read_Tasking;
+
+      procedure Read_Scenarios;
 
       procedure Read_Files_Section
-        (Files : in out RTG.File_Descriptor_Vectors.Vector)
-           with Pre  => Reader.Element_Kind = Start_Object,
-                Post => Reader.Element_Kind = End_Object;
+        (Files   : in out RTG.File_Descriptor_Vectors.Vector;
+         Context : VSS.Strings.Virtual_String);
 
-      procedure Read_System_Section
-        (System : in out RTG.System.System_Descriptor)
-           with Pre  => Reader.Element_Kind = Start_Object,
-                Post => Reader.Element_Kind = End_Object;
+      procedure Read_System_Section;
 
-      procedure Read_System_Parameters_Section
-        (System : in out RTG.System.System_Descriptor)
-           with Pre  => Reader.Element_Kind = Start_Object,
-                Post => Reader.Element_Kind = End_Object;
+      procedure Read_System_Parameters_Section;
 
-      procedure Read_System_Restrictions_Section
-        (System : in out RTG.System.System_Descriptor)
-           with Pre  => Reader.Element_Kind = Start_Object,
-                Post => Reader.Element_Kind = End_Object;
+      procedure Read_System_Restrictions_Section;
 
       procedure Read_Values
-        (Values : in out VSS.String_Vectors.Virtual_String_Vector)
-           with Pre  => Reader.Element_Kind = Start_Array,
-                Post => Reader.Element_Kind = End_Array;
+        (Values  : in out VSS.String_Vectors.Virtual_String_Vector;
+         Context : VSS.Strings.Virtual_String);
 
       procedure Parse_Memory_Descriptor
         (Values     : VSS.String_Vectors.Virtual_String_Vector;
          Descriptor : in out RTG.Memory_Descriptor);
 
       procedure Process_Include (Path : VSS.Strings.Virtual_String);
-      --  Process `include` directive.
+
+      ----------
+      -- Next --
+      ----------
+
+      procedure Next is
+         use all type VSS.JSON.Pull_Readers.JSON_Reader_Error;
+
+      begin
+         loop
+            begin
+               Reader.Read_Next;
+
+            exception
+               when Program_Error =>
+                  --  Some malformed JSON5 constructs raise directly in VSS.
+
+                  RTG.Diagnostics.Error (File, "invalid JSON input");
+            end;
+
+            if Input.Has_Error then
+               RTG.Diagnostics.Error (File, Input.Error_Message);
+            end if;
+
+            --  JSON5 can retain Premature_End_Of_Document after emitting
+            --  a valid final token. Invalid tokens still fail immediately.
+
+            if Reader.Element_Kind = Invalid
+              or Reader.Error in Not_Valid | Custom_Error
+            then
+               if Reader.Error_Message.Is_Empty then
+                  RTG.Diagnostics.Error (File, "unexpected end of document");
+
+               else
+                  RTG.Diagnostics.Error (File, Reader.Error_Message);
+               end if;
+            end if;
+
+            exit when Reader.Element_Kind /= Comment;
+         end loop;
+      end Next;
+
+      ------------
+      -- Expect --
+      ------------
+
+      procedure Expect
+        (Kind    : VSS.JSON.Streams.JSON_Stream_Element_Kind;
+         Context : VSS.Strings.Virtual_String)
+      is
+         Template : constant VSS.Strings.Templates.Virtual_String_Template :=
+           "`{}`: expected {}, got {}";
+
+      begin
+         if Reader.Element_Kind /= Kind then
+            RTG.Diagnostics.Error
+              (File,
+               Template.Format
+                 (VSS.Strings.Formatters.Strings.Image (Context),
+                  VSS.Strings.Formatters.Strings.Image
+                    (VSS.Strings.Conversions.To_Virtual_String (Kind'Image)),
+                  VSS.Strings.Formatters.Strings.Image
+                    (VSS.Strings.Conversions.To_Virtual_String
+                       (Reader.Element_Kind'Image))));
+         end if;
+      end Expect;
+
+      --------------
+      -- Read_Key --
+      --------------
+
+      function Read_Key return VSS.Strings.Virtual_String is
+         Key : VSS.Strings.Virtual_String;
+
+      begin
+         Expect (Key_Name, "object member");
+         Key := Reader.Key_Name;
+         Next;
+
+         return Key;
+      end Read_Key;
+
+      ----------------
+      -- Skip_Value --
+      ----------------
+
+      procedure Skip_Value is
+         Depth : Natural := 0;
+
+      begin
+         case Reader.Element_Kind is
+            when Start_Object | Start_Array =>
+               Depth := 1;
+
+            when String_Value | Boolean_Value | Number_Value | Null_Value =>
+               null;
+
+            when others =>
+               RTG.Diagnostics.Error (File, "expected a JSON value");
+         end case;
+
+         Next;
+
+         while Depth /= 0 loop
+            case Reader.Element_Kind is
+               when Start_Object | Start_Array =>
+                  Depth := @ + 1;
+
+               when End_Object | End_Array =>
+                  Depth := @ - 1;
+
+               when Key_Name | String_Value | Boolean_Value
+                 | Number_Value | Null_Value =>
+                  null;
+
+               when others =>
+                  RTG.Diagnostics.Error (File, "incomplete JSON value");
+            end case;
+
+            Next;
+         end loop;
+      end Skip_Value;
+
+      ------------------
+      -- Skip_Unknown --
+      ------------------
+
+      procedure Skip_Unknown (Key : VSS.Strings.Virtual_String) is
+         Template : constant VSS.Strings.Templates.Virtual_String_Template :=
+           "configuration parameter `{}` is unknown";
+
+      begin
+         RTG.Diagnostics.Warning
+           (File,
+            Template.Format (VSS.Strings.Formatters.Strings.Image (Key)));
+         Skip_Value;
+      end Skip_Unknown;
+
+      -----------------
+      -- Read_String --
+      -----------------
+
+      function Read_String
+        (Context : VSS.Strings.Virtual_String)
+         return VSS.Strings.Virtual_String
+      is
+         Value : VSS.Strings.Virtual_String;
+
+      begin
+         Expect (String_Value, Context);
+         Value := Reader.String_Value;
+         Next;
+
+         return Value;
+      end Read_String;
+
+      ------------------
+      -- Read_Boolean --
+      ------------------
+
+      function Read_Boolean
+        (Context : VSS.Strings.Virtual_String) return Boolean
+      is
+         Value : Boolean;
+
+      begin
+         Expect (Boolean_Value, Context);
+         Value := Reader.Boolean_Value;
+         Next;
+
+         return Value;
+      end Read_Boolean;
+
+      ------------------
+      -- Read_Integer --
+      ------------------
+
+      function Read_Integer
+        (Context : VSS.Strings.Virtual_String) return Integer
+      is
+         use type VSS.JSON.JSON_Number_Kind;
+
+         Value : Integer;
+         Template : constant VSS.Strings.Templates.Virtual_String_Template :=
+           "`{}`: expected an integer in range of Standard.Integer";
+
+      begin
+         Expect (Number_Value, Context);
+
+         if Reader.Number_Value.Kind /= VSS.JSON.JSON_Integer then
+            RTG.Diagnostics.Error
+              (File,
+               Template.Format
+                 (VSS.Strings.Formatters.Strings.Image (Context)));
+         end if;
+
+         begin
+            Value := Integer (Reader.Number_Value.Integer_Value);
+
+         exception
+            when Constraint_Error =>
+               RTG.Diagnostics.Error
+                 (File,
+                  Template.Format
+                    (VSS.Strings.Formatters.Strings.Image (Context)));
+         end;
+
+         Next;
+
+         return Value;
+      end Read_Integer;
 
       -----------------------------
       -- Parse_Memory_Descriptor --
@@ -103,7 +323,7 @@ package body RTG.Runtime_Reader is
 
       begin
          if Values.Length /= 2 then
-            RTG.Diagnostics.Error ("must have two components");
+            RTG.Diagnostics.Error (File, "memory must have two components");
          end if;
 
          --  Convert address
@@ -111,7 +331,7 @@ package body RTG.Runtime_Reader is
          Value := Values (1);
 
          if not Value.Starts_With ("0x") then
-            RTG.Diagnostics.Error ("address must starts with 0x");
+            RTG.Diagnostics.Error (File, "memory address must start with 0x");
          end if;
 
          First.Set_At_First (Value);
@@ -154,8 +374,12 @@ package body RTG.Runtime_Reader is
                      (Value.Slice (First, Last)));
 
          else
-            raise Program_Error;
+            RTG.Diagnostics.Error (File, "memory size must use DT_SIZE_K");
          end if;
+
+      exception
+         when Constraint_Error =>
+            RTG.Diagnostics.Error (File, "invalid memory address or size");
       end Parse_Memory_Descriptor;
 
       ---------------------
@@ -178,559 +402,323 @@ package body RTG.Runtime_Reader is
       ------------------------
 
       procedure Read_Configuration is
-         Key   : VSS.Strings.Virtual_String;
-         Depth : Natural := 0;
+         Key : VSS.Strings.Virtual_String;
 
       begin
-         loop
-            case Reader.Read_Next is
-               when Key_Name =>
-                  Key := Reader.Key_Name;
+         Expect (Start_Object, "configuration");
+         Next;
 
-               when String_Value =>
-                  if Key = "include" then
-                     Process_Include (Reader.String_Value);
+         while Reader.Element_Kind /= End_Object loop
+            Key := Read_Key;
 
-                  else
-                     --  While it is mostly a backward compatibilty case,
-                     --  `scenarios` section is not detected, and processed
-                     --  here.
+            if Key = "include" then
+               Process_Include (Read_String (Key));
 
-                     Scenarios.Insert (Key, Reader.String_Value);
-                  end if;
+            elsif Key = "runtime" then
+               Read_Runtime;
 
-               when Start_Array =>
+            elsif Key = "tasking" then
+               Read_Tasking;
+
+            elsif Key = "scenarios" then
+               Read_Scenarios;
+
+            elsif Key = "dt:/chosen/a0b,flash:reg"
+              or Key = "dt:/chosen/a0b,sram:reg"
+            then
+               declare
+                  Values : VSS.String_Vectors.Virtual_String_Vector;
+
+               begin
+                  Read_Values (Values, Key);
+
                   if Key = "dt:/chosen/a0b,flash:reg" then
-                     declare
-                        Values : VSS.String_Vectors.Virtual_String_Vector;
-
-                     begin
-                        Read_Values (Values);
-                        Parse_Memory_Descriptor (Values, Startup.Flash);
-                     end;
-
-                  elsif Key = "dt:/chosen/a0b,sram:reg" then
-                     declare
-                        Values : VSS.String_Vectors.Virtual_String_Vector;
-
-                     begin
-                        Read_Values (Values);
-                        Parse_Memory_Descriptor (Values, Startup.SRAM);
-                     end;
+                     Parse_Memory_Descriptor (Values, Startup.Flash);
 
                   else
-                     RTG.Diagnostics.Warning
-                       ("configuration parameter `{}` is not an array",
-                        Key);
+                     Parse_Memory_Descriptor (Values, Startup.SRAM);
                   end if;
+               end;
 
-               when Start_Object =>
-                  if Key = "runtime" then
-                     Read_Runtime;
+            elsif Reader.Element_Kind = String_Value then
+               --  Preserve legacy root scenario and device-tree string values.
+               Scenarios.Insert (Key, Read_String (Key));
 
-                  elsif Key = "tasking" then
-                     Read_Tasking;
-
-                  else
-                     Depth := @ + 1;
-                  end if;
-
-               when End_Object =>
-                  exit when Depth = 0;
-
-                  Depth := @ - 1;
-
-               when others =>
-                  raise Program_Error with Reader.Element_Kind'Img;
-            end case;
+            else
+               Skip_Unknown (Key);
+            end if;
          end loop;
+
+         Next;
       end Read_Configuration;
-
-      ------------------------
-      -- Read_Files_Section --
-      ------------------------
-
-      procedure Read_Files_Section
-        (Files : in out RTG.File_Descriptor_Vectors.Vector)
-      is
-         Information : RTG.File_Descriptor;
-
-         procedure Read_File_Information
-           with Pre  => Reader.Element_Kind = Start_Object,
-                Post => Reader.Element_Kind = End_Object;
-
-         ---------------------------
-         -- Read_File_Information --
-         ---------------------------
-
-         procedure Read_File_Information is
-            type Parameter_Kind is (Unknown, Crate, Path);
-
-            Parameter : Parameter_Kind;
-            Key       : VSS.Strings.Virtual_String;
-
-         begin
-            loop
-               case Reader.Read_Next is
-                  when Key_Name =>
-                     Key := Reader.Key_Name;
-
-                     if Key = "crate" then
-                        Parameter := Crate;
-
-                     elsif Key = "path" then
-                        Parameter := Path;
-
-                     else
-                        RTG.Diagnostics.Warning
-                          ("source file parameter `{}` is unknown", Key);
-                     end if;
-
-                  when String_Value =>
-                     case Parameter is
-                        when Unknown =>
-                           null;
-
-                        when Crate =>
-                           Information.Crate := Reader.String_Value;
-
-                        when Path =>
-                           Information.Path := Reader.String_Value;
-                     end case;
-
-                  when End_Object =>
-                     exit;
-
-                  when others =>
-                     raise Program_Error with Reader.Element_Kind'Img;
-               end case;
-            end loop;
-         end Read_File_Information;
-
-      begin
-         loop
-            case Reader.Read_Next is
-               when Key_Name =>
-                  Information.File := Reader.Key_Name;
-                  Information.Crate.Clear;
-                  Information.Path.Clear;
-
-               when Start_Object =>
-                  Read_File_Information;
-                  Files.Append (Information);
-
-               when End_Object =>
-                  exit;
-
-               when others =>
-                  raise Program_Error with Reader.Element_Kind'Img;
-            end case;
-         end loop;
-      end Read_Files_Section;
 
       ------------------
       -- Read_Runtime --
       ------------------
 
       procedure Read_Runtime is
-
-         type Components is
-           (None,
-            Common_Required_Switches,
-            Languages,
-            Linker_Required_Switches,
-            Component_System,
-            Files);
-
-         Component : Components := None;
-         Key       : VSS.Strings.Virtual_String;
+         Key : VSS.Strings.Virtual_String;
 
       begin
-         loop
-            case Reader.Read_Next is
-               when Key_Name =>
-                  Key := Reader.Key_Name;
+         Expect (Start_Object, "runtime");
+         Next;
 
-                  if Key = "common_required_switches" then
-                     Component := Common_Required_Switches;
+         while Reader.Element_Kind /= End_Object loop
+            Key := Read_Key;
 
-                  elsif Key = "files" then
-                     Component := Files;
+            if Key = "common_required_switches" then
+               Read_Values (Runtime.Common_Required_Switches, Key);
 
-                  elsif Key = "languages" then
-                     Component := Languages;
+            elsif Key = "languages" then
+               Read_Values (Runtime.Languages, Key);
 
-                  elsif Key = "linker_required_switches" then
-                     Component := Linker_Required_Switches;
+            elsif Key = "linker_required_switches" then
+               Read_Values (Runtime.Linker_Required_Switches, Key);
 
-                  elsif Key = "system" then
-                     Component := Component_System;
+            elsif Key = "files" then
+               Read_Files_Section (Runtime.Runtime_Files, Key);
 
-                  else
-                     RTG.Diagnostics.Warning
-                       ("`{}` is unknown runtime configuration parameter",
-                        Key);
-                  end if;
+            elsif Key = "system" then
+               Read_System_Section;
 
-               when Start_Array =>
-                  case Component is
-                     when Common_Required_Switches =>
-                        Read_Values (Runtime.Common_Required_Switches);
-
-                     when Languages =>
-                        Read_Values (Runtime.Languages);
-
-                     when Linker_Required_Switches =>
-                        Read_Values (Runtime.Linker_Required_Switches);
-
-                     when others =>
-                        RTG.Diagnostics.Warning
-                          ("`{}` runtime configuration parameter is not an array",
-                           Key);
-                        Reader.Skip_Current_Array;
-                  end case;
-
-               when Start_Object =>
-                  case Component is
-                     when Files =>
-                        Read_Files_Section (Runtime.Runtime_Files);
-
-                     when Component_System =>
-                        Read_System_Section (System);
-
-                     when others =>
-                        RTG.Diagnostics.Warning
-                          ("`{}` runtime configuration parameter is not object",
-                        Key);
-                        Reader.Skip_Current_Object;
-                  end case;
-
-               when End_Object =>
-                  exit;
-
-               when others =>
-                  raise Program_Error with Reader.Element_Kind'Img;
-            end case;
+            else
+               Skip_Unknown (Key);
+            end if;
          end loop;
+
+         Next;
       end Read_Runtime;
-
-      ------------------------------------
-      -- Read_System_Parameters_Section --
-      ------------------------------------
-
-      procedure Read_System_Parameters_Section
-        (System : in out RTG.System.System_Descriptor)
-      is
-         type Components is
-           (None,
-            Preallocated_Stacks,
-            Suppress_Standard_Library);
-
-         Component : Components := None;
-         Key       : VSS.Strings.Virtual_String;
-
-      begin
-         loop
-            case Reader.Read_Next is
-               when Key_Name =>
-                  Key := Reader.Key_Name;
-
-                  if Key = "Preallocated_Stacks" then
-                     Component := Preallocated_Stacks;
-
-                  elsif Key = "Suppress_Standard_Library" then
-                     Component := Suppress_Standard_Library;
-
-                  else
-                     RTG.Diagnostics.Warning
-                       ("`{}` is unknown system parameters parameter",
-                        Key);
-                  end if;
-
-               when Boolean_Value =>
-                  case Component is
-                     when Preallocated_Stacks =>
-                        System.Set_Preallocated_Stacks
-                          (Reader.Boolean_Value);
-
-                     when Suppress_Standard_Library =>
-                        System.Set_Suppress_Standard_Library
-                          (Reader.Boolean_Value);
-
-                     when others =>
-                        RTG.Diagnostics.Warning
-                          ("`{}` runtime system parameter is not boolean",
-                        Key);
-                        Reader.Skip_Current_Object;
-                  end case;
-
-               when End_Object =>
-                  exit;
-
-               when others =>
-                  raise Program_Error with Reader.Element_Kind'Img;
-            end case;
-         end loop;
-      end Read_System_Parameters_Section;
-
-      --------------------------------------
-      -- Read_System_Restrictions_Section --
-      --------------------------------------
-
-      procedure Read_System_Restrictions_Section
-        (System : in out RTG.System.System_Descriptor)
-      is
-         type Components is
-           (None,
-            No_Exception_Propagation,
-            No_Finalization,
-            No_Implicit_Dynamic_Code);
-
-         Component : Components := None;
-         Key       : VSS.Strings.Virtual_String;
-
-      begin
-         loop
-            case Reader.Read_Next is
-               when Key_Name =>
-                  Key := Reader.Key_Name;
-
-                  if Key = "No_Exception_Propagation" then
-                     Component := No_Exception_Propagation;
-
-                  elsif Key = "No_Finalization" then
-                     Component := No_Finalization;
-
-                  elsif Key = "No_Implicit_Dynamic_Code" then
-                     Component := No_Implicit_Dynamic_Code;
-
-                  else
-                     RTG.Diagnostics.Warning
-                       ("`{}` is unknown system restrictions parameter",
-                        Key);
-                  end if;
-
-               when Boolean_Value =>
-                  case Component is
-                     when No_Exception_Propagation =>
-                        System.Set_No_Exception_Propagation
-                          (Reader.Boolean_Value);
-
-                     when No_Finalization =>
-                        System.Set_No_Finalization (Reader.Boolean_Value);
-
-                     when No_Implicit_Dynamic_Code =>
-                        System.Set_No_Implicit_Dynamic_Code
-                          (Reader.Boolean_Value);
-
-                     when others =>
-                        RTG.Diagnostics.Warning
-                          ("`{}` runtime system restrictions is not boolean",
-                        Key);
-                        Reader.Skip_Current_Object;
-                  end case;
-
-               when End_Object =>
-                  exit;
-
-               when others =>
-                  raise Program_Error with Reader.Element_Kind'Img;
-            end case;
-         end loop;
-      end Read_System_Restrictions_Section;
-
-      -------------------------
-      -- Read_System_Section --
-      -------------------------
-
-      procedure Read_System_Section
-        (System : in out RTG.System.System_Descriptor)
-      is
-         type Components is
-           (None,
-            Restrictions,
-            Parameters,
-            Interrupt_Priority_Values,
-            Priority_Values);
-
-         Component : Components := None;
-         Key       : VSS.Strings.Virtual_String;
-
-      begin
-         loop
-            case Reader.Read_Next is
-               when Key_Name =>
-                  Key := Reader.Key_Name;
-
-                  if Key = "interrupt_priority_values" then
-                     Component := Interrupt_Priority_Values;
-
-                  elsif Key = "parameters" then
-                     Component := Parameters;
-
-                  elsif Key = "priority_values" then
-                     Component := Priority_Values;
-
-                  elsif Key = "restrictions" then
-                     Component := Restrictions;
-
-                  else
-                     RTG.Diagnostics.Warning
-                       ("`{}` is unknown system configuration parameter",
-                        Key);
-                  end if;
-
-               when Number_Value =>
-                  case Component is
-                     when Interrupt_Priority_Values =>
-                        System.Priorities.Interrupt_Priority_Values :=
-                          Integer (Reader.Number_Value.Integer_Value);
-
-                     when Priority_Values =>
-                        System.Priorities.Priority_Values :=
-                          Integer (Reader.Number_Value.Integer_Value);
-
-                     when others =>
-                        RTG.Diagnostics.Warning
-                          ("`{}` system configuration parameter is not number value",
-                        Key);
-                  end case;
-
-               when Start_Object =>
-                  case Component is
-                     when Parameters =>
-                        Read_System_Parameters_Section (System);
-
-                     when Restrictions =>
-                        Read_System_Restrictions_Section (System);
-
-                     when others =>
-                        RTG.Diagnostics.Warning
-                          ("`{}` system configuration parameter is not object",
-                        Key);
-                        Reader.Skip_Current_Object;
-                  end case;
-
-               when End_Object =>
-                  exit;
-
-               when others =>
-                  raise Program_Error with Reader.Element_Kind'Img;
-            end case;
-         end loop;
-      end Read_System_Section;
 
       ------------------
       -- Read_Tasking --
       ------------------
 
       procedure Read_Tasking is
-
-         type Parameter_Kind is (Kernel, Files);
-
-         Not_An_Object : constant
-           VSS.Strings.Templates.Virtual_String_Template :=
-             "`{}` tasking configuration parameter is not an object";
-
-         Parameter : Parameter_Kind;
-         Key       : VSS.Strings.Virtual_String;
+         Key : VSS.Strings.Virtual_String;
 
       begin
-         loop
-            case Reader.Read_Next is
-               when Key_Name =>
-                  Key := Reader.Key_Name;
+         Expect (Start_Object, "tasking");
+         Next;
 
-                  if Key = "files" then
-                     Parameter := Files;
+         while Reader.Element_Kind /= End_Object loop
+            Key := Read_Key;
 
-                  elsif Key = "kernel" then
-                     Parameter := Kernel;
+            if Key = "kernel" then
+               Tasking.Kernel := Read_String (Key);
+
+            elsif Key = "files" then
+               Read_Files_Section (Tasking.Files, Key);
+
+            else
+               Skip_Unknown (Key);
+            end if;
+         end loop;
+
+         Next;
+      end Read_Tasking;
+
+      -------------------------
+      -- Read_System_Section --
+      -------------------------
+
+      procedure Read_System_Section is
+         Key : VSS.Strings.Virtual_String;
+
+      begin
+         Expect (Start_Object, "system");
+         Next;
+
+         while Reader.Element_Kind /= End_Object loop
+            Key := Read_Key;
+
+            if Key = "parameters" then
+               Read_System_Parameters_Section;
+
+            elsif Key = "restrictions" then
+               Read_System_Restrictions_Section;
+
+            elsif Key = "priority_values" then
+               System.Priorities.Priority_Values := Read_Integer (Key);
+
+            elsif Key = "interrupt_priority_values" then
+               System.Priorities.Interrupt_Priority_Values :=
+                 Read_Integer (Key);
+
+            else
+               Skip_Unknown (Key);
+            end if;
+         end loop;
+
+         Next;
+      end Read_System_Section;
+
+      ------------------------------------
+      -- Read_System_Parameters_Section --
+      ------------------------------------
+
+      procedure Read_System_Parameters_Section is
+         Key : VSS.Strings.Virtual_String;
+
+      begin
+         Expect (Start_Object, "parameters");
+         Next;
+
+         while Reader.Element_Kind /= End_Object loop
+            Key := Read_Key;
+
+            if Key = "Preallocated_Stacks" then
+               System.Set_Preallocated_Stacks (Read_Boolean (Key));
+
+            elsif Key = "Suppress_Standard_Library" then
+               System.Set_Suppress_Standard_Library (Read_Boolean (Key));
+
+            else
+               Skip_Unknown (Key);
+            end if;
+         end loop;
+
+         Next;
+      end Read_System_Parameters_Section;
+
+      --------------------------------------
+      -- Read_System_Restrictions_Section --
+      --------------------------------------
+
+      procedure Read_System_Restrictions_Section is
+         Key : VSS.Strings.Virtual_String;
+
+      begin
+         Expect (Start_Object, "restrictions");
+         Next;
+
+         while Reader.Element_Kind /= End_Object loop
+            Key := Read_Key;
+
+            if Key = "No_Exception_Propagation" then
+               System.Set_No_Exception_Propagation (Read_Boolean (Key));
+
+            elsif Key = "No_Finalization" then
+               System.Set_No_Finalization (Read_Boolean (Key));
+
+            elsif Key = "No_Implicit_Dynamic_Code" then
+               System.Set_No_Implicit_Dynamic_Code (Read_Boolean (Key));
+
+            else
+               Skip_Unknown (Key);
+            end if;
+         end loop;
+
+         Next;
+      end Read_System_Restrictions_Section;
+
+      --------------------
+      -- Read_Scenarios --
+      --------------------
+
+      procedure Read_Scenarios is
+         Key : VSS.Strings.Virtual_String;
+
+      begin
+         Expect (Start_Object, "scenarios");
+         Next;
+
+         while Reader.Element_Kind /= End_Object loop
+            Key := Read_Key;
+            Scenarios.Insert (Key, Read_String (Key));
+         end loop;
+
+         Next;
+      end Read_Scenarios;
+
+      ------------------------
+      -- Read_Files_Section --
+      ------------------------
+
+      procedure Read_Files_Section
+        (Files   : in out RTG.File_Descriptor_Vectors.Vector;
+         Context : VSS.Strings.Virtual_String)
+      is
+         Key : VSS.Strings.Virtual_String;
+
+      begin
+         Expect (Start_Object, Context);
+         Next;
+
+         while Reader.Element_Kind /= End_Object loop
+            declare
+               Information : RTG.File_Descriptor;
+
+            begin
+               Information.File := Read_Key;
+               Expect (Start_Object, Information.File);
+               Next;
+
+               while Reader.Element_Kind /= End_Object loop
+                  Key := Read_Key;
+
+                  if Key = "crate" then
+                     Information.Crate := Read_String (Key);
+
+                  elsif Key = "path" then
+                     Information.Path := Read_String (Key);
 
                   else
-                     RTG.Diagnostics.Warning
-                       ("`{}` is unknown tasking configuration parameter",
-                        Key);
+                     Skip_Unknown (Key);
                   end if;
+               end loop;
 
-               when String_Value =>
-                  case Parameter is
-                     when Kernel =>
-                        Tasking.Kernel := Reader.String_Value;
-
-                     when others =>
-                        RTG.Diagnostics.Warning (Not_An_Object, Key);
-                  end case;
-
-               when Start_Object =>
-                  case Parameter is
-                     when Files =>
-                        Read_Files_Section (Tasking.Files);
-
-                     when others =>
-                        RTG.Diagnostics.Warning (Not_An_Object, Key);
-                        Reader.Skip_Current_Object;
-                  end case;
-
-               when End_Object =>
-                  exit;
-
-               when others =>
-                  raise Program_Error with Reader.Element_Kind'Img;
-            end case;
+               Next;
+               Files.Append (Information);
+            end;
          end loop;
-      end Read_Tasking;
+
+         Next;
+      end Read_Files_Section;
 
       -----------------
       -- Read_Values --
       -----------------
 
       procedure Read_Values
-        (Values : in out VSS.String_Vectors.Virtual_String_Vector) is
+        (Values  : in out VSS.String_Vectors.Virtual_String_Vector;
+         Context : VSS.Strings.Virtual_String) is
       begin
-         loop
-            case Reader.Read_Next is
-               when String_Value =>
-                  Values.Append (Reader.String_Value);
+         Expect (Start_Array, Context);
+         Next;
 
-               when End_Array =>
-                  exit;
-
-               when others =>
-                  raise Program_Error with Reader.Element_Kind'Img;
-            end case;
+         while Reader.Element_Kind /= End_Array loop
+            Values.Append (Read_String (Context));
          end loop;
+
+         Next;
       end Read_Values;
 
    begin
       if Runtime.Descriptor_Directory = GNATCOLL.VFS.No_File then
-         --  Sets `Descriptor_Directory` from the first processed runtime
-         --  descriptor file.
+         --  Use the directory of the first runtime descriptor processed.
 
          Runtime.Descriptor_Directory := File.Dir;
       end if;
 
       Input.Open
         (VSS.Strings.Conversions.To_Virtual_String (File.Display_Full_Name));
+
+      if Input.Has_Error then
+         RTG.Diagnostics.Error (File, Input.Error_Message);
+      end if;
+
       Reader.Set_Stream (Input'Unchecked_Access);
-
-      loop
-         case Reader.Read_Next is
-            when Start_Document =>
-               null;
-
-            when End_Document =>
-               exit;
-
-            when Start_Object =>
-               Read_Configuration;
-
-            when others =>
-               raise Program_Error with Reader.Element_Kind'Img;
-         end case;
-      end loop;
-
+      Next;
+      Expect (Start_Document, "document");
+      Next;
+      Read_Configuration;
+      Expect (End_Document, "document");
       Input.Close;
+
+   exception
+      when others =>
+         Input.Close;
+         raise;
    end Read;
 
 end RTG.Runtime_Reader;
